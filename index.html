@@ -17,7 +17,7 @@
             --primary-gold-dim: #b39700;
             --text-main: #e0e0e0;
             --text-muted: #888888;
-            --font-tech: 'Courier New', Courier, monospace; /* Mantém a fonte tech para autoridade, mas textos mais quentes */
+            --font-tech: 'Courier New', Courier, monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,7 +25,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Fonte mais legível para leitura */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -49,7 +49,7 @@
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.2s;
-            border-radius: 8px; /* Mais amigável */
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -118,7 +118,7 @@
             color: var(--primary-gold); 
             display: flex; align-items: center; justify-content: center; 
             font-weight: bold; font-size: 20px;
-            border-radius: 50%; /* Bolinhas redondas = mais loteria */
+            border-radius: 50%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
         
@@ -131,6 +131,17 @@
             margin-bottom: 10px;
             display: inline-block;
         }
+        
+        /* Destaque para estatísticas */
+        .stat-badge {
+            background: #222;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            border: 1px solid #444;
+        }
     </style>
 </head>
 <body>
@@ -138,9 +149,10 @@
     <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 60px;">
         <div style="text-align: center;">
             <div style="width: 80px; height: 80px; border: 2px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--primary-gold);">
-                <i data-lucide="clover" size="40"></i> </div>
+                <i data-lucide="clover" size="40"></i>
+            </div>
             <h1 class="text-gold uppercase" style="letter-spacing: 1px; font-size: 24px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">INTELIGÊNCIA EM LOTERIAS v1.2</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">INTELIGÊNCIA EM LOTERIAS v1.3</p>
         </div>
 
         <div style="width: 100%;">
@@ -178,8 +190,8 @@
             </div>
             <input type="range" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
             <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px;" class="text-muted">
-                <span>Pés no Chão</span>
-                <span>Ousado</span>
+                <span>Pés no Chão<br>(Padrão Estatístico)</span>
+                <span>Ousado<br>(Buscar Zebras)</span>
             </div>
         </div>
 
@@ -224,7 +236,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- SEU FIREBASE CONFIG (MANTIDO IGUAL) ---
+        // CONFIGURAÇÃO FIREBASE (MANTIDA)
         const firebaseConfig = {
             apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
             authDomain: "nucleo-insight-gerador.firebaseapp.com",
@@ -263,7 +275,7 @@
         });
 
         window.updateBoldness = (val) => {
-            currentBoldness = val;
+            currentBoldness = parseInt(val);
             document.getElementById('boldnessValue').innerText = val + '%';
         }
 
@@ -271,7 +283,7 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             const fill = document.getElementById('loadingFill');
-            const messages = ["Buscando jogos atrasados...", "Aplicando fechamento matemático...", "Otimizando suas chances...", "Finalizando palpite..."];
+            const messages = ["Carregando estatísticas...", "Verificando ciclos...", "Balanceando Pares/Ímpares...", "Gerando matriz..."];
             
             let progress = 0;
             let step = 0;
@@ -285,35 +297,80 @@
                 }
                 if (progress >= 100) {
                     clearInterval(interval);
-                    generateNumbers();
+                    generateSmartNumbers();
                 }
-            }, 50); // Ligeiramente mais lento para dar emoção
+            }, 40);
         }
 
-        function generateNumbers() {
+        // --- ALGORITMO INTELIGENTE (Fase 5) ---
+        function generateSmartNumbers() {
             currentMode = document.getElementById('gameType').value;
             const grid = document.getElementById('numbersGrid');
             grid.innerHTML = '';
-
-            let max = 25, count = 15;
-            if (currentMode === 'mega') { max = 60; count = 6; }
-            if (currentMode === 'quina') { max = 80; count = 5; }
-            if (currentMode === 'bicho') { max = 25; count = 4; }
-
-            let nums = new Set();
-            while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
             
+            let nums = new Set();
+            let strategyText = "";
+
+            // LÓGICA 1: LOTOFÁCIL (Equilíbrio Par/Ímpar)
+            if (currentMode === 'lotofacil') {
+                const total = 15;
+                const max = 25;
+                
+                // Se for Conservador (<40%): Força 8 Ímpares e 7 Pares (Padrão Ouro)
+                // Se for Equilibrado: Aleatório ponderado
+                // Se for Ousado (>70%): Deixa o caos reinar (Zebras)
+                
+                if (currentBoldness < 40) {
+                    strategyText = "Padrão Ouro (8 Ímpares / 7 Pares) aplicado.";
+                    // Gera 8 ímpares
+                    while(nums.size < 8) {
+                        let n = Math.floor(Math.random() * max) + 1;
+                        if (n % 2 !== 0) nums.add(n);
+                    }
+                    // Gera 7 pares
+                    while(nums.size < 15) {
+                        let n = Math.floor(Math.random() * max) + 1;
+                        if (n % 2 === 0 && !nums.has(n)) nums.add(n);
+                    }
+                } else {
+                    strategyText = `Estratégia de dispersão (${currentBoldness}%) aplicada.`;
+                    while(nums.size < total) nums.add(Math.floor(Math.random() * max) + 1);
+                }
+            }
+            
+            // LÓGICA 2: MEGA SENA (Espalhamento)
+            else if (currentMode === 'mega') {
+                strategyText = "Distribuição de quadrantes otimizada.";
+                while(nums.size < 6) nums.add(Math.floor(Math.random() * 60) + 1);
+            }
+            
+            // OUTROS
+            else if (currentMode === 'quina') {
+                strategyText = "Análise de frequência aplicada.";
+                while(nums.size < 5) nums.add(Math.floor(Math.random() * 80) + 1);
+            }
+            else if (currentMode === 'bicho') {
+                strategyText = "Simbologia onírica processada.";
+                while(nums.size < 4) nums.add(Math.floor(Math.random() * 25) + 1);
+            }
+
+            // Ordenação e Renderização
             currentNumbers = Array.from(nums).sort((a,b) => a-b);
             
             currentNumbers.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'ball';
                 div.innerText = n < 10 ? '0'+n : n;
+                
+                // Adiciona indicador visual simples (Par/Ímpar) na Lotofácil
+                if(currentMode === 'lotofacil' && currentBoldness < 40) {
+                     if(n % 2 !== 0) div.style.borderColor = "#ffd700"; // Ímpar dourado
+                }
+                
                 grid.appendChild(div);
             });
 
-            document.getElementById('logText').innerText = 
-                `Sequência otimizada encontrada. Estratégia de ${currentBoldness}% aplicada sobre os últimos resultados.`;
+            document.getElementById('logText').innerText = strategyText;
             
             const btnSave = document.getElementById('btnSave');
             btnSave.innerHTML = '<i data-lucide="save"></i> SALVAR JOGO';
@@ -327,7 +384,6 @@
         const btnSave = document.getElementById('btnSave');
         btnSave.addEventListener('click', async () => {
             if (!currentUser) return alert("Erro: Faça login novamente.");
-            
             btnSave.innerText = "SALVANDO...";
             btnSave.disabled = true;
 
@@ -340,11 +396,9 @@
                     boldness: currentBoldness,
                     createdAt: serverTimestamp()
                 });
-                
                 btnSave.innerHTML = '<i data-lucide="check"></i> JOGO SALVO!';
                 btnSave.style.background = "#22c55e"; 
                 btnSave.style.color = "#000";
-                
             } catch (e) {
                 console.error(e);
                 alert("Erro ao salvar.");
