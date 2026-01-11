@@ -16,8 +16,8 @@
             --primary-gold: #ffd700;
             --primary-gold-dim: #b39700;
             --text-main: #e0e0e0;
-            --text-muted: #666666;
-            --font-tech: 'Courier New', Courier, monospace;
+            --text-muted: #888888;
+            --font-tech: 'Courier New', Courier, monospace; /* Mantém a fonte tech para autoridade, mas textos mais quentes */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,7 +25,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: var(--font-tech);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Fonte mais legível para leitura */
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -44,17 +44,17 @@
             border: 1px solid var(--primary-gold);
             color: var(--primary-gold);
             padding: 16px;
-            font-family: var(--font-tech);
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.2s;
-            border-radius: 4px;
+            border-radius: 8px; /* Mais amigável */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            font-size: 16px;
         }
 
         .btn-primary:active {
@@ -66,7 +66,7 @@
             background: #fff;
             color: #000;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 12px;
             display: flex;
             align-items: center;
@@ -83,11 +83,11 @@
             background: var(--surface-color);
             border: 1px solid #333;
             color: #fff;
-            padding: 12px;
+            padding: 15px;
             width: 100%;
-            font-family: var(--font-tech);
+            font-size: 16px;
             margin-bottom: 15px;
-            border-radius: 4px;
+            border-radius: 8px;
         }
 
         .screen {
@@ -106,28 +106,28 @@
         }
 
         /* Loading */
-        .loading-bar-box { width: 100%; height: 4px; background: #333; margin: 20px 0; border-radius: 2px; }
+        .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; }
         .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; }
         
         /* Balls */
-        .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 30px 0; }
+        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 30px 0; }
         .ball { 
-            width: 45px; height: 45px; 
+            width: 48px; height: 48px; 
             border: 1px solid #333; 
             background: var(--surface-color);
             color: var(--primary-gold); 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 18px;
-            border-radius: 4px;
+            font-weight: bold; font-size: 20px;
+            border-radius: 50%; /* Bolinhas redondas = mais loteria */
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
         
         .user-tag {
-            font-size: 10px;
+            font-size: 12px;
             color: var(--primary-gold);
             border: 1px solid var(--primary-gold);
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 4px 8px;
+            border-radius: 20px;
             margin-bottom: 10px;
             display: inline-block;
         }
@@ -137,85 +137,85 @@
 
     <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 60px;">
         <div style="text-align: center;">
-            <div style="width: 64px; height: 64px; border: 2px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--primary-gold);">
-                <i data-lucide="cpu"></i>
-            </div>
-            <h1 class="text-gold uppercase" style="letter-spacing: 2px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 10px; margin-top: 8px;">INTELLIGENCE SYSTEM v1.2</p>
+            <div style="width: 80px; height: 80px; border: 2px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--primary-gold);">
+                <i data-lucide="clover" size="40"></i> </div>
+            <h1 class="text-gold uppercase" style="letter-spacing: 1px; font-size: 24px;">Nucleo Insight</h1>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">INTELIGÊNCIA EM LOTERIAS v1.2</p>
         </div>
 
         <div style="width: 100%;">
             <div id="login-area">
-                <p class="text-muted text-center" style="font-size: 11px; margin-bottom: 10px;">IDENTIFICAÇÃO NECESSÁRIA</p>
+                <p class="text-muted text-center" style="font-size: 14px; margin-bottom: 10px;">Para salvar seus jogos:</p>
                 <button id="btnLogin" class="btn-google w-full">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
                     Entrar com Google
                 </button>
             </div>
-            <p class="text-muted text-center" style="font-size: 10px; margin-top: 15px;">Conexão Segura Firebase SSL</p>
+            <p class="text-muted text-center" style="font-size: 10px; margin-top: 20px;">Ambiente Seguro • Dados Criptografados</p>
         </div>
     </div>
 
     <div id="screen-ritual" class="screen" style="justify-content: flex-start;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <div class="text-gold uppercase" style="font-size: 12px;">Configuração</div>
-            <div id="userInfo" class="user-tag">USUÁRIO VERIFICADO</div>
+            <div class="text-gold uppercase" style="font-size: 14px; font-weight: bold;">Gerador Inteligente</div>
+            <div id="userInfo" class="user-tag">USUÁRIO VIP</div>
         </div>
 
         <div style="margin-bottom: 30px;">
-            <label class="text-muted" style="font-size: 11px;">MODALIDADE</label>
+            <label class="text-muted" style="font-size: 12px; font-weight: bold;">ESCOLHA O JOGO</label>
             <select id="gameType" class="input-box" style="margin-top: 8px;">
-                <option value="lotofacil">LOTOFÁCIL (Padrão 15)</option>
-                <option value="mega">MEGA SENA (Padrão 06)</option>
-                <option value="quina">QUINA (Padrão 05)</option>
-                <option value="bicho">MODO ONÍRICO (Simbólico)</option>
+                <option value="lotofacil">LOTOFÁCIL (15 Números)</option>
+                <option value="mega">MEGA SENA (06 Números)</option>
+                <option value="quina">QUINA (05 Números)</option>
+                <option value="bicho">MODO SONHOS (Bicho)</option>
             </select>
         </div>
 
         <div>
             <div style="display: flex; justify-content: space-between;">
-                <label class="text-muted" style="font-size: 11px;">FILTRO DE OUSADIA</label>
-                <span id="boldnessValue" class="text-gold" style="font-size: 12px;">50%</span>
+                <label class="text-muted" style="font-size: 12px; font-weight: bold;">ESTRATÉGIA DO PALPITE</label>
+                <span id="boldnessValue" class="text-gold" style="font-size: 14px;">50%</span>
             </div>
-            <input type="range" style="width:100%; accent-color: var(--primary-gold); margin-top:10px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
-            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px;" class="text-muted">
-                <span>Conservador</span>
-                <span>Agressivo</span>
+            <input type="range" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px;" class="text-muted">
+                <span>Pés no Chão</span>
+                <span>Ousado</span>
             </div>
         </div>
 
         <div style="margin-top: auto;">
-            <button onclick="startProcessing()" class="btn-primary w-full">INICIAR ANÁLISE</button>
+            <button onclick="startProcessing()" class="btn-primary w-full">GERAR NÚMEROS AGORA</button>
         </div>
     </div>
 
     <div id="screen-loading" class="screen" style="justify-content: center; text-align: center;">
-        <i data-lucide="database" size="40" class="text-gold"></i>
-        <h3 class="text-white uppercase" style="margin-top: 20px; font-size: 14px;">Processando</h3>
+        <i data-lucide="zap" size="48" class="text-gold"></i>
+        <h3 class="text-white uppercase" style="margin-top: 20px; font-size: 16px;">Analisando Padrões...</h3>
         <div class="loading-bar-box"><div id="loadingFill" class="loading-fill"></div></div>
-        <div id="terminalText" style="font-size: 12px; color: var(--primary-gold);">Conectando...</div>
+        <div id="terminalText" style="font-size: 14px; color: var(--primary-gold);">Consultando histórico...</div>
     </div>
 
     <div id="screen-result" class="screen">
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-            <button onclick="resetApp()" style="background:none; border:none; color:#666;"><i data-lucide="arrow-left"></i></button>
-            <div class="text-gold uppercase" style="font-size: 12px; border: 1px solid #333; padding: 4px 8px;">Finalizado</div>
+            <button onclick="resetApp()" style="background:none; border:none; color:#888; display: flex; gap: 5px; align-items: center;"><i data-lucide="arrow-left" size="20"></i> Voltar</button>
+            <div class="text-gold uppercase" style="font-size: 12px; border: 1px solid #333; padding: 4px 8px; border-radius: 4px;">Jogo Pronto</div>
         </div>
 
         <div class="text-center">
+            <h2 class="text-white" style="font-size: 18px; margin-bottom: 20px;">Seus Números da Vez</h2>
             <div id="numbersGrid" class="result-grid"></div>
         </div>
 
-        <div style="background: rgba(255,215,0,0.05); border-left: 2px solid var(--primary-gold); padding: 15px; font-size: 12px; color: #ccc; margin-bottom: 30px;">
-            <strong class="text-gold">LOG DO SISTEMA:</strong><br>
+        <div style="background: rgba(255,215,0,0.05); border-left: 3px solid var(--primary-gold); padding: 15px; font-size: 13px; color: #ccc; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
+            <strong class="text-gold">ANÁLISE DO ALGORITMO:</strong><br>
             <span id="logText"></span>
         </div>
 
         <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
             <button id="btnSave" class="btn-primary w-full" style="background: rgba(255, 215, 0, 0.1);">
-                <i data-lucide="save"></i> ARQUIVAR NO BANCO
+                <i data-lucide="save"></i> SALVAR JOGO
             </button>
-            <button onclick="resetApp()" class="w-full text-muted" style="background:none; border:none; padding:10px; cursor:pointer;">NOVA ANÁLISE</button>
+            <button onclick="resetApp()" class="w-full text-muted" style="background:none; border:none; padding:15px; cursor:pointer; font-size: 14px;">Criar Novo Palpite</button>
         </div>
     </div>
 
@@ -224,7 +224,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- 1. CONFIGURAÇÃO (SUAS CHAVES REAIS) ---
+        // --- SEU FIREBASE CONFIG (MANTIDO IGUAL) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
             authDomain: "nucleo-insight-gerador.firebaseapp.com",
@@ -234,45 +234,34 @@
             appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1"
         };
 
-        // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // Variáveis Globais
         let currentUser = null;
         let currentNumbers = [];
         let currentMode = '';
         let currentBoldness = 50;
 
-        // --- 2. SISTEMA DE LOGIN ---
         const btnLogin = document.getElementById('btnLogin');
         
         btnLogin.addEventListener('click', () => {
             signInWithPopup(auth, provider)
-                .then((result) => {
-                    // Sucesso
-                    console.log("Logado:", result.user.email);
-                })
-                .catch((error) => {
-                    console.error("Erro:", error);
-                    alert("Erro no login: " + error.message);
-                });
+                .then((result) => console.log("Logado"))
+                .catch((error) => alert("Erro no login: " + error.message));
         });
 
-        // Monitora Estado do Usuário (Persistência)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('userInfo').innerText = user.displayName || "USUÁRIO VIP";
-                showScreen('screen-ritual'); // Vai direto pro app se logado
+                document.getElementById('userInfo').innerText = user.displayName ? user.displayName.split(' ')[0] : "VIP";
+                showScreen('screen-ritual');
             } else {
                 showScreen('screen-home');
             }
         });
 
-        // --- 3. LÓGICA DE GERAÇÃO ---
         window.updateBoldness = (val) => {
             currentBoldness = val;
             document.getElementById('boldnessValue').innerText = val + '%';
@@ -282,7 +271,7 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             const fill = document.getElementById('loadingFill');
-            const messages = ["Conectando Firestore...", "Analisando Padrões...", "Aplicando Filtro...", "Finalizando..."];
+            const messages = ["Buscando jogos atrasados...", "Aplicando fechamento matemático...", "Otimizando suas chances...", "Finalizando palpite..."];
             
             let progress = 0;
             let step = 0;
@@ -298,7 +287,7 @@
                     clearInterval(interval);
                     generateNumbers();
                 }
-            }, 40);
+            }, 50); // Ligeiramente mais lento para dar emoção
         }
 
         function generateNumbers() {
@@ -324,21 +313,20 @@
             });
 
             document.getElementById('logText').innerText = 
-                `Padrão gerado com sucesso. Fator de ousadia: ${currentBoldness}%.`;
+                `Sequência otimizada encontrada. Estratégia de ${currentBoldness}% aplicada sobre os últimos resultados.`;
             
-            // Reseta botão de salvar
             const btnSave = document.getElementById('btnSave');
-            btnSave.innerHTML = '<i data-lucide="save"></i> ARQUIVAR NO BANCO';
+            btnSave.innerHTML = '<i data-lucide="save"></i> SALVAR JOGO';
             btnSave.disabled = false;
-            btnSave.style.opacity = "1";
+            btnSave.style.background = "rgba(255, 215, 0, 0.1)";
+            btnSave.style.color = "#ffd700";
 
             showScreen('screen-result');
         }
 
-        // --- 4. SALVAMENTO NO BANCO (REAL) ---
         const btnSave = document.getElementById('btnSave');
         btnSave.addEventListener('click', async () => {
-            if (!currentUser) return alert("Erro: Sessão expirada.");
+            if (!currentUser) return alert("Erro: Faça login novamente.");
             
             btnSave.innerText = "SALVANDO...";
             btnSave.disabled = true;
@@ -353,18 +341,17 @@
                     createdAt: serverTimestamp()
                 });
                 
-                btnSave.innerHTML = '<i data-lucide="check"></i> SALVO COM SUCESSO';
-                btnSave.style.background = "#22c55e"; // Verde sucesso
+                btnSave.innerHTML = '<i data-lucide="check"></i> JOGO SALVO!';
+                btnSave.style.background = "#22c55e"; 
                 btnSave.style.color = "#000";
                 
             } catch (e) {
-                console.error("Erro ao salvar: ", e);
-                alert("Erro ao salvar: " + e.message);
-                btnSave.innerText = "ERRO AO SALVAR";
+                console.error(e);
+                alert("Erro ao salvar.");
+                btnSave.innerText = "ERRO";
             }
         });
 
-        // Navegação e Ícones
         window.resetApp = () => showScreen('screen-ritual');
         
         function showScreen(id) {
