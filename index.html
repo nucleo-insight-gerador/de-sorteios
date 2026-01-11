@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nucleo Insight | Intelligence</title>
     <meta name="theme-color" content="#000000">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -16,13 +22,11 @@
             --text-main: #e0e0e0;
             --text-muted: #888888;
             --font-tech: 'Courier New', Courier, monospace;
-            
-            /* Cores de Temperatura */
+            --hot-red: #ff4444;
+            --cold-blue: #4488ff;
             --temp-safe: #00ff88;
             --temp-warn: #ffd700;
             --temp-danger: #ff0055;
-            
-            /* Cor atual dinâmica (alterada via JS) */
             --current-color: #ffd700;
         }
 
@@ -95,46 +99,11 @@
             background: rgba(255, 215, 0, 0.05);
         }
 
-        /* --- SLIDER PERSONALIZADO (TERMÔMETRO) --- */
-        .slider-wrapper {
-            position: relative;
-            padding: 10px 0;
-        }
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 12px;
-            background: #222;
-            border-radius: 6px;
-            outline: none;
-            box-shadow: inset 0 0 5px #000;
-        }
-        /* Track (Trilho) */
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 12px;
-            cursor: pointer;
-            border-radius: 6px;
-            background: linear-gradient(90deg, var(--temp-safe) 0%, var(--temp-warn) 50%, var(--temp-danger) 100%);
-            opacity: 0.8;
-        }
-        /* Thumb (Bolinha) */
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 28px;
-            width: 28px;
-            border-radius: 50%;
-            background: #fff;
-            border: 4px solid var(--current-color);
-            margin-top: -8px; /* Centralizar */
-            box-shadow: 0 0 15px var(--current-color);
-            cursor: grab;
-            transition: border-color 0.1s;
-        }
-        input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.1);
-            cursor: grabbing;
-        }
+        /* SLIDER */
+        .slider-wrapper { position: relative; padding: 10px 0; }
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 12px; background: #222; border-radius: 6px; outline: none; box-shadow: inset 0 0 5px #000; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 12px; cursor: pointer; border-radius: 6px; background: linear-gradient(90deg, var(--temp-safe) 0%, var(--temp-warn) 50%, var(--temp-danger) 100%); opacity: 0.8; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 28px; width: 28px; border-radius: 50%; background: #fff; border: 4px solid var(--current-color); margin-top: -8px; box-shadow: 0 0 15px var(--current-color); cursor: grab; transition: border-color 0.1s; }
 
         /* TELAS */
         .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; }
@@ -144,80 +113,33 @@
         /* LOADING & RESULTADOS */
         .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; overflow: hidden; }
         .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; box-shadow: 0 0 10px var(--primary-gold); }
-        
         .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 25px 0; }
         
-        /* BOLINHAS ESTILO 3D */
         .ball { 
-            width: 46px; height: 46px; 
-            border: 1px solid #444; 
-            background: radial-gradient(circle at 30% 30%, #333, #000); /* Efeito 3D */
-            color: var(--primary-gold); 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 19px;
-            border-radius: 50%;
+            width: 46px; height: 46px; border: 1px solid #444; background: radial-gradient(circle at 30% 30%, #333, #000);
+            color: var(--primary-gold); display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 19px; border-radius: 50%;
             box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 2px rgba(255,255,255,0.1);
-            position: relative;
-            text-shadow: 0 0 5px rgba(255,215,0,0.3);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            opacity: 0; transform: scale(0); /* Começa invisível para animar */
+            position: relative; text-shadow: 0 0 5px rgba(255,215,0,0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0);
         }
+        .badge-hot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #ff0055; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #ff0055; }
+        .badge-cold { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #00ccff; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #00ccff; }
+        .ball:nth-child(1) { animation-delay: 0.05s; } .ball:nth-child(2) { animation-delay: 0.1s; } .ball:nth-child(3) { animation-delay: 0.15s; } .ball:nth-child(4) { animation-delay: 0.2s; } .ball:nth-child(5) { animation-delay: 0.25s; } .ball:nth-child(6) { animation-delay: 0.3s; } .ball:nth-child(7) { animation-delay: 0.35s; } .ball:nth-child(8) { animation-delay: 0.4s; } .ball:nth-child(9) { animation-delay: 0.45s; } .ball:nth-child(10) { animation-delay: 0.5s; } .ball:nth-child(11) { animation-delay: 0.55s; } .ball:nth-child(12) { animation-delay: 0.6s; } .ball:nth-child(13) { animation-delay: 0.65s; } .ball:nth-child(14) { animation-delay: 0.7s; } .ball:nth-child(15) { animation-delay: 0.75s; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
+
+        .user-tag { font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #000; background: var(--primary-gold); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; display: inline-block; }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-box { background: #0a0a0a; border: 1px solid var(--primary-gold); padding: 30px; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2); }
         
-        /* Badges de Inteligência */
-        .badge-hot {
-            position: absolute; top: 0; right: 0; width: 14px; height: 14px;
-            background: #ff0055; border-radius: 50%; border: 2px solid #000;
-            box-shadow: 0 0 5px #ff0055;
-        }
-        .badge-cold {
-            position: absolute; top: 0; right: 0; width: 14px; height: 14px;
-            background: #00ccff; border-radius: 50%; border: 2px solid #000;
-            box-shadow: 0 0 5px #00ccff;
-        }
+        /* LOGO IMAGE */
+        .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary-gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); margin-bottom: 15px; object-fit: cover; }
         
-        /* ANIMAÇÃO EM CASCATA DAS BOLINHAS */
-        .ball:nth-child(1) { animation-delay: 0.05s; }
-        .ball:nth-child(2) { animation-delay: 0.1s; }
-        .ball:nth-child(3) { animation-delay: 0.15s; }
-        .ball:nth-child(4) { animation-delay: 0.2s; }
-        .ball:nth-child(5) { animation-delay: 0.25s; }
-        .ball:nth-child(6) { animation-delay: 0.3s; }
-        .ball:nth-child(7) { animation-delay: 0.35s; }
-        .ball:nth-child(8) { animation-delay: 0.4s; }
-        .ball:nth-child(9) { animation-delay: 0.45s; }
-        .ball:nth-child(10) { animation-delay: 0.5s; }
-        .ball:nth-child(11) { animation-delay: 0.55s; }
-        .ball:nth-child(12) { animation-delay: 0.6s; }
-        .ball:nth-child(13) { animation-delay: 0.65s; }
-        .ball:nth-child(14) { animation-delay: 0.7s; }
-        .ball:nth-child(15) { animation-delay: 0.75s; }
-
-        @keyframes popIn { 
-            0% { opacity: 0; transform: scale(0); } 
-            100% { opacity: 1; transform: scale(1); } 
-        }
-
-        .user-tag {
-            font-size: 10px; font-weight: bold; letter-spacing: 1px;
-            color: #000; background: var(--primary-gold);
-            padding: 4px 10px; border-radius: 20px;
-            margin-bottom: 10px; display: inline-block;
-        }
-
-        /* MODAL PAYWALL */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(8px);
-        }
-        .modal-box {
-            background: #0a0a0a; border: 1px solid var(--primary-gold);
-            padding: 30px; border-radius: 16px; width: 90%; max-width: 380px;
-            text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
-        }
-
-        .logo-container svg { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
+        /* FOOTER LINKS */
+        .footer-links { margin-top: 30px; font-size: 10px; opacity: 0.6; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; margin: 0 5px; }
     </style>
 </head>
 <body>
@@ -239,17 +161,12 @@
     </div>
 
     <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 60px;">
-        <div style="text-align: center;" class="logo-container">
-            <div style="margin-bottom: 20px;">
-                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 5L93.3013 30V80L50 105L6.69873 80V30L50 5Z" stroke="#FFD700" stroke-width="2"/>
-                    <path d="M50 25L71.6506 37.5V62.5L50 75L28.3494 62.5V37.5L50 25Z" fill="rgba(255, 215, 0, 0.1)" stroke="#FFD700" stroke-width="1"/>
-                    <circle cx="50" cy="50" r="6" fill="#FFD700"/>
-                    <path d="M50 5V25 M93 30L71.5 37.5 M93 80L71.5 62.5 M50 105V75 M6.5 80L28 62.5 M6.5 30L28 37.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                </svg>
-            </div>
+        <div style="text-align: center;">
+            
+            <img src="icon.png" class="logo-img" alt="Nucleo Insight Logo">
+            
             <h1 class="text-gold uppercase" style="letter-spacing: 2px; font-size: 26px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v2.1</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v2.2</p>
         </div>
         <div style="width: 100%;">
             <div id="login-area">
@@ -259,7 +176,12 @@
                     Entrar com Google
                 </button>
             </div>
-            <p class="text-muted text-center" style="font-size: 10px; margin-top: 20px; opacity: 0.5;">Server-Side Validation • Secure SSL</p>
+            
+            <div class="footer-links text-center">
+                <a href="termos.html" target="_blank">Termos de Uso</a> • 
+                <a href="privacidade.html" target="_blank">Privacidade</a>
+            </div>
+            <p class="text-muted text-center" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Server-Side Validation • PWA Ready</p>
         </div>
     </div>
 
@@ -290,7 +212,6 @@
                 <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">TEMPERATURA</label>
                 <span id="boldnessValue" class="text-dynamic font-bold" style="font-size: 16px;">50%</span>
             </div>
-            
             <div class="slider-wrapper">
                 <div style="display: flex; justify-content: space-between; margin-bottom: -15px; pointer-events: none; padding: 0 5px;">
                     <i data-lucide="snowflake" size="14" style="color: var(--temp-safe);"></i>
@@ -298,7 +219,6 @@
                 </div>
                 <input type="range" id="boldnessSlider" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
             </div>
-
             <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; opacity: 0.7;" class="text-muted">
                 <span id="labelSafe">Seguro (Dados)</span>
                 <span id="labelRisk">Caos (Zebra)</span>
@@ -325,7 +245,6 @@
 
         <div class="text-center">
             <h2 id="resultTitle" class="text-white" style="font-size: 18px; margin-bottom: 20px; font-weight: normal;">Sugestão do Algoritmo</h2>
-            
             <div id="numbersGrid" class="result-grid"></div>
             <div id="animalResult" style="display:none; margin-bottom: 20px; font-size: 22px; color: var(--primary-gold); font-weight: bold; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,215,0,0.3);"></div>
         </div>
@@ -348,7 +267,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
             authDomain: "nucleo-insight-gerador.firebaseapp.com",
@@ -369,37 +287,23 @@
         let currentBoldness = 50;
         let userUsage = 0;
         let isVip = false;
-        
         const DAILY_LIMIT = 5;
 
         // INTELIGÊNCIA LÓGICA
-        function getDailySeed() {
-            const today = new Date();
-            return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-        }
+        function getDailySeed() { const today = new Date(); return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate(); }
+        function seededRandom(seed) { var x = Math.sin(seed++) * 10000; return x - Math.floor(x); }
 
-        function seededRandom(seed) {
-            var x = Math.sin(seed++) * 10000;
-            return x - Math.floor(x);
-        }
-
-        // SLIDER LÓGICA VISUAL
         window.updateBoldness = (val) => {
             currentBoldness = parseInt(val);
             const display = document.getElementById('boldnessValue');
             const root = document.documentElement;
-            
-            // Lógica de Cores
             let color = '#ffd700';
             if (val < 35) { color = '#00ff88'; display.innerText = val + '% (Seguro)'; }
             else if (val < 70) { color = '#ffd700'; display.innerText = val + '% (Padrão)'; }
             else { color = '#ff0055'; display.innerText = val + '% (Caos)'; }
-            
-            // Aplica cor na variável CSS para atualizar Slider e Textos
             root.style.setProperty('--current-color', color);
         }
 
-        // ANTI-FRAUDE
         async function checkServerUsage() {
             if (!currentUser) return;
             const today = new Date().toDateString();
@@ -408,12 +312,9 @@
                 const docSnap = await getDoc(usageRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.date === today) { userUsage = data.count; } 
-                    else { userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email }, { merge: true }); }
+                    if (data.date === today) { userUsage = data.count; } else { userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email }, { merge: true }); }
                     if (data.isVip === true) { isVip = true; updateVipStatus(); }
-                } else {
-                    userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email, isVip: false });
-                }
+                } else { userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email, isVip: false }); }
                 updateUsageDisplay();
             } catch (e) { console.error(e); }
         }
@@ -422,130 +323,65 @@
             if (!currentUser || isVip) return;
             const today = new Date().toDateString();
             const usageRef = doc(db, "usage", currentUser.uid);
-            userUsage++;
-            await updateDoc(usageRef, { count: userUsage, date: today });
+            userUsage++; await updateDoc(usageRef, { count: userUsage, date: today });
             updateUsageDisplay();
         }
 
-        function updateVipStatus() {
-            const tag = document.getElementById('userInfo');
-            tag.innerText = "VIP"; tag.style.backgroundColor = "#ffd700"; tag.style.color = "#000"; tag.style.boxShadow = "0 0 10px #ffd700";
-        }
+        function updateVipStatus() { const tag = document.getElementById('userInfo'); tag.innerText = "VIP"; tag.style.backgroundColor = "#ffd700"; tag.style.color = "#000"; tag.style.boxShadow = "0 0 10px #ffd700"; }
+        function updateUsageDisplay() { const display = document.getElementById('usageCount'); if (isVip) { display.innerText = "ILIMITADO"; display.style.color = "#22c55e"; } else { display.innerText = `${userUsage} / ${DAILY_LIMIT}`; display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700"; } }
+        window.checkLimitAndStart = async () => { if (!isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
 
-        function updateUsageDisplay() {
-            const display = document.getElementById('usageCount');
-            if (isVip) { display.innerText = "ILIMITADO"; display.style.color = "#22c55e"; } 
-            else { display.innerText = `${userUsage} / ${DAILY_LIMIT}`; display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700"; }
-        }
-
-        window.checkLimitAndStart = async () => {
-            if (!isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; }
-            startProcessing();
-        }
-
-        // LOGIN
         const btnLogin = document.getElementById('btnLogin');
         btnLogin.addEventListener('click', () => { signInWithPopup(auth, provider).catch((error) => alert(error.message)); });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user; document.getElementById('userInfo').innerText = "FREE"; showScreen('screen-ritual'); checkServerUsage(); } 
-            else { showScreen('screen-home'); }
-        });
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; document.getElementById('userInfo').innerText = "FREE"; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
 
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
         const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
 
-        window.toggleDreamInput = () => {
-            const mode = document.getElementById('gameType').value;
-            const input = document.getElementById('dreamInput');
-            if (mode === 'bicho') { input.style.display = 'block'; input.focus(); } else { input.style.display = 'none'; }
-        }
+        window.toggleDreamInput = () => { const mode = document.getElementById('gameType').value; const input = document.getElementById('dreamInput'); if (mode === 'bicho') { input.style.display = 'block'; input.focus(); } else { input.style.display = 'none'; } }
 
         window.startProcessing = () => {
-            showScreen('screen-loading');
-            const term = document.getElementById('terminalText');
-            const fill = document.getElementById('loadingFill');
-            const mode = document.getElementById('gameType').value;
-            let messages = ["Consultando Base Histórica...", "Analisando Atrasos...", "Calculando Tendência..."];
-            if(mode === 'bicho') messages = ["Decodificando...", "Verificando Padrão do Dia...", "Gerando Palpite..."];
-            
-            let progress = 0; let step = 0;
-            const interval = setInterval(() => {
-                progress += 2; fill.style.width = progress + '%';
-                if (progress % 30 === 0 && step < messages.length) { term.innerText = messages[step]; step++; }
-                if (progress >= 100) { clearInterval(interval); generateResult(); }
-            }, 40);
+            showScreen('screen-loading'); const term = document.getElementById('terminalText'); const fill = document.getElementById('loadingFill'); const mode = document.getElementById('gameType').value;
+            let messages = ["Consultando Base...", "Analisando Atrasos...", "Calculando..."]; if(mode === 'bicho') messages = ["Decodificando...", "Verificando Padrão...", "Gerando..."];
+            let progress = 0; let step = 0; const interval = setInterval(() => { progress += 2; fill.style.width = progress + '%'; if (progress % 30 === 0 && step < messages.length) { term.innerText = messages[step]; step++; } if (progress >= 100) { clearInterval(interval); generateResult(); } }, 40);
         }
 
         async function generateResult() {
             await incrementServerUsage();
-            currentMode = document.getElementById('gameType').value;
-            const grid = document.getElementById('numbersGrid');
-            const animalRes = document.getElementById('animalResult');
-            const logText = document.getElementById('logText');
+            currentMode = document.getElementById('gameType').value; const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
-            
-            let seed = getDailySeed(); 
-            let isSafeMode = currentBoldness < 40;
+            let seed = getDailySeed(); let isSafeMode = currentBoldness < 40;
 
             if (currentMode === 'bicho') {
-                const input = document.getElementById('dreamInput').value.toLowerCase().trim();
-                let group = 0; let foundKey = "";
+                const input = document.getElementById('dreamInput').value.toLowerCase().trim(); let group = 0; let foundKey = "";
                 for (const [key, val] of Object.entries(dreamDictionary)) { if (input.includes(key)) { group = val; foundKey=key; break; } }
                 if (group === 0) { const numStr = input.replace(/\D/g, ''); if (numStr.length >= 2) { const last = parseInt(numStr.slice(-2)); group = last===0?25:Math.ceil(last/4); foundKey="numérica"; }}
-                if (group === 0) {
-                    if (isSafeMode) { group = Math.floor(seededRandom(seed) * 25) + 1; foundKey = "Tendência do Dia (Data)"; } 
-                    else { group = Math.floor(Math.random() * 25) + 1; foundKey = "Quebra de Padrão (Aleatório)"; }
-                }
+                if (group === 0) { if (isSafeMode) { group = Math.floor(seededRandom(seed) * 25) + 1; foundKey = "Tendência do Dia (Data)"; } else { group = Math.floor(Math.random() * 25) + 1; foundKey = "Quebra de Padrão (Aleatório)"; } }
                 let base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
-                animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group<10?'0'+group:group})`;
-                animalRes.style.display = 'block';
+                animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group<10?'0'+group:group})`; animalRes.style.display = 'block';
                 logText.innerText = foundKey?`Análise: ${foundKey}`:"Palpite gerado.";
                 currentNumbers.forEach(n => { const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n; grid.appendChild(div); });
             } else {
                 let max=25, count=15; if (currentMode==='mega'){max=60;count=6;} if (currentMode==='quina'){max=80;count=5;}
                 let nums = new Set();
-                
-                if (isSafeMode) {
-                    let localSeed = seed; if (currentMode==='mega') localSeed += 100;
-                    while(nums.size < count) { let n = Math.floor(seededRandom(localSeed++) * max) + 1; nums.add(n); }
-                    logText.innerText = "Estratégia: Tendência Estatística do Dia (Base Histórica Simulada).";
-                } else {
-                    while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
-                    logText.innerText = `Estratégia: Quebra de Padrão (Risco ${currentBoldness}%).`;
-                }
+                if (isSafeMode) { let localSeed = seed; if (currentMode==='mega') localSeed += 100; while(nums.size < count) { let n = Math.floor(seededRandom(localSeed++) * max) + 1; nums.add(n); } logText.innerText = "Estratégia: Tendência Estatística do Dia."; } 
+                else { while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1); logText.innerText = `Estratégia: Quebra de Padrão (Risco ${currentBoldness}%).`; }
                 currentNumbers = Array.from(nums).sort((a,b)=>a-b);
                 currentNumbers.forEach(n => {
                     const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n;
-                    if (Math.random() > 0.7) {
-                        const badge = document.createElement('div');
-                        badge.className = Math.random()>0.5 ? 'badge-hot' : 'badge-cold';
-                        div.appendChild(badge);
-                    }
+                    if (Math.random() > 0.7) { const badge = document.createElement('div'); badge.className = Math.random()>0.5 ? 'badge-hot' : 'badge-cold'; div.appendChild(badge); }
                     grid.appendChild(div);
                 });
             }
-
-            const btnSave = document.getElementById('btnSave');
-            btnSave.innerHTML = '<i data-lucide="save"></i> SALVAR NA CARTEIRA';
-            btnSave.disabled = false; btnSave.style.background = "rgba(255, 215, 0, 0.1)"; btnSave.style.color = "#ffd700";
+            const btnSave = document.getElementById('btnSave'); btnSave.innerHTML = '<i data-lucide="save"></i> SALVAR NA CARTEIRA'; btnSave.disabled = false; btnSave.style.background = "rgba(255, 215, 0, 0.1)"; btnSave.style.color = "#ffd700";
             showScreen('screen-result');
         }
 
         window.openVipLink = () => { window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => showScreen('screen-ritual');
-        
-        const btnSave = document.getElementById('btnSave');
-        btnSave.addEventListener('click', async () => {
-            if (!currentUser) return;
-            btnSave.innerText = "SALVANDO...";
-            await addDoc(collection(db, "history"), {
-                uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, createdAt: serverTimestamp()
-            });
-            btnSave.innerHTML = 'SUCESSO!';
-        });
-
+        const btnSave = document.getElementById('btnSave'); btnSave.addEventListener('click', async () => { if (!currentUser) return; btnSave.innerText = "SALVANDO..."; await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, createdAt: serverTimestamp() }); btnSave.innerHTML = 'SUCESSO!'; });
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         lucide.createIcons();
     </script>
