@@ -16,7 +16,6 @@
             --text-muted: #888888;
             --font-tech: 'Courier New', Courier, monospace;
             
-            /* Cores do Slider */
             --safe-green: #22c55e;
             --warn-yellow: #eab308;
             --danger-red: #ef4444;
@@ -41,7 +40,6 @@
         .font-bold { font-weight: bold; }
         .w-full { width: 100%; }
         
-        /* Utilitários de Cor Dinâmica */
         .color-safe { color: var(--safe-green) !important; border-color: var(--safe-green) !important; }
         .color-warn { color: var(--warn-yellow) !important; border-color: var(--warn-yellow) !important; }
         .color-danger { color: var(--danger-red) !important; border-color: var(--danger-red) !important; }
@@ -83,11 +81,10 @@
             border-radius: 8px;
         }
         
-        /* Estilo específico para o campo de sonho */
         #dreamInput {
             border: 1px solid var(--primary-gold);
             color: var(--primary-gold);
-            display: none; /* Escondido por padrão */
+            display: none;
             background: rgba(255, 215, 0, 0.05);
         }
         #dreamInput::placeholder { color: #554b00; }
@@ -141,7 +138,7 @@
                 <i data-lucide="brain-circuit" size="40"></i>
             </div>
             <h1 class="text-gold uppercase" style="letter-spacing: 1px; font-size: 24px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">DECODIFICADOR DE PADRÕES v1.4</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">DECODIFICADOR DE PADRÕES v1.5</p>
         </div>
 
         <div style="width: 100%;">
@@ -168,10 +165,10 @@
                 <option value="lotofacil">LOTOFÁCIL (15 Números)</option>
                 <option value="mega">MEGA SENA (06 Números)</option>
                 <option value="quina">QUINA (05 Números)</option>
-                <option value="bicho">JOGO DO BICHO (Decodificador)</option>
+                <option value="bicho">DECODIFICADOR DE SONHOS</option>
             </select>
             
-            <input type="text" id="dreamInput" class="input-box" placeholder="Digite seu sonho, placa ou palpite..." style="margin-top: 0px;">
+            <input type="text" id="dreamInput" class="input-box" placeholder="Digite sonho, placa ou sinal..." style="margin-top: 0px;">
         </div>
 
         <div>
@@ -183,7 +180,7 @@
             <input type="range" id="boldnessSlider" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
             
             <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px;" class="text-muted">
-                <span id="labelSafe">Seguro</span>
+                <span id="labelSafe">Pés no Chão</span>
                 <span id="labelRisk">Ousado</span>
             </div>
             
@@ -201,7 +198,7 @@
         <i data-lucide="cpu" size="48" class="text-gold animate-pulse"></i>
         <h3 class="text-white uppercase" style="margin-top: 20px; font-size: 16px;">Decodificando...</h3>
         <div class="loading-bar-box"><div id="loadingFill" class="loading-fill"></div></div>
-        <div id="terminalText" style="font-size: 14px; color: var(--primary-gold);">Acessando banco de sonhos...</div>
+        <div id="terminalText" style="font-size: 14px; color: var(--primary-gold);">Acessando banco onírico...</div>
     </div>
 
     <div id="screen-result" class="screen">
@@ -219,7 +216,7 @@
         </div>
 
         <div style="background: rgba(255,215,0,0.05); border-left: 3px solid var(--primary-gold); padding: 15px; font-size: 13px; color: #ccc; margin-bottom: 30px; border-radius: 0 8px 8px 0;">
-            <strong class="text-gold">LOGICA APLICADA:</strong><br>
+            <strong class="text-gold">LÓGICA APLICADA:</strong><br>
             <span id="logText"></span>
         </div>
 
@@ -255,29 +252,29 @@
         let currentMode = '';
         let currentBoldness = 50;
 
-        // --- DICIONÁRIO DE SONHOS (Inteligência Real) ---
+        // DICIONÁRIO ONÍRICO
         const dreamDictionary = {
             'avestruz': 1, 'ovo': 1, 'buraco': 1,
             'aguia': 2, 'voar': 2, 'alto': 2, 'ceu': 2,
             'burro': 3, 'teimosia': 3, 'estrada': 3,
-            'borboleta': 4, 'jardim': 4, 'colorido': 4, 'transformacao': 4,
-            'cachorro': 5, 'latido': 5, 'mordida': 5, 'amigo': 5, 'fiel': 5,
+            'borboleta': 4, 'jardim': 4, 'colorido': 4,
+            'cachorro': 5, 'latido': 5, 'mordida': 5, 'amigo': 5,
             'cabra': 6, 'montanha': 6, 'leite': 6,
             'carneiro': 7, 'lã': 7, 'pastor': 7,
             'camelo': 8, 'deserto': 8, 'areia': 8,
-            'cobra': 9, 'veneno': 9, 'traicao': 9, 'chao': 9,
+            'cobra': 9, 'veneno': 9, 'traicao': 9,
             'coelho': 10, 'rapido': 10, 'cenoura': 10,
-            'cavalo': 11, 'corrida': 11, 'ferradura': 11, 'galope': 11,
-            'elefante': 12, 'pesado': 12, 'tromba': 12, 'memoria': 12,
+            'cavalo': 11, 'corrida': 11, 'ferradura': 11,
+            'elefante': 12, 'pesado': 12, 'tromba': 12,
             'galo': 13, 'madrugada': 13, 'briga': 13,
-            'gato': 14, 'telhado': 14, 'unha': 14, 'miado': 14,
-            'jacare': 15, 'rio': 15, 'lagoa': 15, 'boca': 15,
-            'leao': 16, 'rei': 16, 'floresta': 16, 'juba': 16, 'poder': 16,
-            'macaco': 17, 'banana': 17, 'arvore': 17, 'pulo': 17,
-            'porco': 18, 'lama': 18, 'comida': 18, 'sujeira': 18,
+            'gato': 14, 'telhado': 14, 'unha': 14,
+            'jacare': 15, 'rio': 15, 'lagoa': 15,
+            'leao': 16, 'rei': 16, 'floresta': 16,
+            'macaco': 17, 'banana': 17, 'arvore': 17,
+            'porco': 18, 'lama': 18, 'comida': 18,
             'pavao': 19, 'beleza': 19, 'pena': 19,
             'peru': 20, 'natal': 20, 'ceia': 20,
-            'touro': 21, 'chifre': 21, 'campo': 21, 'forca': 21,
+            'touro': 21, 'chifre': 21, 'campo': 21,
             'tigre': 22, 'listras': 22, 'ataque': 22,
             'urso': 23, 'caverna': 23, 'mel': 23,
             'veado': 24, 'floresta': 24,
@@ -289,7 +286,6 @@
             "Cavalo", "Elefante", "Galo", "Gato", "Jacaré", "Leão", "Macaco", "Porco", "Pavão", "Peru", "Touro", "Tigre", "Urso", "Veado", "Vaca"
         ];
 
-        // --- LÓGICA DE UI ---
         window.toggleDreamInput = () => {
             const mode = document.getElementById('gameType').value;
             const input = document.getElementById('dreamInput');
@@ -307,7 +303,6 @@
             const alert = document.getElementById('riskAlert');
             const slider = document.getElementById('boldnessSlider');
 
-            // Muda cor e texto baseado no slider
             if (val < 35) {
                 display.className = "text-gold color-safe";
                 alert.innerText = "Modo Seguro: Foca nos números que mais saem (Estatística Pura).";
@@ -321,11 +316,9 @@
                 alert.innerText = "ALERTA: Modo Caos! Gera 'zebras' e sequências raras. Alto risco.";
                 alert.className = "color-danger";
             }
-            
             display.innerText = val + '%';
         }
 
-        // --- SISTEMA DE LOGIN (Mantido) ---
         const btnLogin = document.getElementById('btnLogin');
         btnLogin.addEventListener('click', () => {
             signInWithPopup(auth, provider).then((result) => console.log("Logado")).catch((error) => alert(error.message));
@@ -341,18 +334,15 @@
             }
         });
 
-        // --- PROCESSAMENTO INTELIGENTE ---
         window.startProcessing = () => {
             const mode = document.getElementById('gameType').value;
-            
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             const fill = document.getElementById('loadingFill');
             
-            // Mensagens diferentes para o Bicho
             let messages = ["Acessando base de dados...", "Verificando ciclos...", "Otimizando matriz..."];
             if (mode === 'bicho') {
-                messages = ["Decodificando sonho...", "Buscando arquétipos...", "Traduzindo simbologia...", "Localizando animal..."];
+                messages = ["Decodificando sonho...", "Buscando arquétipos...", "Traduzindo simbologia...", "Consultando manual..."];
             }
 
             let progress = 0;
@@ -380,13 +370,11 @@
             animalRes.style.display = 'none';
             currentNumbers = [];
 
-            // 1. JOGO DO BICHO (Lógica Semântica)
             if (currentMode === 'bicho') {
                 const input = document.getElementById('dreamInput').value.toLowerCase().trim();
                 let group = 0;
                 let foundKey = "";
 
-                // Verifica Dicionário
                 for (const [key, val] of Object.entries(dreamDictionary)) {
                     if (input.includes(key)) {
                         group = val;
@@ -395,18 +383,16 @@
                     }
                 }
 
-                // Se não achou palavra, tenta ver se é Placa (Números no final)
                 if (group === 0) {
-                    const numbersInString = input.replace(/\D/g, ''); // Pega só números
+                    const numbersInString = input.replace(/\D/g, ''); 
                     if (numbersInString.length >= 2) {
                         const lastTwo = parseInt(numbersInString.slice(-2));
-                        if (lastTwo === 0) group = 25; // Vaca (00)
+                        if (lastTwo === 0) group = 25; 
                         else group = Math.ceil(lastTwo / 4);
                         foundKey = "placa/número";
                     }
                 }
 
-                // Se ainda zero, gera aleatório baseado no hash da palavra (mesma palavra = mesmo bicho sempre)
                 if (group === 0 && input.length > 0) {
                     let hash = 0;
                     for (let i = 0; i < input.length; i++) hash += input.charCodeAt(i);
@@ -414,19 +400,15 @@
                     foundKey = "vibração astral";
                 }
 
-                // Se vazio total, aleatório
                 if (group === 0) group = Math.floor(Math.random() * 25) + 1;
 
-                // Gera os números do grupo (ex: Grupo 1 = 01,02,03,04)
                 let base = (group - 1) * 4 + 1;
                 currentNumbers = [base, base+1, base+2, base+3];
                 
-                // Exibe
                 animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group < 10 ? '0'+group : group})`;
                 animalRes.style.display = 'block';
-                logText.innerText = foundKey ? `Interpretação confirmada: "${foundKey}" está ligado a este animal.` : "Nenhum padrão textual claro. Gerado por vibração aleatória.";
+                logText.innerText = foundKey ? `Interpretação confirmada: "${foundKey}" está ligado a este símbolo.` : "Nenhum padrão textual claro. Gerado por vibração aleatória.";
 
-                // Mostra as dezenas
                 currentNumbers.forEach(n => {
                     const div = document.createElement('div');
                     div.className = 'ball';
@@ -434,18 +416,14 @@
                     grid.appendChild(div);
                 });
 
-            } 
-            // 2. OUTROS JOGOS (Lógica Numérica)
-            else {
+            } else {
                 let max = 25, count = 15;
                 if (currentMode === 'mega') { max = 60; count = 6; }
                 if (currentMode === 'quina') { max = 80; count = 5; }
 
                 let nums = new Set();
                 
-                // Lógica do Slider (Simples)
                 if (currentMode === 'lotofacil' && currentBoldness < 40) {
-                    // Conservador: Tenta 8 ímpares / 7 pares
                     while(nums.size < 8) { let n = Math.floor(Math.random()*max)+1; if(n%2!=0) nums.add(n); }
                     while(nums.size < 15) { let n = Math.floor(Math.random()*max)+1; if(n%2==0 && !nums.has(n)) nums.add(n); }
                     logText.innerText = "Estratégia Conservadora: Padrão 8 Ímpares / 7 Pares aplicado.";
@@ -472,7 +450,6 @@
             showScreen('screen-result');
         }
 
-        // --- SALVAR (Mantido) ---
         const btnSave = document.getElementById('btnSave');
         btnSave.addEventListener('click', async () => {
             if (!currentUser) return alert("Sessão expirada. Faça login novamente.");
@@ -484,7 +461,7 @@
                     numbers: currentNumbers,
                     mode: currentMode,
                     boldness: currentBoldness,
-                    input: document.getElementById('dreamInput').value, // Salva o sonho também!
+                    input: document.getElementById('dreamInput').value,
                     createdAt: serverTimestamp()
                 });
                 btnSave.innerHTML = '<i data-lucide="check"></i> SUCESSO!';
