@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <style>
         /* --- ESTÉTICA DARK PREMIUM --- */
         :root {
@@ -27,12 +27,11 @@
             color: var(--text-main);
             font-family: var(--font-tech);
             height: 100vh;
-            overflow: hidden; /* App-like feel */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* Tipografia e Utilitários */
         .text-gold { color: var(--primary-gold); }
         .text-muted { color: var(--text-muted); }
         .uppercase { text-transform: uppercase; }
@@ -40,7 +39,6 @@
         .font-bold { font-weight: bold; }
         .w-full { width: 100%; }
         
-        /* Botões */
         .btn-primary {
             background: transparent;
             border: 1px solid var(--primary-gold);
@@ -64,7 +62,23 @@
             color: #000;
         }
 
-        /* Inputs e Selects */
+        .btn-google {
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
         .input-box {
             background: var(--surface-color);
             border: 1px solid #333;
@@ -76,52 +90,26 @@
             border-radius: 4px;
         }
 
-        .input-box:focus {
-            outline: none;
-            border-color: var(--primary-gold);
-        }
-
-        /* Telas (SPA Logic) */
         .screen {
-            display: none; /* Esconde tudo por padrão */
+            display: none;
             flex-direction: column;
             height: 100%;
             padding: 24px;
             animation: fadeIn 0.4s ease;
         }
 
-        .screen.active {
-            display: flex; /* Mostra a tela ativa */
-        }
+        .screen.active { display: flex; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- TELA 1: HOME --- */
-        .home-container {
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 60px;
-            padding-bottom: 40px;
-        }
-        .logo-area { text-align: center; }
-        .logo-icon { width: 64px; height: 64px; border: 2px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--primary-gold); }
-        
-        /* --- TELA 2: RITUAL --- */
-        .ritual-container { justify-content: flex-start; }
-        .control-group { margin-bottom: 30px; }
-        .slider-container { margin-top: 10px; }
-        input[type=range] { width: 100%; accent-color: var(--primary-gold); }
-
-        /* --- TELA 3: LOADING --- */
-        .loading-container { justify-content: center; align-items: center; text-align: center; }
+        /* Loading */
         .loading-bar-box { width: 100%; height: 4px; background: #333; margin: 20px 0; border-radius: 2px; }
         .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; }
-        .terminal-text { font-size: 12px; color: var(--primary-gold); min-height: 20px; }
-
-        /* --- TELA 4: RESULTADO --- */
+        
+        /* Balls */
         .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 30px 0; }
         .ball { 
             width: 45px; height: 45px; 
@@ -133,54 +121,49 @@
             border-radius: 4px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
-        .log-box {
-            background: rgba(255, 215, 0, 0.05);
-            border-left: 2px solid var(--primary-gold);
-            padding: 15px;
-            font-size: 12px;
-            color: #ccc;
-            margin-bottom: 30px;
-            line-height: 1.4;
+        
+        .user-tag {
+            font-size: 10px;
+            color: var(--primary-gold);
+            border: 1px solid var(--primary-gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: inline-block;
         }
-
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen home-container active">
-        <div class="logo-area">
-            <div class="logo-icon">
+    <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 60px;">
+        <div style="text-align: center;">
+            <div style="width: 64px; height: 64px; border: 2px solid var(--primary-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--primary-gold);">
                 <i data-lucide="cpu"></i>
             </div>
             <h1 class="text-gold uppercase" style="letter-spacing: 2px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 10px; margin-top: 8px;">INTELLIGENCE SYSTEM v1.0</p>
+            <p class="text-muted" style="font-size: 10px; margin-top: 8px;">INTELLIGENCE SYSTEM v1.2</p>
         </div>
 
         <div style="width: 100%;">
-            <div style="border: 1px dashed #333; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                <p class="text-muted" style="font-size: 11px; margin-bottom: 5px;">STATUS DO SERVIDOR:</p>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="width: 8px; height: 8px; background: var(--primary-gold); border-radius: 50%; box-shadow: 0 0 5px var(--primary-gold);"></span>
-                    <span style="font-size: 12px; color: #fff;">ONLINE & SEGURO</span>
-                </div>
+            <div id="login-area">
+                <p class="text-muted text-center" style="font-size: 11px; margin-bottom: 10px;">IDENTIFICAÇÃO NECESSÁRIA</p>
+                <button id="btnLogin" class="btn-google w-full">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+                    Entrar com Google
+                </button>
             </div>
-
-            <button onclick="goToRitual()" class="btn-primary w-full">
-                <i data-lucide="shield-check" size="18"></i>
-                ACESSAR SISTEMA
-            </button>
-            <p class="text-muted text-center" style="font-size: 10px; margin-top: 15px;">Ao entrar, você concorda com os Termos de Uso.</p>
+            <p class="text-muted text-center" style="font-size: 10px; margin-top: 15px;">Conexão Segura Firebase SSL</p>
         </div>
     </div>
 
-    <div id="screen-ritual" class="screen ritual-container">
+    <div id="screen-ritual" class="screen" style="justify-content: flex-start;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div class="text-gold uppercase" style="font-size: 12px;">Configuração</div>
-            <i data-lucide="sliders" size="18" class="text-muted"></i>
+            <div id="userInfo" class="user-tag">USUÁRIO VERIFICADO</div>
         </div>
 
-        <div class="control-group">
-            <label class="text-muted" style="font-size: 11px;">MODALIDADE DE ANÁLISE</label>
+        <div style="margin-bottom: 30px;">
+            <label class="text-muted" style="font-size: 11px;">MODALIDADE</label>
             <select id="gameType" class="input-box" style="margin-top: 8px;">
                 <option value="lotofacil">LOTOFÁCIL (Padrão 15)</option>
                 <option value="mega">MEGA SENA (Padrão 06)</option>
@@ -189,14 +172,12 @@
             </select>
         </div>
 
-        <div class="control-group">
+        <div>
             <div style="display: flex; justify-content: space-between;">
                 <label class="text-muted" style="font-size: 11px;">FILTRO DE OUSADIA</label>
                 <span id="boldnessValue" class="text-gold" style="font-size: 12px;">50%</span>
             </div>
-            <div class="slider-container">
-                <input type="range" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
-            </div>
+            <input type="range" style="width:100%; accent-color: var(--primary-gold); margin-top:10px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
             <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px;" class="text-muted">
                 <span>Conservador</span>
                 <span>Agressivo</span>
@@ -204,150 +185,194 @@
         </div>
 
         <div style="margin-top: auto;">
-            <button onclick="startProcessing()" class="btn-primary w-full">
-                INICIAR ANÁLISE
-            </button>
+            <button onclick="startProcessing()" class="btn-primary w-full">INICIAR ANÁLISE</button>
         </div>
     </div>
 
-    <div id="screen-loading" class="screen loading-container">
-        <i data-lucide="database" size="40" class="text-gold" style="opacity: 0.8;"></i>
-        <h3 class="text-white uppercase" style="margin-top: 20px; font-size: 14px;">Processando Dados</h3>
-        
-        <div class="loading-bar-box">
-            <div id="loadingFill" class="loading-fill"></div>
-        </div>
-        
-        <div id="terminalText" class="terminal-text">Iniciando handshake...</div>
+    <div id="screen-loading" class="screen" style="justify-content: center; text-align: center;">
+        <i data-lucide="database" size="40" class="text-gold"></i>
+        <h3 class="text-white uppercase" style="margin-top: 20px; font-size: 14px;">Processando</h3>
+        <div class="loading-bar-box"><div id="loadingFill" class="loading-fill"></div></div>
+        <div id="terminalText" style="font-size: 12px; color: var(--primary-gold);">Conectando...</div>
     </div>
 
     <div id="screen-result" class="screen">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <button onclick="resetApp()" style="background: none; border: none; color: #666; cursor: pointer;">
-                <i data-lucide="arrow-left"></i>
-            </button>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <button onclick="resetApp()" style="background:none; border:none; color:#666;"><i data-lucide="arrow-left"></i></button>
             <div class="text-gold uppercase" style="font-size: 12px; border: 1px solid #333; padding: 4px 8px;">Finalizado</div>
         </div>
 
         <div class="text-center">
-            <p class="text-muted" style="font-size: 10px; letter-spacing: 1px;">MATRIZ SUGERIDA</p>
-            
-            <div id="numbersGrid" class="result-grid">
-                </div>
+            <div id="numbersGrid" class="result-grid"></div>
         </div>
 
-        <div class="log-box">
+        <div style="background: rgba(255,215,0,0.05); border-left: 2px solid var(--primary-gold); padding: 15px; font-size: 12px; color: #ccc; margin-bottom: 30px;">
             <strong class="text-gold">LOG DO SISTEMA:</strong><br>
-            <span id="logText">Análise completada. Padrão de recorrência identificado com base na frequência dos últimos ciclos + ajuste de ousadia.</span>
+            <span id="logText"></span>
         </div>
 
         <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
-            <button onclick="alert('Funcionalidade PRO: Salvo no banco de dados (Simulação)')" class="btn-primary w-full" style="background: rgba(255, 215, 0, 0.1);">
-                <i data-lucide="save"></i> ARQUIVAR
+            <button id="btnSave" class="btn-primary w-full" style="background: rgba(255, 215, 0, 0.1);">
+                <i data-lucide="save"></i> ARQUIVAR NO BANCO
             </button>
-            <button onclick="resetApp()" class="w-full text-muted" style="background: none; border: none; padding: 10px; font-family: var(--font-tech); cursor: pointer;">
-                NOVA ANÁLISE
-            </button>
+            <button onclick="resetApp()" class="w-full text-muted" style="background:none; border:none; padding:10px; cursor:pointer;">NOVA ANÁLISE</button>
         </div>
     </div>
 
-    <script>
-        // Inicializa Ícones
-        lucide.createIcons();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Variáveis de Controle
-        const screens = ['screen-home', 'screen-ritual', 'screen-loading', 'screen-result'];
+        // --- 1. CONFIGURAÇÃO (SUAS CHAVES REAIS) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
+            authDomain: "nucleo-insight-gerador.firebaseapp.com",
+            projectId: "nucleo-insight-gerador",
+            storageBucket: "nucleo-insight-gerador.firebasestorage.app",
+            messagingSenderId: "159624822756",
+            appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // Variáveis Globais
+        let currentUser = null;
+        let currentNumbers = [];
+        let currentMode = '';
         let currentBoldness = 50;
 
-        // Funções de Navegação
-        function showScreen(screenId) {
-            screens.forEach(id => {
-                document.getElementById(id).classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
+        // --- 2. SISTEMA DE LOGIN ---
+        const btnLogin = document.getElementById('btnLogin');
+        
+        btnLogin.addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    // Sucesso
+                    console.log("Logado:", result.user.email);
+                })
+                .catch((error) => {
+                    console.error("Erro:", error);
+                    alert("Erro no login: " + error.message);
+                });
+        });
 
-        function goToRitual() {
-            // Futuramente aqui entra o Login Google
-            showScreen('screen-ritual');
-        }
+        // Monitora Estado do Usuário (Persistência)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('userInfo').innerText = user.displayName || "USUÁRIO VIP";
+                showScreen('screen-ritual'); // Vai direto pro app se logado
+            } else {
+                showScreen('screen-home');
+            }
+        });
 
-        function updateBoldness(val) {
+        // --- 3. LÓGICA DE GERAÇÃO ---
+        window.updateBoldness = (val) => {
             currentBoldness = val;
             document.getElementById('boldnessValue').innerText = val + '%';
         }
 
-        function startProcessing() {
+        window.startProcessing = () => {
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             const fill = document.getElementById('loadingFill');
-            const messages = [
-                "Conectando ao histórico...",
-                "Filtrando ruídos...",
-                "Aplicando teoria do caos...",
-                "Otimizando matriz...",
-                "Finalizando..."
-            ];
-
+            const messages = ["Conectando Firestore...", "Analisando Padrões...", "Aplicando Filtro...", "Finalizando..."];
+            
             let progress = 0;
             let step = 0;
-
+            
             const interval = setInterval(() => {
-                progress += 2; // Velocidade da barra
+                progress += 2; 
                 fill.style.width = progress + '%';
-
-                // Troca mensagens a cada 20%
-                if (progress % 20 === 0 && step < messages.length) {
+                if (progress % 25 === 0 && step < messages.length) {
                     term.innerText = messages[step];
                     step++;
                 }
-
                 if (progress >= 100) {
                     clearInterval(interval);
                     generateNumbers();
                 }
-            }, 50); // Tempo total ~2.5 seg
+            }, 40);
         }
 
         function generateNumbers() {
-            const mode = document.getElementById('gameType').value;
+            currentMode = document.getElementById('gameType').value;
             const grid = document.getElementById('numbersGrid');
-            grid.innerHTML = ''; // Limpa
+            grid.innerHTML = '';
 
-            let max, count;
-            
-            // Lógica Simples para MVP
-            if (mode === 'lotofacil') { max = 25; count = 15; }
-            else if (mode === 'mega') { max = 60; count = 6; }
-            else if (mode === 'quina') { max = 80; count = 5; }
-            else { max = 25; count = 4; } // Bicho/Simbólico (Adaptação)
+            let max = 25, count = 15;
+            if (currentMode === 'mega') { max = 60; count = 6; }
+            if (currentMode === 'quina') { max = 80; count = 5; }
+            if (currentMode === 'bicho') { max = 25; count = 4; }
 
             let nums = new Set();
-            while(nums.size < count) {
-                nums.add(Math.floor(Math.random() * max) + 1);
-            }
+            while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
             
-            // Ordena e Exibe
-            const sorted = Array.from(nums).sort((a,b) => a-b);
+            currentNumbers = Array.from(nums).sort((a,b) => a-b);
             
-            sorted.forEach(n => {
+            currentNumbers.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'ball';
                 div.innerText = n < 10 ? '0'+n : n;
                 grid.appendChild(div);
             });
 
-            // Atualiza Texto Técnico
             document.getElementById('logText').innerText = 
-                `Análise completada. Padrão de recorrência verificado. Fator de ousadia: ${currentBoldness}%.`;
+                `Padrão gerado com sucesso. Fator de ousadia: ${currentBoldness}%.`;
+            
+            // Reseta botão de salvar
+            const btnSave = document.getElementById('btnSave');
+            btnSave.innerHTML = '<i data-lucide="save"></i> ARQUIVAR NO BANCO';
+            btnSave.disabled = false;
+            btnSave.style.opacity = "1";
 
             showScreen('screen-result');
         }
 
-        function resetApp() {
-            showScreen('screen-ritual');
+        // --- 4. SALVAMENTO NO BANCO (REAL) ---
+        const btnSave = document.getElementById('btnSave');
+        btnSave.addEventListener('click', async () => {
+            if (!currentUser) return alert("Erro: Sessão expirada.");
+            
+            btnSave.innerText = "SALVANDO...";
+            btnSave.disabled = true;
+
+            try {
+                await addDoc(collection(db, "history"), {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    numbers: currentNumbers,
+                    mode: currentMode,
+                    boldness: currentBoldness,
+                    createdAt: serverTimestamp()
+                });
+                
+                btnSave.innerHTML = '<i data-lucide="check"></i> SALVO COM SUCESSO';
+                btnSave.style.background = "#22c55e"; // Verde sucesso
+                btnSave.style.color = "#000";
+                
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                alert("Erro ao salvar: " + e.message);
+                btnSave.innerText = "ERRO AO SALVAR";
+            }
+        });
+
+        // Navegação e Ícones
+        window.resetApp = () => showScreen('screen-ritual');
+        
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
 
+        lucide.createIcons();
     </script>
 </body>
 </html>
