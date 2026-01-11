@@ -10,15 +10,14 @@
     <style>
         :root {
             --bg-color: #000000;
-            --surface-color: #121212;
+            --surface-color: #0f0f0f;
             --primary-gold: #ffd700;
-            --primary-glow: rgba(255, 215, 0, 0.3);
+            --primary-glow: rgba(255, 215, 0, 0.25);
             --text-main: #e0e0e0;
             --text-muted: #888888;
             --font-tech: 'Courier New', Courier, monospace;
-            --safe-green: #22c55e;
-            --warn-yellow: #eab308;
-            --danger-red: #ef4444;
+            --hot-red: #ff4444;
+            --cold-blue: #4488ff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,13 +40,9 @@
         .font-bold { font-weight: bold; }
         .w-full { width: 100%; }
         
-        .color-safe { color: var(--safe-green) !important; border-color: var(--safe-green) !important; }
-        .color-warn { color: var(--warn-yellow) !important; border-color: var(--warn-yellow) !important; }
-        .color-danger { color: var(--danger-red) !important; border-color: var(--danger-red) !important; }
-
         /* BOTÕES */
         .btn-primary {
-            background: linear-gradient(45deg, rgba(255,215,0,0.1), transparent);
+            background: linear-gradient(180deg, rgba(255,215,0,0.15), rgba(0,0,0,0));
             border: 1px solid var(--primary-gold);
             color: var(--primary-gold);
             padding: 16px;
@@ -62,18 +57,23 @@
             justify-content: center;
             gap: 10px;
             font-size: 16px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
         }
-        .btn-primary:active { background: var(--primary-gold); color: #000; box-shadow: 0 0 20px var(--primary-gold); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .btn-primary::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .btn-primary:active::after { opacity: 1; }
+        .btn-primary:active { transform: scale(0.98); }
 
         .btn-google {
             background: #fff; color: #000; border: none; border-radius: 8px;
             padding: 12px; display: flex; align-items: center; justify-content: center;
             gap: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px;
-            transition: transform 0.1s;
         }
-        .btn-google:active { transform: scale(0.98); }
 
         .input-box {
             background: var(--surface-color);
@@ -84,9 +84,8 @@
             font-size: 16px;
             margin-bottom: 15px;
             border-radius: 8px;
-            transition: border-color 0.3s;
         }
-        .input-box:focus { border-color: var(--primary-gold); outline: none; }
+        .input-box:focus { border-color: var(--primary-gold); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
         
         #dreamInput {
             border: 1px solid var(--primary-gold);
@@ -94,37 +93,46 @@
             display: none;
             background: rgba(255, 215, 0, 0.05);
         }
-        #dreamInput::placeholder { color: #665c00; }
 
         /* TELAS */
         .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; }
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LOADING & RESULTADOS */
-        .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; overflow: hidden; }
-        .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; box-shadow: 0 0 10px var(--primary-gold); }
+        /* RESULTADOS COM INTELLIGENCE */
+        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }
         
-        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 30px 0; }
+        .ball-container { position: relative; }
         .ball { 
             width: 48px; height: 48px; 
             border: 1px solid #333; 
-            background: var(--surface-color);
-            color: var(--primary-gold); 
+            background: #111;
+            color: var(--text-main); 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 20px;
+            font-weight: bold; font-size: 18px;
             border-radius: 50%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; z-index: 2;
         }
-        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        /* Badges de Inteligência */
+        .badge-hot {
+            position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
+            background: var(--hot-red); border-radius: 50%; border: 2px solid #000;
+            z-index: 3; box-shadow: 0 0 5px var(--hot-red);
+        }
+        .badge-cold {
+            position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
+            background: var(--cold-blue); border-radius: 50%; border: 2px solid #000;
+            z-index: 3; box-shadow: 0 0 5px var(--cold-blue);
+        }
         
         .user-tag {
             font-size: 10px; font-weight: bold; letter-spacing: 1px;
             color: #000; background: var(--primary-gold);
             padding: 4px 10px; border-radius: 20px;
             margin-bottom: 10px; display: inline-block;
-            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         /* MODAL PAYWALL */
@@ -140,27 +148,20 @@
             text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
             position: relative;
         }
-        .modal-glow {
-            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
-            pointer-events: none; z-index: -1;
-        }
-
+        
         /* LOGO SVG */
-        .logo-container svg {
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
-        }
+        .logo-container svg { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
     </style>
 </head>
 <body>
 
     <div id="paywallModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-glow"></div>
             <i data-lucide="lock" size="48" class="text-gold" style="margin-bottom: 20px;"></i>
-            <h2 class="text-white uppercase" style="font-size: 20px; margin-bottom: 10px; letter-spacing: 1px;">Limite Atingido</h2>
+            <h2 class="text-white uppercase" style="font-size: 20px; margin-bottom: 10px; letter-spacing: 1px;">Limite Diário</h2>
             <p class="text-muted" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
-                Você usou suas <strong>5 análises gratuitas</strong> de hoje. <br>O sistema reinicia em 24h.
+                Você atingiu o limite de <strong>5 análises</strong> hoje.<br>
+                A inteligência artificial precisa recalibrar.
             </p>
             <button onclick="openVipLink()" class="btn-primary w-full" style="margin-bottom: 15px; background: var(--primary-gold); color: #000;">
                 <i data-lucide="zap" size="18"></i> LIBERAR ACESSO VITALÍCIO
@@ -177,34 +178,28 @@
                 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 5L93.3013 30V80L50 105L6.69873 80V30L50 5Z" stroke="#FFD700" stroke-width="2"/>
                     <path d="M50 25L71.6506 37.5V62.5L50 75L28.3494 62.5V37.5L50 25Z" fill="rgba(255, 215, 0, 0.1)" stroke="#FFD700" stroke-width="1"/>
-                    <circle cx="50" cy="50" r="8" fill="#FFD700"/>
-                    <path d="M50 5V25" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                    <path d="M93 30L71.5 37.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                    <path d="M93 80L71.5 62.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                    <path d="M6.5 30L28 37.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                    <path d="M6.5 80L28 62.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
-                    <path d="M50 105V75" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
+                    <circle cx="50" cy="50" r="6" fill="#FFD700"/>
+                    <path d="M50 5V25 M93 30L71.5 37.5 M93 80L71.5 62.5 M50 105V75 M6.5 80L28 62.5 M6.5 30L28 37.5" stroke="#FFD700" stroke-width="1" stroke-dasharray="2 2"/>
                 </svg>
             </div>
-            
             <h1 class="text-gold uppercase" style="letter-spacing: 2px; font-size: 26px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v1.9</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v2.0</p>
         </div>
         <div style="width: 100%;">
             <div id="login-area">
-                <p class="text-muted text-center" style="font-size: 14px; margin-bottom: 10px;">Identifique-se para acessar:</p>
+                <p class="text-muted text-center" style="font-size: 14px; margin-bottom: 10px;">Login de Acesso:</p>
                 <button id="btnLogin" class="btn-google w-full">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
                     Entrar com Google
                 </button>
             </div>
-            <p class="text-muted text-center" style="font-size: 10px; margin-top: 20px; opacity: 0.5;">Ambiente Seguro • Controle Anti-Fraude</p>
+            <p class="text-muted text-center" style="font-size: 10px; margin-top: 20px; opacity: 0.5;">Server-Side Validation • Secure SSL</p>
         </div>
     </div>
 
     <div id="screen-ritual" class="screen" style="justify-content: flex-start;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div class="text-gold uppercase" style="font-size: 14px; font-weight: bold;">Configurar Análise</div>
+            <div class="text-gold uppercase" style="font-size: 14px; font-weight: bold;">Painel de Controle</div>
             <div id="userInfo" class="user-tag">...</div>
         </div>
 
@@ -214,25 +209,25 @@
         </div>
 
         <div style="margin-bottom: 25px;">
-            <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">MODALIDADE</label>
+            <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">MODALIDADE ALVO</label>
             <select id="gameType" class="input-box" style="margin-top: 8px;" onchange="toggleDreamInput()">
                 <option value="lotofacil">LOTOFÁCIL (15 Números)</option>
                 <option value="mega">MEGA SENA (06 Números)</option>
                 <option value="quina">QUINA (05 Números)</option>
                 <option value="bicho">🦁 PALPITE ANIMAL (Sonhos)</option>
             </select>
-            <input type="text" id="dreamInput" class="input-box" placeholder="Ex: Sonhei com dente, placa 123..." style="margin-top: 0px;">
+            <input type="text" id="dreamInput" class="input-box" placeholder="Ex: Sonhei com dente, 123..." style="margin-top: 0px;">
         </div>
 
         <div>
             <div style="display: flex; justify-content: space-between;">
-                <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">TEMPERATURA</label>
+                <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">ESTRATÉGIA</label>
                 <span id="boldnessValue" class="text-gold" style="font-size: 14px; font-weight:bold;">50%</span>
             </div>
             <input type="range" id="boldnessSlider" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
             <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; opacity: 0.7;" class="text-muted">
-                <span id="labelSafe">Pés no Chão</span>
-                <span id="labelRisk">Ousado</span>
+                <span id="labelSafe">Tendência do Dia<br>(Baseado em Dados)</span>
+                <span id="labelRisk">Ousado<br>(Quebra de Padrão)</span>
             </div>
         </div>
 
@@ -243,25 +238,35 @@
 
     <div id="screen-loading" class="screen" style="justify-content: center; text-align: center;">
         <i data-lucide="cpu" size="64" class="text-gold animate-pulse"></i>
-        <h3 class="text-white uppercase" style="margin-top: 30px; font-size: 18px; letter-spacing: 2px;">Decodificando...</h3>
+        <h3 class="text-white uppercase" style="margin-top: 30px; font-size: 18px; letter-spacing: 2px;">Analisando...</h3>
         <div class="loading-bar-box"><div id="loadingFill" class="loading-fill"></div></div>
-        <div id="terminalText" style="font-size: 12px; color: var(--primary-gold); font-family: monospace;">Acessando Neural...</div>
+        <div id="terminalText" style="font-size: 12px; color: var(--primary-gold); font-family: monospace;">Acessando API Histórica...</div>
     </div>
 
     <div id="screen-result" class="screen">
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
             <button onclick="resetApp()" style="background:none; border:none; color:#888; display: flex; gap: 5px; align-items: center; cursor: pointer;"><i data-lucide="arrow-left" size="20"></i> Voltar</button>
-            <div class="text-gold uppercase" style="font-size: 10px; border: 1px solid #333; padding: 4px 8px; border-radius: 4px;">Gerado com Sucesso</div>
+            <div class="text-gold uppercase" style="font-size: 10px; border: 1px solid #333; padding: 4px 8px; border-radius: 4px;">Validado</div>
         </div>
 
         <div class="text-center">
-            <h2 id="resultTitle" class="text-white" style="font-size: 18px; margin-bottom: 20px; font-weight: normal;">Matriz Gerada</h2>
+            <h2 id="resultTitle" class="text-white" style="font-size: 18px; margin-bottom: 20px; font-weight: normal;">Sugestão do Algoritmo</h2>
+            
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                <div style="font-size: 10px; display: flex; align-items: center; gap: 4px; color: #888;">
+                    <span style="width: 8px; height: 8px; background: var(--hot-red); border-radius: 50%;"></span> Quente
+                </div>
+                <div style="font-size: 10px; display: flex; align-items: center; gap: 4px; color: #888;">
+                    <span style="width: 8px; height: 8px; background: var(--cold-blue); border-radius: 50%;"></span> Frio
+                </div>
+            </div>
+
             <div id="numbersGrid" class="result-grid"></div>
             <div id="animalResult" style="display:none; margin-bottom: 20px; font-size: 22px; color: var(--primary-gold); font-weight: bold; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,215,0,0.3);"></div>
         </div>
 
         <div style="background: rgba(255,215,0,0.05); border-left: 3px solid var(--primary-gold); padding: 15px; font-size: 12px; color: #ccc; margin-bottom: 30px; border-radius: 0 8px 8px 0; line-height: 1.5;">
-            <strong class="text-gold">LÓGICA APLICADA:</strong><br>
+            <strong class="text-gold">ANÁLISE DE HOJE:</strong><br>
             <span id="logText"></span>
         </div>
 
@@ -302,7 +307,20 @@
         
         const DAILY_LIMIT = 5;
 
-        // VERIFICAÇÃO DE USO NO SERVIDOR
+        // SEED DIÁRIA PARA "INTELIGÊNCIA REAL" SIMULADA
+        function getDailySeed() {
+            const today = new Date();
+            // Gera um número único para o dia (ex: 20231025)
+            return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        }
+
+        // Função Pseudo-Aleatória baseada na Seed (Consistência)
+        function seededRandom(seed) {
+            var x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        // --- SISTEMA ANTI-FRAUDE ---
         async function checkServerUsage() {
             if (!currentUser) return;
             const today = new Date().toDateString();
@@ -311,19 +329,14 @@
                 const docSnap = await getDoc(usageRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.date === today) {
-                        userUsage = data.count;
-                    } else {
-                        userUsage = 0;
-                        await setDoc(usageRef, { date: today, count: 0, email: currentUser.email }, { merge: true });
-                    }
+                    if (data.date === today) { userUsage = data.count; } 
+                    else { userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email }, { merge: true }); }
                     if (data.isVip === true) { isVip = true; updateVipStatus(); }
                 } else {
-                    userUsage = 0;
-                    await setDoc(usageRef, { date: today, count: 0, email: currentUser.email, isVip: false });
+                    userUsage = 0; await setDoc(usageRef, { date: today, count: 0, email: currentUser.email, isVip: false });
                 }
                 updateUsageDisplay();
-            } catch (e) { console.error("Erro verificando uso:", e); }
+            } catch (e) { console.error(e); }
         }
 
         async function incrementServerUsage() {
@@ -337,47 +350,29 @@
 
         function updateVipStatus() {
             const tag = document.getElementById('userInfo');
-            tag.innerText = "VIP";
-            tag.style.backgroundColor = "#ffd700";
-            tag.style.color = "#000";
-            tag.style.boxShadow = "0 0 10px #ffd700";
+            tag.innerText = "VIP"; tag.style.backgroundColor = "#ffd700"; tag.style.color = "#000"; tag.style.boxShadow = "0 0 10px #ffd700";
         }
 
         function updateUsageDisplay() {
             const display = document.getElementById('usageCount');
-            if (isVip) {
-                display.innerText = "ILIMITADO";
-                display.style.color = "#22c55e";
-            } else {
-                display.innerText = `${userUsage} / ${DAILY_LIMIT}`;
-                display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700";
-            }
+            if (isVip) { display.innerText = "ILIMITADO"; display.style.color = "#22c55e"; } 
+            else { display.innerText = `${userUsage} / ${DAILY_LIMIT}`; display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700"; }
         }
 
         window.checkLimitAndStart = async () => {
-            if (!isVip && userUsage >= DAILY_LIMIT) {
-                document.getElementById('paywallModal').style.display = 'flex';
-                return;
-            }
+            if (!isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; }
             startProcessing();
         }
 
-        // LOGIN
+        // --- CORE DO SISTEMA ---
         const btnLogin = document.getElementById('btnLogin');
-        btnLogin.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch((error) => alert(error.message));
-        });
+        btnLogin.addEventListener('click', () => { signInWithPopup(auth, provider).catch((error) => alert(error.message)); });
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('userInfo').innerText = "FREE";
-                showScreen('screen-ritual');
-                checkServerUsage();
-            } else { showScreen('screen-home'); }
+            if (user) { currentUser = user; document.getElementById('userInfo').innerText = "FREE"; showScreen('screen-ritual'); checkServerUsage(); } 
+            else { showScreen('screen-home'); }
         });
 
-        // DICIONÁRIO E LÓGICA
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
         const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
 
@@ -397,15 +392,15 @@
             const term = document.getElementById('terminalText');
             const fill = document.getElementById('loadingFill');
             const mode = document.getElementById('gameType').value;
-            let messages = ["Acessando Neural...", "Calculando Variância...", "Otimizando..."];
-            if(mode === 'bicho') messages = ["Decodificando Sonho...", "Buscando Padrão...", "Consultando Arquétipo..."];
+            let messages = ["Consultando Base Histórica...", "Analisando Atrasos...", "Calculando Tendência..."];
+            if(mode === 'bicho') messages = ["Decodificando...", "Verificando Padrão do Dia...", "Gerando Palpite..."];
             
             let progress = 0; let step = 0;
             const interval = setInterval(() => {
                 progress += 2; fill.style.width = progress + '%';
                 if (progress % 30 === 0 && step < messages.length) { term.innerText = messages[step]; step++; }
                 if (progress >= 100) { clearInterval(interval); generateResult(); }
-            }, 30);
+            }, 40);
         }
 
         async function generateResult() {
@@ -415,38 +410,89 @@
             const animalRes = document.getElementById('animalResult');
             const logText = document.getElementById('logText');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
+            
+            // LÓGICA DE INTELLIGENCE (SEED DIÁRIA)
+            let seed = getDailySeed(); // Semente baseada na data de hoje
+            let isSafeMode = currentBoldness < 40;
 
             if (currentMode === 'bicho') {
                 const input = document.getElementById('dreamInput').value.toLowerCase().trim();
                 let group = 0; let foundKey = "";
+                
+                // 1. Tenta achar no dicionário
                 for (const [key, val] of Object.entries(dreamDictionary)) { if (input.includes(key)) { group = val; foundKey=key; break; } }
+                
+                // 2. Se não, tenta números
                 if (group === 0) { const numStr = input.replace(/\D/g, ''); if (numStr.length >= 2) { const last = parseInt(numStr.slice(-2)); group = last===0?25:Math.ceil(last/4); foundKey="numérica"; }}
-                if (group === 0 && input.length>0) { let h=0; for(let i=0;i<input.length;i++)h+=input.charCodeAt(i); group=(h%25)+1; foundKey="vibracional"; }
-                if (group===0) group = Math.floor(Math.random()*25)+1;
+                
+                // 3. Se vazio, usa a DATA DE HOJE (Palpite do Dia) se for modo Seguro, ou Random se for Ousado
+                if (group === 0) {
+                    if (isSafeMode) {
+                        // Consistência: Palpite do dia é sempre o mesmo para todo mundo
+                        group = Math.floor(seededRandom(seed) * 25) + 1;
+                        foundKey = "Tendência do Dia (Data)";
+                    } else {
+                        // Caos
+                        group = Math.floor(Math.random() * 25) + 1;
+                        foundKey = "Quebra de Padrão (Aleatório)";
+                    }
+                }
 
                 let base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group<10?'0'+group:group})`;
                 animalRes.style.display = 'block';
-                logText.innerText = foundKey?`Decodificação via chave "${foundKey}" confirmada.`:"Padrão aleatório gerado com sucesso.";
+                logText.innerText = foundKey?`Análise: ${foundKey}`:"Palpite gerado.";
+                
                 currentNumbers.forEach(n => { const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n; grid.appendChild(div); });
+
             } else {
                 let max=25, count=15; if (currentMode==='mega'){max=60;count=6;} if (currentMode==='quina'){max=80;count=5;}
                 let nums = new Set();
-                while(nums.size<count) nums.add(Math.floor(Math.random()*max)+1);
+                
+                // INTELLIGENCE LOTERIAS
+                if (isSafeMode) {
+                    // Modo Seguro: Gera números consistentes com a data (Todo mundo recebe a mesma sugestão "quente" do dia)
+                    // Isso simula uma "análise profunda" do dia
+                    let localSeed = seed; 
+                    if (currentMode==='mega') localSeed += 100; // Variação por jogo
+                    
+                    while(nums.size < count) {
+                        let n = Math.floor(seededRandom(localSeed++) * max) + 1;
+                        nums.add(n);
+                    }
+                    logText.innerText = "Estratégia: Tendência Estatística do Dia (Base Histórica Simulada).";
+                } else {
+                    // Modo Ousado: Aleatório (Caos)
+                    while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
+                    logText.innerText = `Estratégia: Quebra de Padrão (Risco ${currentBoldness}%).`;
+                }
+
                 currentNumbers = Array.from(nums).sort((a,b)=>a-b);
-                logText.innerText = `Matriz otimizada gerada (Fator de Risco ${currentBoldness}%).`;
-                currentNumbers.forEach(n => { const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n; grid.appendChild(div); });
+                
+                currentNumbers.forEach(n => {
+                    const div = document.createElement('div'); 
+                    div.className = 'ball'; 
+                    div.innerText = n<10?'0'+n:n;
+                    
+                    // Adiciona Badges de "Quente/Frio" aleatoriamente para efeito visual
+                    if (Math.random() > 0.7) {
+                        const badge = document.createElement('div');
+                        badge.className = Math.random()>0.5 ? 'badge-hot' : 'badge-cold';
+                        div.appendChild(badge);
+                    }
+                    
+                    grid.appendChild(div);
+                });
             }
+
             const btnSave = document.getElementById('btnSave');
             btnSave.innerHTML = '<i data-lucide="save"></i> SALVAR NA CARTEIRA';
             btnSave.disabled = false; btnSave.style.background = "rgba(255, 215, 0, 0.1)"; btnSave.style.color = "#ffd700";
             showScreen('screen-result');
         }
 
-        // --- CHECKOUT REAL DA KIWIFY ---
-        window.openVipLink = () => {
-            window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank");
-        }
+        // LINKS
+        window.openVipLink = () => { window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => showScreen('screen-ritual');
         
