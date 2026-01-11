@@ -60,7 +60,6 @@
             gap: 10px;
             font-size: 16px;
         }
-
         .btn-primary:active { background: var(--primary-gold); color: #000; }
 
         .btn-google {
@@ -88,20 +87,9 @@
         }
         #dreamInput::placeholder { color: #554b00; }
 
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            padding: 24px;
-            animation: fadeIn 0.4s ease;
-        }
-
+        .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; }
         .screen.active { display: flex; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; }
         .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; }
@@ -166,9 +154,8 @@
                 <i data-lucide="brain-circuit" size="40"></i>
             </div>
             <h1 class="text-gold uppercase" style="letter-spacing: 1px; font-size: 24px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">DECODIFICADOR DE PADRÕES v1.6</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px;">INTELIGÊNCIA EM PADRÕES v1.7</p>
         </div>
-
         <div style="width: 100%;">
             <div id="login-area">
                 <p class="text-muted text-center" style="font-size: 14px; margin-bottom: 10px;">Acesse para usar a IA:</p>
@@ -198,10 +185,10 @@
                 <option value="lotofacil">LOTOFÁCIL (15 Números)</option>
                 <option value="mega">MEGA SENA (06 Números)</option>
                 <option value="quina">QUINA (05 Números)</option>
-                <option value="bicho">DECODIFICADOR DE SONHOS</option>
+                <option value="bicho">🦁 PALPITE ANIMAL (Sonhos)</option>
             </select>
             
-            <input type="text" id="dreamInput" class="input-box" placeholder="Digite sonho, placa ou sinal..." style="margin-top: 0px;">
+            <input type="text" id="dreamInput" class="input-box" placeholder="Digite: Sonho, Placa ou Palpite..." style="margin-top: 0px;">
         </div>
 
         <div>
@@ -209,14 +196,11 @@
                 <label class="text-muted" style="font-size: 12px; font-weight: bold;">TEMPERATURA DA APOSTA</label>
                 <span id="boldnessValue" class="text-gold" style="font-size: 14px; font-weight:bold;">50%</span>
             </div>
-            
             <input type="range" id="boldnessSlider" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
-            
             <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px;" class="text-muted">
                 <span id="labelSafe">Pés no Chão</span>
                 <span id="labelRisk">Ousado</span>
             </div>
-            
             <div id="riskAlert" style="margin-top: 15px; font-size: 11px; padding: 10px; border-radius: 4px; border: 1px dashed #444; color: #888;">
                 Modo Padrão: Equilibra estatística e sorte.
             </div>
@@ -283,7 +267,6 @@
         let currentMode = '';
         let currentBoldness = 50;
         
-        // --- SISTEMA DE ESCASSEZ (Limiter) ---
         const DAILY_LIMIT = 5;
         
         function getUsage() {
@@ -291,7 +274,7 @@
             const storage = localStorage.getItem('nucleo_usage');
             if (!storage) return 0;
             const data = JSON.parse(storage);
-            if (data.date !== today) return 0; // Reset diário
+            if (data.date !== today) return 0; 
             return data.count;
         }
 
@@ -305,15 +288,11 @@
         function updateUsageDisplay() {
             const count = getUsage();
             document.getElementById('usageCount').innerText = `${count} / ${DAILY_LIMIT}`;
-            if(count >= DAILY_LIMIT) {
-                document.getElementById('usageCount').style.color = "#ef4444";
-            }
+            if(count >= DAILY_LIMIT) { document.getElementById('usageCount').style.color = "#ef4444"; }
         }
         
-        // Chama ao iniciar
         updateUsageDisplay();
 
-        // --- LÓGICA DE UI ---
         window.checkLimitAndStart = () => {
             if (getUsage() >= DAILY_LIMIT) {
                 document.getElementById('paywallModal').style.display = 'flex';
@@ -323,15 +302,12 @@
         }
         
         window.openVipLink = () => {
-            // AQUI VOCÊ COLOCA SEU LINK DE PAGAMENTO OU WHATSAPP
+            // AQUI O LINK DO DINHEIRO
             window.open("https://wa.me/seu_numero_aqui?text=Quero+acesso+VIP+ao+Nucleo+Insight", "_blank");
         }
         
-        window.closeModal = () => {
-            document.getElementById('paywallModal').style.display = 'none';
-        }
+        window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
 
-        // DICIONÁRIO E LÓGICA MANTIDA (Abaixo)
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
         const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
 
@@ -346,7 +322,6 @@
             currentBoldness = parseInt(val);
             const display = document.getElementById('boldnessValue');
             const alert = document.getElementById('riskAlert');
-            
             if (val < 35) { display.className = "text-gold color-safe"; alert.innerText = "Modo Seguro: Foca na estatística."; alert.className = "color-safe"; }
             else if (val < 70) { display.className = "text-gold color-warn"; alert.innerText = "Modo Equilibrado: Mistura surpresas."; alert.className = "color-warn"; }
             else { display.className = "text-gold color-danger"; alert.innerText = "ALERTA: Modo Caos! Alto risco."; alert.className = "color-danger"; }
@@ -363,9 +338,7 @@
                 currentUser = user;
                 document.getElementById('userInfo').innerText = user.displayName ? user.displayName.split(' ')[0] : "VIP";
                 showScreen('screen-ritual');
-            } else {
-                showScreen('screen-home');
-            }
+            } else { showScreen('screen-home'); }
         });
 
         window.startProcessing = () => {
@@ -375,7 +348,7 @@
             const fill = document.getElementById('loadingFill');
             
             let messages = ["Acessando base...", "Calculando...", "Otimizando..."];
-            if (mode === 'bicho') messages = ["Decodificando...", "Traduzindo...", "Consultando..."];
+            if (mode === 'bicho') messages = ["Interpretando...", "Buscando Padrão...", "Consultando Tabela..."];
 
             let progress = 0; let step = 0;
             const interval = setInterval(() => {
@@ -386,9 +359,7 @@
         }
 
         function generateResult() {
-            // INCREMENTA O CONTADOR AQUI
             incrementUsage();
-            
             currentMode = document.getElementById('gameType').value;
             const grid = document.getElementById('numbersGrid');
             const animalRes = document.getElementById('animalResult');
@@ -417,7 +388,7 @@
                 let base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group<10?'0'+group:group})`;
                 animalRes.style.display = 'block';
-                logText.innerText = foundKey?`Interpretação confirmada: "${foundKey}"`:"Padrão aleatório gerado.";
+                logText.innerText = foundKey?`Palpite confirmado: "${foundKey}"`:"Palpite aleatório gerado.";
                 
                 currentNumbers.forEach(n => {
                     const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n; grid.appendChild(div);
