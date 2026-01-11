@@ -16,8 +16,14 @@
             --text-main: #e0e0e0;
             --text-muted: #888888;
             --font-tech: 'Courier New', Courier, monospace;
-            --hot-red: #ff4444;
-            --cold-blue: #4488ff;
+            
+            /* Cores de Temperatura */
+            --temp-safe: #00ff88;
+            --temp-warn: #ffd700;
+            --temp-danger: #ff0055;
+            
+            /* Cor atual dinâmica (alterada via JS) */
+            --current-color: #ffd700;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,8 +38,9 @@
             flex-direction: column;
         }
 
-        /* TIPOGRAFIA E CORES */
+        /* TIPOGRAFIA */
         .text-gold { color: var(--primary-gold); text-shadow: 0 0 10px var(--primary-glow); }
+        .text-dynamic { color: var(--current-color); text-shadow: 0 0 10px var(--current-color); transition: color 0.3s; }
         .text-muted { color: var(--text-muted); }
         .uppercase { text-transform: uppercase; }
         .text-center { text-align: center; }
@@ -51,7 +58,7 @@
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.3s;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -61,13 +68,7 @@
             position: relative;
             overflow: hidden;
         }
-        .btn-primary::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 60%);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .btn-primary:active::after { opacity: 1; }
-        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:active { transform: scale(0.98); background: rgba(255,215,0,0.2); }
 
         .btn-google {
             background: #fff; color: #000; border: none; border-radius: 8px;
@@ -85,7 +86,7 @@
             margin-bottom: 15px;
             border-radius: 8px;
         }
-        .input-box:focus { border-color: var(--primary-gold); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
+        .input-box:focus { border-color: var(--primary-gold); outline: none; }
         
         #dreamInput {
             border: 1px solid var(--primary-gold);
@@ -94,40 +95,108 @@
             background: rgba(255, 215, 0, 0.05);
         }
 
+        /* --- SLIDER PERSONALIZADO (TERMÔMETRO) --- */
+        .slider-wrapper {
+            position: relative;
+            padding: 10px 0;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px;
+            background: #222;
+            border-radius: 6px;
+            outline: none;
+            box-shadow: inset 0 0 5px #000;
+        }
+        /* Track (Trilho) */
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--temp-safe) 0%, var(--temp-warn) 50%, var(--temp-danger) 100%);
+            opacity: 0.8;
+        }
+        /* Thumb (Bolinha) */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid var(--current-color);
+            margin-top: -8px; /* Centralizar */
+            box-shadow: 0 0 15px var(--current-color);
+            cursor: grab;
+            transition: border-color 0.1s;
+        }
+        input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.1);
+            cursor: grabbing;
+        }
+
         /* TELAS */
         .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; }
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* RESULTADOS COM INTELLIGENCE */
-        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }
+        /* LOADING & RESULTADOS */
+        .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; overflow: hidden; }
+        .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; box-shadow: 0 0 10px var(--primary-gold); }
         
-        .ball-container { position: relative; }
+        .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 25px 0; }
+        
+        /* BOLINHAS ESTILO 3D */
         .ball { 
-            width: 48px; height: 48px; 
-            border: 1px solid #333; 
-            background: #111;
-            color: var(--text-main); 
+            width: 46px; height: 46px; 
+            border: 1px solid #444; 
+            background: radial-gradient(circle at 30% 30%, #333, #000); /* Efeito 3D */
+            color: var(--primary-gold); 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 18px;
+            font-weight: bold; font-size: 19px;
             border-radius: 50%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; z-index: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 2px rgba(255,255,255,0.1);
+            position: relative;
+            text-shadow: 0 0 5px rgba(255,215,0,0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0; transform: scale(0); /* Começa invisível para animar */
         }
         
         /* Badges de Inteligência */
         .badge-hot {
-            position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
-            background: var(--hot-red); border-radius: 50%; border: 2px solid #000;
-            z-index: 3; box-shadow: 0 0 5px var(--hot-red);
+            position: absolute; top: 0; right: 0; width: 14px; height: 14px;
+            background: #ff0055; border-radius: 50%; border: 2px solid #000;
+            box-shadow: 0 0 5px #ff0055;
         }
         .badge-cold {
-            position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
-            background: var(--cold-blue); border-radius: 50%; border: 2px solid #000;
-            z-index: 3; box-shadow: 0 0 5px var(--cold-blue);
+            position: absolute; top: 0; right: 0; width: 14px; height: 14px;
+            background: #00ccff; border-radius: 50%; border: 2px solid #000;
+            box-shadow: 0 0 5px #00ccff;
         }
         
+        /* ANIMAÇÃO EM CASCATA DAS BOLINHAS */
+        .ball:nth-child(1) { animation-delay: 0.05s; }
+        .ball:nth-child(2) { animation-delay: 0.1s; }
+        .ball:nth-child(3) { animation-delay: 0.15s; }
+        .ball:nth-child(4) { animation-delay: 0.2s; }
+        .ball:nth-child(5) { animation-delay: 0.25s; }
+        .ball:nth-child(6) { animation-delay: 0.3s; }
+        .ball:nth-child(7) { animation-delay: 0.35s; }
+        .ball:nth-child(8) { animation-delay: 0.4s; }
+        .ball:nth-child(9) { animation-delay: 0.45s; }
+        .ball:nth-child(10) { animation-delay: 0.5s; }
+        .ball:nth-child(11) { animation-delay: 0.55s; }
+        .ball:nth-child(12) { animation-delay: 0.6s; }
+        .ball:nth-child(13) { animation-delay: 0.65s; }
+        .ball:nth-child(14) { animation-delay: 0.7s; }
+        .ball:nth-child(15) { animation-delay: 0.75s; }
+
+        @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+
         .user-tag {
             font-size: 10px; font-weight: bold; letter-spacing: 1px;
             color: #000; background: var(--primary-gold);
@@ -146,10 +215,8 @@
             background: #0a0a0a; border: 1px solid var(--primary-gold);
             padding: 30px; border-radius: 16px; width: 90%; max-width: 380px;
             text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
-            position: relative;
         }
-        
-        /* LOGO SVG */
+
         .logo-container svg { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
     </style>
 </head>
@@ -160,11 +227,10 @@
             <i data-lucide="lock" size="48" class="text-gold" style="margin-bottom: 20px;"></i>
             <h2 class="text-white uppercase" style="font-size: 20px; margin-bottom: 10px; letter-spacing: 1px;">Limite Diário</h2>
             <p class="text-muted" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
-                Você atingiu o limite de <strong>5 análises</strong> hoje.<br>
-                A inteligência artificial precisa recalibrar.
+                Inteligência esgotada por hoje (5/5).<br>Recalibração em 24h.
             </p>
             <button onclick="openVipLink()" class="btn-primary w-full" style="margin-bottom: 15px; background: var(--primary-gold); color: #000;">
-                <i data-lucide="zap" size="18"></i> LIBERAR ACESSO VITALÍCIO
+                <i data-lucide="zap" size="18"></i> LIBERAR VITALÍCIO
             </button>
             <button onclick="closeModal()" class="w-full text-muted" style="background:none; border:none; padding:10px; cursor:pointer; font-size: 12px; opacity: 0.6;">
                 Voltar amanhã
@@ -183,7 +249,7 @@
                 </svg>
             </div>
             <h1 class="text-gold uppercase" style="letter-spacing: 2px; font-size: 26px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v2.0</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v2.1</p>
         </div>
         <div style="width: 100%;">
             <div id="login-area">
@@ -220,14 +286,22 @@
         </div>
 
         <div>
-            <div style="display: flex; justify-content: space-between;">
-                <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">ESTRATÉGIA</label>
-                <span id="boldnessValue" class="text-gold" style="font-size: 14px; font-weight:bold;">50%</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <label class="text-muted" style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">TEMPERATURA</label>
+                <span id="boldnessValue" class="text-dynamic font-bold" style="font-size: 16px;">50%</span>
             </div>
-            <input type="range" id="boldnessSlider" style="width:100%; accent-color: var(--primary-gold); margin-top:15px;" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
-            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; opacity: 0.7;" class="text-muted">
-                <span id="labelSafe">Tendência do Dia<br>(Baseado em Dados)</span>
-                <span id="labelRisk">Ousado<br>(Quebra de Padrão)</span>
+            
+            <div class="slider-wrapper">
+                <div style="display: flex; justify-content: space-between; margin-bottom: -15px; pointer-events: none; padding: 0 5px;">
+                    <i data-lucide="snowflake" size="14" style="color: var(--temp-safe);"></i>
+                    <i data-lucide="flame" size="14" style="color: var(--temp-danger);"></i>
+                </div>
+                <input type="range" id="boldnessSlider" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; opacity: 0.7;" class="text-muted">
+                <span id="labelSafe">Seguro (Dados)</span>
+                <span id="labelRisk">Caos (Zebra)</span>
             </div>
         </div>
 
@@ -252,15 +326,6 @@
         <div class="text-center">
             <h2 id="resultTitle" class="text-white" style="font-size: 18px; margin-bottom: 20px; font-weight: normal;">Sugestão do Algoritmo</h2>
             
-            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
-                <div style="font-size: 10px; display: flex; align-items: center; gap: 4px; color: #888;">
-                    <span style="width: 8px; height: 8px; background: var(--hot-red); border-radius: 50%;"></span> Quente
-                </div>
-                <div style="font-size: 10px; display: flex; align-items: center; gap: 4px; color: #888;">
-                    <span style="width: 8px; height: 8px; background: var(--cold-blue); border-radius: 50%;"></span> Frio
-                </div>
-            </div>
-
             <div id="numbersGrid" class="result-grid"></div>
             <div id="animalResult" style="display:none; margin-bottom: 20px; font-size: 22px; color: var(--primary-gold); font-weight: bold; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,215,0,0.3);"></div>
         </div>
@@ -307,20 +372,34 @@
         
         const DAILY_LIMIT = 5;
 
-        // SEED DIÁRIA PARA "INTELIGÊNCIA REAL" SIMULADA
+        // INTELIGÊNCIA LÓGICA
         function getDailySeed() {
             const today = new Date();
-            // Gera um número único para o dia (ex: 20231025)
             return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
         }
 
-        // Função Pseudo-Aleatória baseada na Seed (Consistência)
         function seededRandom(seed) {
             var x = Math.sin(seed++) * 10000;
             return x - Math.floor(x);
         }
 
-        // --- SISTEMA ANTI-FRAUDE ---
+        // SLIDER LÓGICA VISUAL
+        window.updateBoldness = (val) => {
+            currentBoldness = parseInt(val);
+            const display = document.getElementById('boldnessValue');
+            const root = document.documentElement;
+            
+            // Lógica de Cores
+            let color = '#ffd700';
+            if (val < 35) { color = '#00ff88'; display.innerText = val + '% (Seguro)'; }
+            else if (val < 70) { color = '#ffd700'; display.innerText = val + '% (Padrão)'; }
+            else { color = '#ff0055'; display.innerText = val + '% (Caos)'; }
+            
+            // Aplica cor na variável CSS para atualizar Slider e Textos
+            root.style.setProperty('--current-color', color);
+        }
+
+        // ANTI-FRAUDE
         async function checkServerUsage() {
             if (!currentUser) return;
             const today = new Date().toDateString();
@@ -364,7 +443,7 @@
             startProcessing();
         }
 
-        // --- CORE DO SISTEMA ---
+        // LOGIN
         const btnLogin = document.getElementById('btnLogin');
         btnLogin.addEventListener('click', () => { signInWithPopup(auth, provider).catch((error) => alert(error.message)); });
 
@@ -380,11 +459,6 @@
             const mode = document.getElementById('gameType').value;
             const input = document.getElementById('dreamInput');
             if (mode === 'bicho') { input.style.display = 'block'; input.focus(); } else { input.style.display = 'none'; }
-        }
-
-        window.updateBoldness = (val) => {
-            currentBoldness = parseInt(val);
-            document.getElementById('boldnessValue').innerText = val + '%';
         }
 
         window.startProcessing = () => {
@@ -411,76 +485,43 @@
             const logText = document.getElementById('logText');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
-            // LÓGICA DE INTELLIGENCE (SEED DIÁRIA)
-            let seed = getDailySeed(); // Semente baseada na data de hoje
+            let seed = getDailySeed(); 
             let isSafeMode = currentBoldness < 40;
 
             if (currentMode === 'bicho') {
                 const input = document.getElementById('dreamInput').value.toLowerCase().trim();
                 let group = 0; let foundKey = "";
-                
-                // 1. Tenta achar no dicionário
                 for (const [key, val] of Object.entries(dreamDictionary)) { if (input.includes(key)) { group = val; foundKey=key; break; } }
-                
-                // 2. Se não, tenta números
                 if (group === 0) { const numStr = input.replace(/\D/g, ''); if (numStr.length >= 2) { const last = parseInt(numStr.slice(-2)); group = last===0?25:Math.ceil(last/4); foundKey="numérica"; }}
-                
-                // 3. Se vazio, usa a DATA DE HOJE (Palpite do Dia) se for modo Seguro, ou Random se for Ousado
                 if (group === 0) {
-                    if (isSafeMode) {
-                        // Consistência: Palpite do dia é sempre o mesmo para todo mundo
-                        group = Math.floor(seededRandom(seed) * 25) + 1;
-                        foundKey = "Tendência do Dia (Data)";
-                    } else {
-                        // Caos
-                        group = Math.floor(Math.random() * 25) + 1;
-                        foundKey = "Quebra de Padrão (Aleatório)";
-                    }
+                    if (isSafeMode) { group = Math.floor(seededRandom(seed) * 25) + 1; foundKey = "Tendência do Dia (Data)"; } 
+                    else { group = Math.floor(Math.random() * 25) + 1; foundKey = "Quebra de Padrão (Aleatório)"; }
                 }
-
                 let base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 animalRes.innerText = `🦁 ${animals[group]} (Grupo ${group<10?'0'+group:group})`;
                 animalRes.style.display = 'block';
                 logText.innerText = foundKey?`Análise: ${foundKey}`:"Palpite gerado.";
-                
                 currentNumbers.forEach(n => { const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n; grid.appendChild(div); });
-
             } else {
                 let max=25, count=15; if (currentMode==='mega'){max=60;count=6;} if (currentMode==='quina'){max=80;count=5;}
                 let nums = new Set();
                 
-                // INTELLIGENCE LOTERIAS
                 if (isSafeMode) {
-                    // Modo Seguro: Gera números consistentes com a data (Todo mundo recebe a mesma sugestão "quente" do dia)
-                    // Isso simula uma "análise profunda" do dia
-                    let localSeed = seed; 
-                    if (currentMode==='mega') localSeed += 100; // Variação por jogo
-                    
-                    while(nums.size < count) {
-                        let n = Math.floor(seededRandom(localSeed++) * max) + 1;
-                        nums.add(n);
-                    }
+                    let localSeed = seed; if (currentMode==='mega') localSeed += 100;
+                    while(nums.size < count) { let n = Math.floor(seededRandom(localSeed++) * max) + 1; nums.add(n); }
                     logText.innerText = "Estratégia: Tendência Estatística do Dia (Base Histórica Simulada).";
                 } else {
-                    // Modo Ousado: Aleatório (Caos)
                     while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
                     logText.innerText = `Estratégia: Quebra de Padrão (Risco ${currentBoldness}%).`;
                 }
-
                 currentNumbers = Array.from(nums).sort((a,b)=>a-b);
-                
                 currentNumbers.forEach(n => {
-                    const div = document.createElement('div'); 
-                    div.className = 'ball'; 
-                    div.innerText = n<10?'0'+n:n;
-                    
-                    // Adiciona Badges de "Quente/Frio" aleatoriamente para efeito visual
+                    const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n;
                     if (Math.random() > 0.7) {
                         const badge = document.createElement('div');
                         badge.className = Math.random()>0.5 ? 'badge-hot' : 'badge-cold';
                         div.appendChild(badge);
                     }
-                    
                     grid.appendChild(div);
                 });
             }
@@ -491,7 +532,6 @@
             showScreen('screen-result');
         }
 
-        // LINKS
         window.openVipLink = () => { window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => showScreen('screen-ritual');
