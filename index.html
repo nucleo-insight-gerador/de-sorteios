@@ -12,95 +12,212 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary: #ffd700; --bg: #050505; }
+        :root { --primary: #ffd700; --neon-glow: 0 0 10px rgba(255, 215, 0, 0.6); --bg: #050505; --surface: rgba(20, 20, 20, 0.8); }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background-image: radial-gradient(circle at 50% 10%, #1a1a00 0%, #000 90%); }
-        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.3; pointer-events: none; }
-        .z-content { position: relative; z-index: 50; }
         
-        .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px; width: 100%; transition: transform 0.2s; }
-        .btn-google:active { transform: scale(0.95); }
+        body { 
+            background-color: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; 
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 10%, #1a1a00 0%, #000 90%);
+        }
+
+        /* --- FUNDO VIVO (CANVAS) --- */
+        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; pointer-events: none; }
+
+        /* --- TICKER --- */
+        .marquee-container { 
+            background: rgba(0, 255, 136, 0.1); border-bottom: 1px solid rgba(0, 255, 136, 0.2); 
+            height: 30px; overflow: hidden; white-space: nowrap; position: relative; z-index: 10; display: flex; align-items: center;
+        }
+        .marquee-content { 
+            display: inline-block; animation: marquee 20s linear infinite; 
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #00ff88; text-transform: uppercase;
+        }
+        @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+        .z-content { position: relative; z-index: 50; } 
         
+        /* BOTÕES */
+        .btn-pulse {
+            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+            border: none; color: #000; padding: 20px;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 18px;
+            text-transform: uppercase; letter-spacing: 2px;
+            border-radius: 12px; cursor: pointer; width: 100%;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            animation: pulse-gold 2s infinite; position: relative; overflow: hidden;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .btn-pulse::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
+            transform: rotate(45deg) translateY(-100%); animation: shine 3s infinite;
+        }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); transform: scale(1.02); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); transform: scale(1); } }
+        @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
+
+        .btn-google { 
+            background: #fff; color: #000; border: none; border-radius: 8px; padding: 15px; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px; width: 100%;
+            transition: transform 0.2s; position: relative; z-index: 200;
+        }
+        .btn-google:active { transform: scale(0.95); background: #eee; }
+
+        /* CARDS DE JOGO */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .game-card { 
+            background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; 
+            padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+        }
+        .game-card.active { 
+            border-color: var(--primary); background: rgba(255, 215, 0, 0.15); 
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); 
+        }
+        .game-card.active::before { content: '●'; color: var(--primary); position: absolute; top: 5px; right: 5px; font-size: 8px; }
+
+        /* SLIDER COMPLETO */
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: #222; border-radius: 3px; outline: none; } 
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); box-shadow: 0 0 10px var(--primary); cursor: grab; }
+
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; position: relative; z-index: 2; }
         .screen.active { display: flex; animation: fadeUp 0.4s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ESTILOS RESUMIDOS PARA ECONOMIZAR ESPAÇO VISUAL */
-        .btn-pulse { background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); border: none; color: #000; padding: 20px; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 18px; text-transform: uppercase; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+        .matrix-text { color: var(--primary); font-family: 'JetBrains Mono'; font-size: 12px; text-align: center; margin-top: 10px; opacity: 0.8; }
+        .spin-container { display: flex; justify-content: center; gap: 5px; font-size: 24px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; }
+        .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
         
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .game-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; }
-        .game-card.active { border-color: var(--primary); background: rgba(255, 215, 0, 0.15); }
+        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 30px 0; perspective: 1000px; }
+        .ball { 
+            width: 48px; height: 48px; background: linear-gradient(135deg, #222, #000); border: 1px solid #444; color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; transform: rotateX(90deg); 
+        }
+        .ball.reveal { animation: flipIn 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes flipIn { from { opacity: 0; transform: rotateX(90deg) translateY(20px); } to { opacity: 1; transform: rotateX(0) translateY(0); } }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .modal-box { background: #111; border: 1px solid var(--primary); padding: 30px; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.15); }
+        .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; margin-bottom: 15px; border-radius: 8px; }
+        #testModeBar { background: #f00; color: #fff; text-align: center; font-size: 9px; padding: 2px; display: none; z-index: 9999; position: relative; }
         
-        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 30px 0; }
-        .ball { width: 48px; height: 48px; background: #111; border: 1px solid #444; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .modal-box { background: #111; border: 1px solid var(--primary); padding: 30px; border-radius: 16px; width: 90%; text-align: center; }
-        .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
+        #social-toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: rgba(20, 20, 20, 0.9); border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 10px 15px; border-radius: 30px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 2000; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 90%; max-width: 350px; backdrop-filter: blur(5px);
+        }
+        #social-toast.visible { transform: translateX(-50%) translateY(0); }
+        .toast-avatar { width: 24px; height: 24px; background: linear-gradient(45deg, #ffd700, #ffaa00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 10px; }
     </style>
 </head>
 <body>
 
+    <div id="testModeBar">🔧 MODO ADMIN</div>
     <canvas id="neural-canvas"></canvas>
+
+    <div class="marquee-container">
+        <div class="marquee-content" id="marqueeText">
+            🍀 MARCOS S. ACERTOU 14 PONTOS NA LOTOFÁCIL HOJE • 🦁 JULIA P. PEGOU O GRUPO DO URSO • 💰 R$ 1.500,00 PREMIADO PARA ROBERTO K. • 
+        </div>
+    </div>
+    
+    <div id="social-toast">
+        <div class="toast-avatar">N</div>
+        <div style="flex:1;">
+            <p style="color:#fff; font-size:11px; font-weight:bold; margin-bottom:2px;" id="toast-title">Novo Palpite</p>
+            <p style="color:#888; font-size:10px;" id="toast-desc">...</p>
+        </div>
+        <i data-lucide="check-circle" size="16" class="text-gold"></i>
+    </div>
 
     <div id="paywallModal" class="modal-overlay">
         <div class="modal-box">
             <i data-lucide="lock" size="48" class="text-gold" style="margin-bottom: 20px;"></i>
-            <h2 style="color:#fff; font-size:20px; margin-bottom:10px;">LIMITE ATINGIDO</h2>
-            <p style="color:#888; font-size:14px; margin-bottom:25px;">Recalibragem necessária.</p>
-            <button onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px;">DESBLOQUEAR TUDO</button>
-            <button onclick="closeModal()" style="background:none; border:none; color:#555; margin-top:15px;">Fechar</button>
+            <h2 style="color:#fff; font-size:20px; font-weight:800; margin-bottom:10px;">SISTEMA BLOQUEADO</h2>
+            <p style="color:#888; font-size:14px; margin-bottom:25px;">Limite atingido. A IA precisa recalibrar ou você pode liberar acesso total.</p>
+            <button onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px;"><i data-lucide="zap"></i> DESBLOQUEAR TUDO</button>
+            <button onclick="closeModal()" style="background:none; border:none; color:#555; margin-top:15px; font-size:12px;">Voltar amanhã</button>
         </div>
     </div>
 
     <div id="screen-home" class="screen active z-content" style="justify-content: center; align-items: center; text-align: center;">
-        <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:100px; height:100px; border-radius:50%; margin-bottom:20px; border:2px solid var(--primary);">
+        <div style="width:120px; height:120px; margin-bottom:20px; position:relative;">
+            <div style="position:absolute; inset:0; border:2px solid var(--primary); border-radius:50%; animation:pulse-gold 2s infinite;"></div>
+            <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover; position:relative; z-index:2;">
+        </div>
         <h1 style="font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 2px;">NUCLEO <span style="color:var(--primary)">INSIGHT</span></h1>
-        <p style="color:#666; font-size:10px; letter-spacing:4px; margin-bottom:40px;">QUANTUM INTELLIGENCE v5.6</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.7</p>
         
-        <div style="width:100%; max-width:300px;">
+        <div style="width:100%; max-width:300px; margin-top:40px; position: relative; z-index: 100;">
             <button id="btnLogin" class="btn-google">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> 
                 ENTRAR COM GOOGLE
             </button>
-            <p id="statusLog" style="color:#ffd700; font-size:10px; margin-top:15px; display:none;">Verificando credenciais...</p>
+            <p id="loadingLogin" style="color:#ffd700; font-size:10px; margin-top:10px; display:none;">Conectando ao Google...</p>
+            <p style="color:#333; font-size:9px; margin-top:15px;">🔒 CONEXÃO CRIPTOGRAFADA</p>
         </div>
     </div>
 
-    <div id="screen-ritual" class="screen z-content">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <div style="font-size:10px; color:#666;">ID: <span id="userIdDisplay">...</span></div>
-            <div style="font-size:10px; color:var(--primary);">CRÉDITOS: <span id="usageCount">...</span></div>
+    <div id="screen-ritual" class="screen z-content" style="justify-content: flex-start;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="font-family:'JetBrains Mono'; font-size:10px; color:#666;">ID: <span id="userIdDisplay">...</span></div>
+            <div style="background:#111; padding:4px 10px; border-radius:20px; border:1px solid #333; font-size:10px; color:var(--primary);">
+                CRÉDITOS: <span id="usageCount">...</span>
+            </div>
         </div>
 
-        <div class="game-grid">
-            <div class="game-card active" onclick="selectGame('lotofacil', this)">🍀 LOTOFÁCIL</div>
-            <div class="game-card" onclick="selectGame('mega', this)">💰 MEGA SENA</div>
-            <div class="game-card" onclick="selectGame('quina', this)">🔷 QUINA</div>
-            <div class="game-card" onclick="selectGame('bicho', this)">🦁 PALPITE</div>
+        <div style="margin-bottom:20px;">
+            <label style="color:#888; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">PROTOCOLO DE ANÁLISE</label>
+            <div class="game-grid" style="margin-top:10px;">
+                <div class="game-card active" onclick="selectGame('lotofacil', this)"><div style="font-size:24px;">🍀</div><div style="font-size:10px; font-weight:bold; margin-top:5px; color:#ccc;">LOTOFÁCIL</div></div>
+                <div class="game-card" onclick="selectGame('mega', this)"><div style="font-size:24px;">💰</div><div style="font-size:10px; font-weight:bold; margin-top:5px; color:#ccc;">MEGA SENA</div></div>
+                <div class="game-card" onclick="selectGame('quina', this)"><div style="font-size:24px;">🔷</div><div style="font-size:10px; font-weight:bold; margin-top:5px; color:#ccc;">QUINA</div></div>
+                <div class="game-card" onclick="selectGame('bicho', this)"><div style="font-size:24px;">🦁</div><div style="font-size:10px; font-weight:bold; margin-top:5px; color:#ccc;">PALPITE</div></div>
+            </div>
+            
+            <input type="hidden" id="gameType" value="lotofacil">
+            <input type="text" id="dreamInput" class="input-box" placeholder="DIGITE O SONHO..." style="display:none; border-color:var(--primary); background:rgba(255,215,0,0.05); color:var(--primary); font-weight:bold; text-align:center;">
         </div>
-        
-        <input type="hidden" id="gameType" value="lotofacil">
-        <input type="text" id="dreamInput" class="input-box" placeholder="DIGITE O SONHO..." style="display:none;">
+
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:10px; border:1px solid #222; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:10px; color:#666; font-weight:bold;">CALIBRAGEM DE RISCO</span>
+                <span id="boldnessValue" style="font-size:12px; font-weight:bold; color:var(--primary);">50%</span>
+            </div>
+            <input type="range" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
+            <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:9px; color:#444;"><span>CONSERVADOR</span><span>OUSADO</span></div>
+        </div>
 
         <div style="margin-top:auto;"><button onclick="checkLimitAndStart()" class="btn-pulse">DECODIFICAR PADRÃO</button></div>
     </div>
 
     <div id="screen-loading" class="screen z-content" style="justify-content:center; align-items:center;">
-        <i data-lucide="cpu" size="64" style="color:var(--primary); animation:pulse 1s infinite;"></i>
-        <div style="margin-top:20px; color:#fff; font-family:'JetBrains Mono'">PROCESSANDO...</div>
+        <i data-lucide="cpu" size="64" class="text-gold" style="animation:spin 3s linear infinite;"></i>
+        <div class="spin-container" id="spinContainer"></div>
+        <div id="terminalText" class="matrix-text">INICIALIZANDO NEURAL CORE...</div>
     </div>
 
     <div id="screen-result" class="screen z-content">
-        <div style="text-align:center; margin-top:20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+            <button onclick="resetApp()" style="background:none; border:none; color:#666; display:flex; align-items:center; gap:5px;"><i data-lucide="arrow-left" size="16"></i> NOVO JOGO</button>
+            <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:2px 8px; border-radius:4px;">CONCLUÍDO</div>
+        </div>
+        <div style="text-align:center;">
             <h2 style="font-size:12px; letter-spacing:2px; color:#666; margin-bottom:10px;">SEQUÊNCIA DECODIFICADA</h2>
             <div id="numbersGrid" class="result-grid"></div>
-            <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:800; margin-bottom:20px;"></div>
+            <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:800; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
         </div>
-        <div style="margin-top:auto;">
-            <button onclick="resetApp()" class="btn-google" style="background:#111; color:#fff; border:1px solid #333;">NOVA ANÁLISE</button>
+        <div style="margin-top:auto; padding:20px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:12px; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:2px; background:var(--primary); box-shadow:0 0 10px var(--primary);"></div>
+            <p style="font-size:10px; color:#888; font-weight:bold; margin-bottom:5px;">ANÁLISE DE PROBABILIDADE:</p>
+            <p id="logText" style="font-size:11px; color:#ccc; line-height:1.4;">...</p>
+            <p id="apiStatus" style="font-size:9px; color:#444; margin-top:10px;"></p>
+        </div>
+        <div style="margin-top:20px;">
+            <button onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px; animation:none; border:1px solid var(--primary);"><i data-lucide="crown"></i> QUERO ACESSO VITALÍCIO</button>
         </div>
     </div>
 
@@ -119,25 +236,13 @@
         const analytics = getAnalytics(app);
         const provider = new GoogleAuthProvider();
         
-        let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let userUsage = 0; let isVip = false;
+        let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // --- SISTEMA DE REDIRECT PURO (SOLUÇÃO DE LOGIN) ---
-        // 1. Verifica se o usuário acabou de voltar do Google
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    console.log("Voltou do Google com sucesso!", result.user);
-                    document.getElementById('statusLog').style.display = "block";
-                    document.getElementById('statusLog').innerText = "Login confirmado! Entrando...";
-                }
-            }).catch((error) => {
-                console.error(error);
-                alert("Erro no Login: " + error.message);
-            });
+        // --- SISTEMA DE REDIRECT PURO (O QUE FEZ VOCÊ LOGAR) ---
+        getRedirectResult(auth).then((result) => { if (result) console.log("Login OK"); }).catch((error) => alert("Erro no Login: " + error.message));
 
-        // 2. Monitora estado do usuário
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -150,13 +255,13 @@
             }
         });
 
-        // 3. Botão inicia o Redirect (Sai da página e vai pro Google)
+        // BOTÃO DE LOGIN COM REDIRECT
         document.getElementById('btnLogin').addEventListener('click', () => {
-            document.getElementById('statusLog').style.display = "block";
+            document.getElementById('loadingLogin').style.display = 'block';
             signInWithRedirect(auth, provider);
         });
 
-        // --- BACKGROUND ---
+        // --- BACKGROUND E VISUAL (VOLTA AQUI, BELEZA!) ---
         const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
         let width, height, particles = [];
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
@@ -165,12 +270,37 @@
         function animate() { ctx.clearRect(0,0,width,height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
         window.addEventListener('resize', resize); resize(); initParticles(); animate();
 
-        // --- LÓGICA DO APP ---
+        // --- TOAST SOCIAL ---
+        const names = ["João M.", "Carlos S.", "Ana P.", "Pedro H.", "Lucas F.", "Mariana L."];
+        const actions = ["Lotofácil", "Mega Sena", "Quina", "Bicho"];
+        setInterval(() => {
+            if(Math.random() > 0.5) {
+                const toast = document.getElementById('social-toast');
+                const name = names[Math.floor(Math.random() * names.length)];
+                const action = actions[Math.floor(Math.random() * actions.length)];
+                document.querySelector('.toast-avatar').innerText = name[0];
+                document.getElementById('toast-title').innerText = "Novo Palpite Gerado";
+                document.getElementById('toast-desc').innerText = `${name} gerou um jogo na ${action}`;
+                toast.classList.add('visible');
+                setTimeout(() => toast.classList.remove('visible'), 4000);
+            }
+        }, 12000);
+
+        // --- UI LOGIC ---
         window.selectGame = (mode, el) => {
             currentMode = mode; document.getElementById('gameType').value = mode;
             document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
             const inp = document.getElementById('dreamInput');
-            inp.style.display = (mode === 'bicho') ? 'block' : 'none';
+            if(mode === 'bicho') { inp.style.display = 'block'; inp.focus(); } else { inp.style.display = 'none'; }
+        }
+
+        window.updateBoldness = (val) => {
+            currentBoldness = val; 
+            document.getElementById('boldnessValue').innerText = val + '%';
+            const root = document.documentElement;
+            if(val < 35) root.style.setProperty('--current-color', '#00ff88');
+            else if(val < 70) root.style.setProperty('--current-color', '#ffd700');
+            else root.style.setProperty('--current-color', '#ff0055');
         }
 
         async function fetchRealLotteryData(mode) {
@@ -178,6 +308,9 @@
             if(!map[mode]) return null;
             try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); return r.ok ? await r.json() : null; } catch(e) { return null; }
         }
+
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
         async function checkServerUsage() {
             if (!currentUser) return;
@@ -192,38 +325,74 @@
 
         window.startProcessing = () => {
             showScreen('screen-loading');
-            setTimeout(() => { generateResult(); }, 2500);
+            const term = document.getElementById('terminalText');
+            const msgs = ["ACESSANDO CAIXA...", "CALIBRANDO IA...", "PROCESSANDO..."];
+            let step = 0;
+            
+            // MATRIX EFFECT
+            const spin = document.getElementById('spinContainer');
+            const spinInterval = setInterval(() => {
+                spin.innerHTML = '';
+                for(let i=0; i<6; i++) {
+                    const d = document.createElement('div'); d.className = 'spin-digit'; 
+                    d.innerText = Math.floor(Math.random()*10); d.style.opacity = Math.random(); 
+                    spin.appendChild(d); 
+                }
+                if(step < msgs.length && Math.random() > 0.9) term.innerText = msgs[step++];
+            }, 80);
+
+            setTimeout(() => { clearInterval(spinInterval); generateResult(); }, 3000);
         }
 
         async function generateResult() {
             await increment();
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult');
+            const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
-            let isSafe = true; let realData = null;
-            if(currentMode!=='bicho') realData = await fetchRealLotteryData(currentMode);
+            let seed = getDailySeed(); let isSafe = currentBoldness < 40; let realData = null;
+            if(isSafe && currentMode!=='bicho') realData = await fetchRealLotteryData(currentMode);
 
             if (currentMode === 'bicho') {
+                const inp = document.getElementById('dreamInput').value.toLowerCase();
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 let group = Math.floor(Math.random()*25)+1;
+                if(inp) { let h=0; for(let i=0;i<inp.length;i++) h+=inp.charCodeAt(i); group=(h%25)+1; }
+                
                 let base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
-                animalRes.innerText = `🦁 ${animals[group]}`; animalRes.style.display='block';
-                currentNumbers.forEach(n => addBall(n, grid));
+                animalRes.innerText = `🦁 ${animals[group]} (G${group})`; animalRes.style.display='block';
+                logText.innerText = "Decodificação: Padrão Onírico"; apiStatus.innerText = "Dicionário v2.1";
+                renderBalls(currentNumbers);
             } else {
                 let max=25, count=15; if(currentMode==='mega'){max=60;count=6;} if(currentMode==='quina'){max=80;count=5;}
                 let nums = new Set();
-                if(realData) { let last = realData.dezenas.map(d=>parseInt(d)); for(let i=0; i<Math.floor(count/2); i++) nums.add(last[i]); }
-                while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
+                if(isSafe) {
+                    if(realData) { 
+                        let last = realData.dezenas.map(d=>parseInt(d)); for(let i=0; i<Math.floor(count/2); i++) nums.add(last[i]); 
+                        logText.innerText = `Base: Concurso ${realData.numero}`; apiStatus.innerText = "FONTE: CAIXA OFICIAL";
+                    } else { logText.innerText = "Base: Histórico Estatístico"; apiStatus.innerText = "FONTE: DATABASE"; }
+                    while(nums.size < count) nums.add(Math.floor(seededRandom(seed++) * max) + 1);
+                } else {
+                    while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
+                    logText.innerText = "Estratégia: Caos (Zebra)"; apiStatus.innerText = "ENTROPIA PURA";
+                }
                 currentNumbers = Array.from(nums).sort((a,b)=>a-b);
-                currentNumbers.forEach(n => addBall(n, grid));
+                renderBalls(currentNumbers);
             }
 
             if(currentUser) { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() }); }
             showScreen('screen-result');
         }
 
-        function addBall(n, grid) { const d = document.createElement('div'); d.className = 'ball'; d.innerText = n<10?'0'+n:n; grid.appendChild(d); }
-        window.openVipLink = () => { if(isTestMode) return alert("Teste"); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
+        function renderBalls(numbers) {
+            const grid = document.getElementById('numbersGrid');
+            numbers.forEach((n, i) => {
+                const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n;
+                div.style.animationDelay = (i * 0.1) + 's'; setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
+            });
+        }
+
+        window.openVipLink = () => { if(isTestMode) return alert("Modo Teste"); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => showScreen('screen-ritual');
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
