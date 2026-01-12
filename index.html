@@ -12,14 +12,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary: #ffd700; --bg: #050505; --surface: #121212; }
+        :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --danger: #ff0055; --success: #00ff88; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body { 
             background-color: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; 
-            /* CORREÇÃO DO BOTÃO SUMINDO (dvh) */
-            height: 100dvh; 
-            overflow: hidden; display: flex; flex-direction: column;
+            height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
             background-image: radial-gradient(circle at 50% 10%, #1a1a00 0%, #000 90%);
         }
 
@@ -38,7 +36,25 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* AJUSTE PARA O GRID CABER NA TELA */
+        /* NOVO PAINEL DE CRÉDITOS E VIP */
+        #creditContainer { margin-bottom: 15px; flex-shrink: 0; }
+        .credit-box { 
+            padding: 12px; border-radius: 10px; text-align: center; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .credit-box.green { background: rgba(0, 255, 136, 0.08); border: 1px solid var(--success); color: var(--success); }
+        .credit-box.yellow { background: rgba(255, 215, 0, 0.08); border: 1px solid var(--primary); color: var(--primary); }
+        .credit-box.red { background: rgba(255, 0, 85, 0.15); border: 2px solid var(--danger); color: var(--danger); animation: pulse-danger 0.8s infinite alternate; }
+        @keyframes pulse-danger { from { box-shadow: 0 0 5px var(--danger); transform: scale(1); } to { box-shadow: 0 0 20px var(--danger); transform: scale(1.02); } }
+        
+        .vip-badge {
+            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000;
+            padding: 12px; border-radius: 10px; text-align: center; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4); display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
         .games-wrapper { overflow-y: auto; flex-grow: 1; padding: 5px; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 10px; }
         
@@ -105,11 +121,10 @@
         #social-toast.visible { transform: translateX(-50%) translateY(0); }
         .fallback-link { color: #555; font-size: 10px; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
         
-        /* BOTÃO FIXO SEGURO */
         .footer-action { margin-top: auto; padding-bottom: 20px; flex-shrink: 0; }
     </style>
 </head>
-<body onclick="initAudio()">
+<body onclick="forceAudioUnlock()">
 
     <div id="testModeBar">🔧 MODO ADMIN</div>
     <canvas id="neural-canvas"></canvas>
@@ -144,10 +159,10 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #000; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase;">Nucleo <span style="color:var(--primary)">Insight</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.5 • MOBILE FIX</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.6 • ULTIMATE</p>
         
         <div style="width:100%; max-width:280px; margin-top:40px;">
-            <button id="btnLogin" class="btn-google" onclick="playSound('click')">
+            <button id="btnLogin" class="btn-google">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> 
                 ACESSAR SISTEMA
             </button>
@@ -158,12 +173,12 @@
     </div>
 
     <div id="screen-ritual" class="screen z-content" style="justify-content: flex-start;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink:0;">
-            <div style="font-family:'JetBrains Mono'; font-size:10px; color:#666;">ID: <span id="userIdDisplay" style="color:#fff;">...</span></div>
-            <div style="background:#111; padding:3px 10px; border-radius:4px; border:1px solid #333; font-size:10px; color:var(--primary);">
-                CRED: <span id="usageCount">...</span>
-            </div>
+        <div style="display:flex; justify-content:center; margin-bottom:10px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono'; font-size:11px; color:#666;">ID LOGADO: <span id="userIdDisplay" style="color:#fff; font-weight:bold;">...</span></div>
         </div>
+
+        <div id="creditContainer">
+            </div>
 
         <div style="margin-bottom:10px; flex-shrink:0;">
             <label style="color:#888; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:block;">SELECIONE A OPERAÇÃO</label>
@@ -244,16 +259,31 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // --- AUDIO ENGINE ---
-        const sfx = {
-            click: new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"),
-            win: new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"),
-            lock: new Audio("https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3")
-        };
-        sfx.click.volume = 0.4; sfx.win.volume = 0.6; sfx.lock.volume = 0.5;
-        window.playSound = (type) => { try { if(sfx[type]) { sfx[type].currentTime = 0; sfx[type].play().catch(e=>{}); } } catch(e){} }
+        // --- WEB AUDIO API V2 (FIXED FOR MOBILE) ---
+        let audioCtx;
+        window.forceAudioUnlock = () => {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        
+        function playTone(freq, type, duration, vol=0.1) {
+            forceAudioUnlock();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
 
-        // --- BACKGROUND ---
+        function playClick() { playTone(1200, 'square', 0.05, 0.2); }
+        function playSlide(val) { playTone(300 + (val*5), 'sine', 0.1, 0.1); }
+        function playWin() { [0, 150, 300].forEach((t, i) => setTimeout(() => playTone(600 + (i*200), 'triangle', 0.4, 0.3), t)); }
+        function playError() { playTone(150, 'sawtooth', 0.4, 0.4); }
+
+        // --- BACKGROUND & TOAST ---
         const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
         let width, height, particles = [];
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
@@ -274,7 +304,7 @@
 
         // --- AUTH ---
         document.getElementById('btnLogin').addEventListener('click', async () => {
-            playSound('click'); document.getElementById('loadingLogin').style.display = 'block';
+            playClick(); document.getElementById('loadingLogin').style.display = 'block';
             try { await setPersistence(auth, browserLocalPersistence); await signInWithPopup(auth, provider); } 
             catch (error) { await signInWithRedirect(auth, provider); }
         });
@@ -284,22 +314,40 @@
 
         async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
         async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
-        function updateUI() { const d=document.getElementById('usageCount'); if(isTestMode){d.innerText="TEST";d.style.color="#4488ff";} else if(isVip){d.innerText="VIP";d.style.color="#00ff88";} else {d.innerText=`${userUsage}/5`;d.style.color=userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700";} }
+        
+        // --- NOVA UI DE CRÉDITOS/VIP ---
+        function updateUI() {
+            const container = document.getElementById('creditContainer');
+            if(isVip) {
+                container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> MEMBRO VIP VITALÍCIO</div>';
+                lucide.createIcons();
+            } else {
+                let colorClass = 'green'; let text = 'JOGADAS DISPONÍVEIS';
+                if(userUsage >= 3) colorClass = 'yellow';
+                if(userUsage >= 4) { colorClass = 'red'; text = 'ATENÇÃO: ÚLTIMA CHANCE'; }
+                if(userUsage >= 5) { colorClass = 'red'; text = 'LIMITE DIÁRIO ESGOTADO'; }
+                container.innerHTML = `
+                    <div class="credit-box ${colorClass}">
+                        <div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div>
+                        <div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div>
+                    </div>`;
+            }
+        }
         
         window.checkLimitAndStart = async () => { 
-            playSound('click');
-            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playSound('lock'); document.getElementById('paywallModal').style.display = 'flex'; return; } 
+            playClick();
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playError(); document.getElementById('paywallModal').style.display = 'flex'; return; } 
             startProcessing(); 
         }
 
         window.selectGame = (mode, el) => {
-            playSound('click');
+            playClick();
             currentMode = mode; document.getElementById('gameType').value = mode;
             document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
             const inp = document.getElementById('dreamInput');
             inp.style.display = (mode === 'bicho') ? 'block' : 'none';
         }
-        window.updateBoldness = (val) => { currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
+        window.updateBoldness = (val) => { playSlide(val); currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
 
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
@@ -317,6 +365,7 @@
             let step = 0;
             const spin = document.getElementById('spinContainer');
             const interval = setInterval(() => {
+                if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); // Matrix sounds
                 spin.innerHTML = '';
                 for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); }
                 if(step<msgs.length && Math.random()>0.85) term.innerText=msgs[step++];
@@ -375,15 +424,12 @@
 
             if(currentUser) { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() }); }
             showScreen('screen-result');
-            playSound('win');
+            playWin();
         }
 
         function renderBalls(numbers) {
             const grid = document.getElementById('numbersGrid');
-            numbers.forEach((n, i) => {
-                const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n;
-                div.style.animationDelay = (i * 0.05) + 's'; setTimeout(() => div.classList.add('reveal'), 50); grid.appendChild(div);
-            });
+            numbers.forEach((n, i) => { addBall(n, grid); });
         }
         
         function addBall(n, grid, isSpecial=false) {
@@ -394,7 +440,7 @@
 
         window.openVipLink = () => { if(isTestMode) return alert("Modo Teste"); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
-        window.resetApp = () => { playSound('click'); showScreen('screen-ritual'); }
+        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         lucide.createIcons();
     </script>
