@@ -99,7 +99,7 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; max-height: 50vh; overflow-y: auto; padding: 10px; }
         
-        /* BOLAS E ANIMAÇÕES (BRAZUCA EDITION) */
+        /* BOLAS E ANIMAÇÕES */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #1a1a1a, #000); 
             border: 1px solid #333; color: var(--primary);
@@ -122,12 +122,12 @@
         .ball.cold::after { opacity:1; background:var(--cold); box-shadow: 0 0 10px var(--cold); }
         @keyframes pulse-cold { from { box-shadow: 0 0 5px var(--cold); opacity: 0.7; } to { box-shadow: 0 0 15px var(--cold); opacity: 1; } }
 
-        /* LEGENDA PARA LEIGOS */
-        .legend-box { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 20px; }
-        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: bold; color: #ccc; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .dot.hot { background: var(--hot); box-shadow: 0 0 5px var(--hot); animation: pulse-hot 0.8s infinite alternate; }
-        .dot.cold { background: var(--cold); box-shadow: 0 0 5px var(--cold); }
+        /* LEGENDA CORRIGIDA (Visual da Imagem) */
+        .legend-box { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; color: #ccc; }
+        /* Miniaturas das bolas para a legenda */
+        .legend-box .ball { width: 30px; height: 30px; font-size: 12px; margin: 0; opacity: 1; transform: scale(1); }
+        .legend-box .ball::after { width: 10px; height: 10px; top: -2px; right: -2px; }
 
         .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
         .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
@@ -251,12 +251,17 @@
         </div>
 
         <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
-            <h2 style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO PARA JOGAR 🎯</h2>
+            <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
+            
             <div id="numbersGrid" class="result-grid"></div>
             
             <div class="legend-box">
-                <div class="legend-item"><span class="dot hot"></span> Nº QUENTE (TENDÊNCIA)</div>
-                <div class="legend-item"><span class="dot cold"></span> Nº FRIO (ZEBRA)</div>
+                <div class="legend-item">
+                    <div class="ball hot">$$</div> Nº QUENTE (TENDÊNCIA)
+                </div>
+                <div class="legend-item">
+                    <div class="ball cold">$$</div> Nº FRIO (ZEBRA)
+                </div>
             </div>
             
             <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
@@ -296,6 +301,13 @@
         function playSlide(val) { playTone(300 + (val*5), 'sine', 0.1, 0.1); }
         function playWin() { [0, 150, 300].forEach((t, i) => setTimeout(() => playTone(600 + (i*200), 'triangle', 0.4, 0.3), t)); }
         function playError() { playTone(150, 'sawtooth', 0.4, 0.4); }
+        // NOVO SOM DE MOEDA (Notificação)
+        function playCoinJingle() {
+             forceAudioUnlock();
+             [0, 0.1, 0.2].forEach((t, i) => {
+                  setTimeout(() => playTone(2000 + (i*500), 'sine', 0.05, 0.15), t*1000);
+             });
+        }
 
         // --- BACKGROUND ---
         const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
@@ -309,6 +321,7 @@
         const names = ["João M.", "Carlos S.", "Ana P.", "Pedro H.", "Lucas F."];
         const actions = ["+Milionária", "Lotofácil", "Super Sete", "Bicho"];
         setInterval(() => { if(Math.random()>0.5) { 
+            playCoinJingle(); // TOCA O SOM DA MOEDA
             const t = document.getElementById('social-toast'); 
             const n = names[Math.floor(Math.random()*names.length)];
             const a = actions[Math.floor(Math.random()*actions.length)];
@@ -375,6 +388,16 @@
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
+            // ATUALIZA O TÍTULO COM O NOME DO JOGO
+            const prettyNames = {
+                'lotofacil': 'LOTOFÁCIL', 'mega': 'MEGA SENA', 'quina': 'QUINA',
+                'bicho': 'JOGO DO BICHO', 'milionaria': '+MILIONÁRIA',
+                'supersete': 'SUPER SETE', 'timemania': 'TIMEMANIA',
+                'lotomania': 'LOTOMANIA', 'diadesorte': 'DIA DE SORTE',
+                'duplasena': 'DUPLA SENA'
+            };
+            document.getElementById('resultTitle').innerText = `SINAL DE ${prettyNames[currentMode]} PRONTO 🎯`;
+
             let seed = getDailySeed(); let isSafe = currentBoldness < 40; let realData = null;
             if(isSafe && currentMode!=='bicho' && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
