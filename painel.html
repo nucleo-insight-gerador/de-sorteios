@@ -3,288 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper Analytics | Nucleo Insight</title>
-    <meta name="robots" content="noindex, nofollow"> <script src="https://cdn.tailwindcss.com"></script>
+    <title>Comando Central | Nucleo Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
-
     <style>
-        body { background-color: #000000; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; background-image: radial-gradient(circle at 50% 0%, #1a1a00 0%, #000 70%); }
-        .glass-panel { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .metric-value { font-size: 1.8rem; font-weight: 800; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-        .metric-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
-        
-        /* Funnel Styles */
-        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #333; margin-bottom: 20px; }
-        .funnel-step.active { border-left-color: #ffd700; }
-        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #333; border-radius: 50%; }
-        .funnel-step.active::before { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
-        
-        .progress-bar-bg { background: #333; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 5px; }
-        .progress-bar-fill { height: 100%; background: #ffd700; width: 0%; transition: width 1s; box-shadow: 0 0 10px #ffd700; }
-        
-        .loading-pulse { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+        body { background-color: #050505; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+        .glass-panel { background: #111; border: 1px solid #333; border-radius: 8px; }
+        .btn-tool { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-tool:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .stat-card { border-left: 3px solid; padding-left: 15px; }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="p-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div id="login-overlay" class="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div class="text-center">
+            <h1 class="text-2xl text-yellow-500 font-bold mb-4">ACESSO RESTRITO</h1>
+            <button id="btnLogin" class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-gray-200">
+                Entrar com Google (Admin)
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="max-w-7xl mx-auto hidden">
         
-        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-yellow-900/30 pb-4 gap-4">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-6">
             <div>
-                <h1 class="text-3xl font-black text-white tracking-tight">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
-                <p class="text-xs text-gray-500 mt-1">SNIPER ANALYTICS DASHBOARD v1.0</p>
+                <h1 class="text-2xl font-black text-white tracking-widest">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
+                <p class="text-xs text-gray-500 mt-1">SISTEMA DE INTELIGÊNCIA ESTRATÉGICA</p>
             </div>
             
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800">
-                    <span class="text-[10px] text-gray-400 uppercase font-bold">Ver Testes</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="initSystem()">
-                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
-                    </label>
-                </div>
-
-                <div class="text-right hidden md:block">
-                    <p class="text-[10px] text-gray-500 uppercase">Status do Banco</p>
-                    <div class="flex items-center gap-2 justify-end">
-                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span id="system-status" class="text-xs text-emerald-400 font-bold">CONECTADO</span>
-                    </div>
-                </div>
-
-                <button onclick="initSystem()" class="bg-yellow-600 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-yellow-500/20">
-                    🔄 ATUALIZAR
-                </button>
+            <div class="flex gap-3 mt-4 md:mt-0">
+                <a href="https://clarity.microsoft.com/projects/view/v018s4v24n/dashboard" target="_blank" class="btn-tool text-orange-400">
+                    <i data-lucide="flame" size="14"></i> CLARITY (Gestos)
+                </a>
+                <a href="https://console.firebase.google.com/u/0/project/nucleo-insight-gerador/analytics/dashboard" target="_blank" class="btn-tool text-yellow-400">
+                    <i data-lucide="bar-chart-2" size="14"></i> ANALYTICS (Tráfego)
+                </a>
+                <a href="https://business.facebook.com/events_manager" target="_blank" class="btn-tool text-blue-400">
+                    <i data-lucide="facebook" size="14"></i> PIXEL (Ads)
+                </a>
             </div>
         </header>
 
+        <div class="flex justify-end mb-6">
+            <div class="flex items-center gap-3 bg-zinc-900 p-2 rounded border border-zinc-800">
+                <span class="text-[10px] text-gray-400 font-bold uppercase">Visualizar:</span>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="loadData()">
+                    <div class="w-10 h-5 bg-emerald-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-600"></div>
+                    <span id="mode-label" class="ml-2 text-xs font-bold text-emerald-500">CLIENTES REAIS</span>
+                </label>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    FUNIL DE CONVERSÃO (Recente)
-                </h2>
-                <div id="funnel-container" class="space-y-6">
-                    <div class="text-center text-gray-600 text-xs py-10 loading-pulse">Carregando dados do Firestore...</div>
+            
+            <div class="lg:col-span-1 glass-panel h-[600px] flex flex-col">
+                <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-zinc-900/50 rounded-t-lg">
+                    <h3 class="text-xs font-bold text-white flex gap-2 items-center"><i data-lucide="activity" size="14" class="text-green-500"></i> FEED DE GERAÇÕES</h3>
+                    <button onclick="loadData()" class="text-xs text-gray-500 hover:text-white"><i data-lucide="refresh-cw" size="12"></i></button>
                 </div>
-            </div>
-
-            <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-yellow-500">
-                        <p class="metric-label">Jogos Gerados</p>
-                        <p id="kpi-total" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Cliques Checkout (Est.)</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-blue-500">
-                        <p class="metric-label">Modo Preferido</p>
-                        <p id="kpi-mode" class="text-xl font-bold text-white mt-1">...</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-purple-500">
-                        <p class="metric-label">Média Ousadia</p>
-                        <p id="kpi-boldness" class="metric-value">0%</p>
-                    </div>
-                </div>
-
-                <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-white mb-4">DISTRIBUIÇÃO DE MODALIDADE</h3>
-                    <canvas id="sourceChart" height="150"></canvas>
-                </div>
-            </div>
-
-            <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
-                <div class="p-4 border-b border-white/5 bg-zinc-900/50 flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-white">📡 FEED EM TEMPO REAL</h3>
-                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">DADOS REAIS</span>
-                </div>
-                <div class="overflow-y-auto p-4 space-y-3" id="live-feed">
+                <div id="live-feed" class="flex-1 overflow-y-auto p-4 space-y-2">
                     </div>
             </div>
 
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 stat-card border-yellow-500">
+                        <p class="text-[10px] text-gray-500 uppercase">Total Jogos</p>
+                        <p id="kpi-total" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                    <div class="glass-panel p-4 stat-card border-blue-500">
+                        <p class="text-[10px] text-gray-500 uppercase">Modo Favorito</p>
+                        <p id="kpi-fav" class="text-lg font-bold text-white truncate">...</p>
+                    </div>
+                    <div class="glass-panel p-4 stat-card border-purple-500">
+                        <p class="text-[10px] text-gray-500 uppercase">Ousadia Média</p>
+                        <p id="kpi-risk" class="text-2xl font-bold text-white">0%</p>
+                    </div>
+                    <div class="glass-panel p-4 stat-card border-green-500">
+                        <p class="text-[10px] text-gray-500 uppercase">Usuários Únicos</p>
+                        <p id="kpi-users" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6">
+                    <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase">Distribuição de Jogos</h3>
+                    <div class="h-64">
+                        <canvas id="gameChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- SUAS CHAVES REAIS DO FIREBASE (JÁ INSERIDAS) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
-            authDomain: "nucleo-insight-gerador.firebaseapp.com",
-            projectId: "nucleo-insight-gerador",
-            storageBucket: "nucleo-insight-gerador.firebasestorage.app",
-            messagingSenderId: "159624822756",
-            appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1"
-        };
+        // SUAS CHAVES REAIS
+        const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
-        let myChart = null;
+        const provider = new GoogleAuthProvider();
+        let chartInstance = null;
 
-        window.initSystem = async () => {
-            const showTestMode = document.getElementById('toggle-test').checked;
-            updateStatusUI(showTestMode);
+        // LOGIN DO ADMIN
+        document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadData();
+            }
+        });
 
-            // Busca os últimos 100 jogos gerados
-            const historyRef = collection(db, "history");
-            const q = query(historyRef, orderBy("createdAt", "desc"), limit(100));
+        window.loadData = async () => {
+            const isTestView = document.getElementById('toggle-test').checked;
+            const label = document.getElementById('mode-label');
             
-            try {
-                const snapshot = await getDocs(q);
-                processData(snapshot, showTestMode);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('funnel-container').innerHTML = `<p class="text-red-500 text-xs">Erro de acesso: ${error.message}</p>`;
-            }
-        };
+            if(isTestView) { label.innerText = "MEUS TESTES (ADMIN)"; label.className = "ml-2 text-xs font-bold text-yellow-500"; }
+            else { label.innerText = "CLIENTES REAIS"; label.className = "ml-2 text-xs font-bold text-emerald-500"; }
 
-        function updateStatusUI(isTest) {
-            const statusEl = document.getElementById('system-status');
-            const badgeEl = document.getElementById('feed-badge');
-            if(isTest) {
-                statusEl.innerText = "MODO TESTE (Admin)"; statusEl.className = "text-xs text-yellow-400 font-bold";
-                badgeEl.innerText = "EXIBINDO TESTES"; badgeEl.className = "text-[9px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded";
-            } else {
-                statusEl.innerText = "ONLINE (Clientes)"; statusEl.className = "text-xs text-emerald-400 font-bold";
-                badgeEl.innerText = "DADOS REAIS"; badgeEl.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded";
-            }
-        }
-
-        function processData(snapshot, showTestMode) {
-            let totalGames = 0;
-            let totalBoldness = 0;
-            let modes = {};
+            const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(200));
+            const snapshot = await getDocs(q);
+            
+            let total = 0, riskSum = 0, modes = {}, users = new Set();
             let feedHTML = '';
-            
+
             snapshot.forEach(doc => {
                 const data = doc.data();
-                
-                // FILTRO: Se botão Teste ta ON, mostra isTest=true. Se OFF, mostra isTest=false/null
-                const isItemTest = data.isTest === true;
-                if (showTestMode && !isItemTest) return;
-                if (!showTestMode && isItemTest) return;
+                const isTestItem = data.isTest === true;
 
-                totalGames++;
-                totalBoldness += data.boldness || 50;
+                // FILTRO INTELIGENTE
+                if (isTestView && !isTestItem) return; // Quer teste, mas é real -> Pula
+                if (!isTestView && isTestItem) return; // Quer real, mas é teste -> Pula
+
+                total++;
+                riskSum += data.boldness || 50; // Se não tiver, assume 50 (legacy)
                 modes[data.mode] = (modes[data.mode] || 0) + 1;
+                if(data.email) users.add(data.email);
 
-                // Cria item do Feed
                 const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
-                const time = date.toLocaleTimeString();
+                const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
-                let modeIcon = '🎲';
-                if(data.mode === 'bicho') modeIcon = '🦁';
-                if(data.mode === 'lotofacil') modeIcon = '🍀';
+                let icon = '🎲';
+                if(data.mode === 'bicho') icon = '🦁';
+                if(data.mode === 'lotofacil') icon = '🍀';
 
                 feedHTML += `
-                <div class="p-3 bg-white/5 rounded border border-white/5 hover:border-yellow-500/50 transition">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-mono text-gray-400">${time}</span>
-                        <span class="text-[10px] bg-zinc-800 text-white px-2 rounded">${(data.mode || 'GERAL').toUpperCase()}</span>
+                <div class="p-3 bg-white/5 rounded border border-white/5 flex justify-between items-center hover:bg-white/10 transition">
+                    <div>
+                        <div class="text-xs text-white font-bold mb-1">${icon} ${data.mode.toUpperCase()}</div>
+                        <div class="text-[10px] text-gray-500">${data.email.split('@')[0]}...</div>
                     </div>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-gray-300">${modeIcon} <strong class="text-yellow-500">Gerou Jogo</strong></span>
+                    <div class="text-right">
+                        <div class="text-xs text-yellow-500 font-mono">${time}</div>
+                        <div class="text-[9px] text-gray-600">Risco: ${data.boldness || 50}%</div>
                     </div>
-                    <div class="mt-1 text-[10px] text-gray-500 truncate">User: ${data.email || 'Anon'}</div>
                 </div>`;
             });
 
-            // Atualiza KPIs
-            document.getElementById('kpi-total').innerText = totalGames;
-            document.getElementById('kpi-boldness').innerText = totalGames > 0 ? Math.round(totalBoldness / totalGames) + "%" : "0%";
+            document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-600 text-xs py-10">Nenhum dado.</div>';
+            document.getElementById('kpi-total').innerText = total;
+            document.getElementById('kpi-users').innerText = users.size;
+            document.getElementById('kpi-risk').innerText = total ? Math.round(riskSum/total) + "%" : "0%";
             
-            const bestMode = Object.keys(modes).length > 0 ? Object.keys(modes).reduce((a, b) => modes[a] > modes[b] ? a : b) : '-';
-            document.getElementById('kpi-mode').innerText = bestMode.toUpperCase();
-            
-            // Simulação de Funil
-            const estimatedClicks = Math.floor(totalGames * 0.15); // Estimatita de 15%
-            document.getElementById('kpi-sales').innerText = estimatedClicks; 
+            const bestMode = Object.keys(modes).reduce((a, b) => modes[a] > modes[b] ? a : b, '-');
+            document.getElementById('kpi-fav').innerText = bestMode.toUpperCase();
 
-            // Atualiza Feed
-            document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-600 text-xs py-10">Nenhum dado encontrado.</div>';
-
-            // Atualiza Gráfico
             renderChart(modes);
-            renderFunnel(totalGames);
-        }
-
-        function renderFunnel(total) {
-            const container = document.getElementById('funnel-container');
-            if(total === 0) {
-                container.innerHTML = '<div class="text-center text-gray-600 text-xs">Sem dados para o funil.</div>';
-                return;
-            }
-            
-            // Simulação de Funil Baseado nos Jogos
-            const steps = [
-                { label: "Acessos (Estimado)", count: total * 3, color: "text-white" }, 
-                { label: "Gerou Jogo", count: total, color: "text-yellow-400" },
-                { label: "Bateu Limite (5)", count: Math.floor(total * 0.2), color: "text-red-400" }, 
-                { label: "Clicou Checkout (Est.)", count: Math.floor(total * 0.05), color: "text-emerald-400" } 
-            ];
-
-            let html = '';
-            steps.forEach((step, index) => {
-                const max = steps[0].count;
-                const width = (step.count / max) * 100;
-                html += `
-                <div class="funnel-step active">
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <p class="text-[10px] uppercase text-gray-500 font-bold">${step.label}</p>
-                            <p class="text-xl font-black ${step.color}">${step.count}</p>
-                        </div>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: ${width}%"></div>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
         }
 
         function renderChart(data) {
-            const ctx = document.getElementById('sourceChart').getContext('2d');
-            if(myChart) myChart.destroy();
+            const ctx = document.getElementById('gameChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
             
-            // Se não tiver dados, cria gráfico vazio
-            if (Object.keys(data).length === 0) {
-                data = {'Sem dados': 1};
-            }
+            if(Object.keys(data).length === 0) data = {'Sem dados': 1};
 
-            myChart = new Chart(ctx, {
-                type: 'doughnut',
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: Object.keys(data),
+                    labels: Object.keys(data).map(k => k.toUpperCase()),
                     datasets: [{
+                        label: 'Jogos',
                         data: Object.values(data),
-                        backgroundColor: ['#eab308', '#10b981', '#3b82f6', '#ec4899'],
-                        borderWidth: 0
+                        backgroundColor: '#ffd700',
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 10 } } } }
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                        x: { grid: { display: false }, ticks: { color: '#888' } }
+                    }
                 }
             });
         }
         
-        initSystem();
+        lucide.createIcons();
     </script>
 </body>
 </html>
