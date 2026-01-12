@@ -82,9 +82,7 @@
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
         }
-        /* Estilo especial para trevos/especiais */
         .ball.special { border-color: #00ff88; color: #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
-        
         .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 
@@ -105,7 +103,7 @@
         .fallback-link { color: #555; font-size: 10px; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
     </style>
 </head>
-<body>
+<body onclick="initAudio()">
 
     <div id="testModeBar">🔧 MODO ADMIN</div>
     <canvas id="neural-canvas"></canvas>
@@ -140,10 +138,10 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #000; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase;">Nucleo <span style="color:var(--primary)">Insight</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.3 • FULL ARSENAL</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.4 • SONIC BOOM</p>
         
         <div style="width:100%; max-width:280px; margin-top:40px;">
-            <button id="btnLogin" class="btn-google" onclick="playSound('click')">
+            <button id="btnLogin" class="btn-google">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> 
                 ACESSAR SISTEMA
             </button>
@@ -170,10 +168,8 @@
                     <div class="game-card" onclick="selectGame('mega', this)"><div class="game-icon">💰</div><div class="game-title">Mega Sena</div></div>
                     <div class="game-card" onclick="selectGame('quina', this)"><div class="game-icon">🔷</div><div class="game-title">Quina</div></div>
                     <div class="game-card" onclick="selectGame('bicho', this)"><div class="game-icon">🦁</div><div class="game-title">Palpite Bicho</div></div>
-                    
                     <div class="game-card" onclick="selectGame('milionaria', this)"><div class="game-icon">💎</div><div class="game-title">+Milionária</div></div>
                     <div class="game-card" onclick="selectGame('supersete', this)"><div class="game-icon">7️⃣</div><div class="game-title">Super Sete</div></div>
-                    
                     <div class="game-card" onclick="selectGame('timemania', this)"><div class="game-icon">⚽</div><div class="game-title">Timemania</div></div>
                     <div class="game-card" onclick="selectGame('lotomania', this)"><div class="game-icon">🎱</div><div class="game-title">Lotomania</div></div>
                     <div class="game-card" onclick="selectGame('diadesorte', this)"><div class="game-icon">📅</div><div class="game-title">Dia de Sorte</div></div>
@@ -242,15 +238,28 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // --- AUDIO ENGINE ---
-        const sfx = {
-            click: new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"),
-            win: new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"),
-            lock: new Audio("https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3")
-        };
-        sfx.click.volume = 0.4; sfx.win.volume = 0.6; sfx.lock.volume = 0.5;
-        window.playSound = (type) => { try { if(sfx[type]) { sfx[type].currentTime = 0; sfx[type].play().catch(e=>{}); } } catch(e){} }
+        // --- WEB AUDIO API (SINTETIZADOR) ---
+        let audioCtx;
+        window.initAudio = () => { if(!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
+        
+        function playTone(freq, type, duration) {
+            if(!audioCtx) initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
 
+        function playClick() { playTone(1200, 'square', 0.05); } // Tck High Tech
+        function playSlide(val) { playTone(200 + (val*10), 'sine', 0.1); } // Pitch sobe com valor
+        function playWin() { 
+            [0, 150, 300, 450].forEach((t, i) => setTimeout(() => playTone(800 + (i*200), 'triangle', 0.3), t)); 
+        }
+        
         // --- BACKGROUND ---
         const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
         let width, height, particles = [];
@@ -272,7 +281,8 @@
 
         // --- AUTH ---
         document.getElementById('btnLogin').addEventListener('click', async () => {
-            playSound('click'); document.getElementById('loadingLogin').style.display = 'block';
+            initAudio(); playClick();
+            document.getElementById('loadingLogin').style.display = 'block';
             try { await setPersistence(auth, browserLocalPersistence); await signInWithPopup(auth, provider); } 
             catch (error) { await signInWithRedirect(auth, provider); }
         });
@@ -285,19 +295,22 @@
         function updateUI() { const d=document.getElementById('usageCount'); if(isTestMode){d.innerText="TEST";d.style.color="#4488ff";} else if(isVip){d.innerText="VIP";d.style.color="#00ff88";} else {d.innerText=`${userUsage}/5`;d.style.color=userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700";} }
         
         window.checkLimitAndStart = async () => { 
-            playSound('click');
-            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playSound('lock'); document.getElementById('paywallModal').style.display = 'flex'; return; } 
+            initAudio(); playClick();
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } 
             startProcessing(); 
         }
 
         window.selectGame = (mode, el) => {
-            playSound('click');
+            initAudio(); playClick();
             currentMode = mode; document.getElementById('gameType').value = mode;
             document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
             const inp = document.getElementById('dreamInput');
             inp.style.display = (mode === 'bicho') ? 'block' : 'none';
         }
-        window.updateBoldness = (val) => { currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
+        window.updateBoldness = (val) => { 
+            playSlide(val); // SOUND EFFECT
+            currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; 
+        }
 
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
@@ -315,6 +328,8 @@
             let step = 0;
             const spin = document.getElementById('spinContainer');
             const interval = setInterval(() => {
+                // SOM DE DADOS (Matrix)
+                if(Math.random() > 0.5) playTone(Math.random()*2000, 'sawtooth', 0.05);
                 spin.innerHTML = '';
                 for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); }
                 if(step<msgs.length && Math.random()>0.85) term.innerText=msgs[step++];
@@ -338,23 +353,16 @@
                 logText.innerText = "Padrão Identificado: Algoritmo Onírico"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else if (currentMode === 'milionaria') {
-                // 6 Numeros (1-50) + 2 Trevos (1-6)
-                let mainNums = new Set();
-                while(mainNums.size < 6) mainNums.add(Math.floor(Math.random() * 50) + 1);
-                let trevos = new Set();
-                while(trevos.size < 2) trevos.add(Math.floor(Math.random() * 6) + 1);
-                
+                let mainNums = new Set(); while(mainNums.size < 6) mainNums.add(Math.floor(Math.random() * 50) + 1);
+                let trevos = new Set(); while(trevos.size < 2) trevos.add(Math.floor(Math.random() * 6) + 1);
                 let sortedMain = Array.from(mainNums).sort((a,b)=>a-b);
                 let sortedTrevos = Array.from(trevos).sort((a,b)=>a-b);
-                currentNumbers = [...sortedMain, ...sortedTrevos]; // For saving
-                
+                currentNumbers = [...sortedMain, ...sortedTrevos];
                 logText.innerText = "Estratégia: Matriz de Alta Volatilidade"; apiStatus.innerText = "FONTE: IA GENERATIVA";
                 sortedMain.forEach(n => addBall(n, grid));
-                sortedTrevos.forEach(n => addBall(n, grid, true)); // Special ball
+                sortedTrevos.forEach(n => addBall(n, grid, true));
             } else if (currentMode === 'supersete') {
-                // 7 Colunas (0-9)
-                currentNumbers = [];
-                for(let i=0; i<7; i++) currentNumbers.push(Math.floor(Math.random()*10));
+                currentNumbers = []; for(let i=0; i<7; i++) currentNumbers.push(Math.floor(Math.random()*10));
                 logText.innerText = "Estratégia: Análise Colunar"; apiStatus.innerText = "FONTE: MATRIX CODE";
                 renderBalls(currentNumbers);
             } else {
@@ -380,7 +388,7 @@
 
             if(currentUser) { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() }); }
             showScreen('screen-result');
-            playSound('win');
+            playWin();
         }
 
         function renderBalls(numbers) {
@@ -396,7 +404,7 @@
 
         window.openVipLink = () => { if(isTestMode) return alert("Modo Teste"); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
-        window.resetApp = () => { playSound('click'); showScreen('screen-ritual'); }
+        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         lucide.createIcons();
     </script>
