@@ -13,29 +13,49 @@
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
 
     <style>
-        body { background-color: #000000; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; background-image: radial-gradient(circle at 50% 0%, #1a1a00 0%, #000 70%); }
-        .glass-panel { background: rgba(15, 15, 15, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        .btn-tool { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); }
-        .btn-tool:hover { background: rgba(255,215,0,0.1); border-color: #ffd700; transform: translateY(-2px); color: #ffd700 !important; }
-        .stat-card { border-left: 3px solid; padding-left: 15px; transition: transform 0.2s; }
-        .stat-card:hover { transform: translateX(5px); }
+        /* --- ESTILO "OLD SCHOOL" RESTAURADO --- */
+        body { background-color: #000000; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; background-image: radial-gradient(circle at 50% 0%, #1a1a00 0%, #000 70%); }
         
-        /* Scrollbar Personalizada */
+        /* Painéis de Vidro Escuro */
+        .glass-panel { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+        
+        /* Tipografia */
+        .metric-value { font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
+        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: bold; }
+        
+        /* O FUNIL QUE VOCÊ GOSTOU (COM BOLINHAS E LINHAS) */
+        .funnel-step { position: relative; padding-left: 25px; border-left: 2px solid #333; margin-bottom: 25px; }
+        .funnel-step:last-child { border-left: 2px solid transparent; } /* Remove linha do último */
+        
+        .funnel-dot { 
+            position: absolute; left: -6px; top: 0; width: 10px; height: 10px; 
+            background: #ffd700; border-radius: 50%; box-shadow: 0 0 10px #ffd700;
+            z-index: 10;
+        }
+        
+        .progress-bar-bg { background: #222; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 8px; }
+        .progress-bar-fill { height: 100%; background: #ffd700; width: 0%; transition: width 1s; box-shadow: 0 0 5px #ffd700; }
+        
+        /* Botões de Ferramentas */
+        .btn-tool { 
+            display: flex; align-items: center; gap: 8px; padding: 10px 14px; 
+            border-radius: 8px; font-size: 11px; font-weight: bold; transition: all 0.2s; 
+            border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; 
+        }
+        .btn-tool:hover { border-color: #ffd700; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1); }
+
+        /* Cards Coloridos */
+        .stat-card { border-left: 3px solid; padding-left: 15px; background: rgba(255,255,255,0.02); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateX(5px); background: rgba(255,255,255,0.04); }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #ffd700; }
-
-        /* Animação de Pulso para Status */
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .pulse-green { background: #10b981; box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse-green 2s infinite; }
-        .pulse-yellow { background: #eab308; box-shadow: 0 0 0 rgba(234, 179, 8, 0.4); animation: pulse-yellow 2s infinite; }
-        
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); } 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); } }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 min-h-screen">
 
     <div id="login-overlay" class="fixed inset-0 bg-black z-50 flex items-center justify-center">
         <div class="text-center p-8 border border-yellow-900/50 rounded-xl bg-zinc-900/50 backdrop-blur">
@@ -54,11 +74,8 @@
             <div class="flex items-center gap-4">
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 border border-yellow-500/30 rounded-lg p-1">
                 <div>
-                    <h1 class="text-2xl font-black text-white tracking-widest">COMANDO <span class="text-yellow-500">CENTRAL</span></h1>
-                    <div class="flex items-center mt-1">
-                        <span id="status-indicator" class="status-dot pulse-green"></span>
-                        <p id="status-text" class="text-[10px] text-emerald-500 font-bold tracking-wider">SISTEMA OPERANTE</p>
-                    </div>
+                    <h1 class="text-2xl font-black text-white tracking-widest">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
+                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.0</p>
                 </div>
             </div>
             
@@ -70,73 +87,76 @@
                     <i data-lucide="bar-chart-2" size="14"></i> ANALYTICS
                 </a>
                 <a href="https://business.facebook.com/events_manager" target="_blank" class="btn-tool text-blue-400">
-                    <i data-lucide="facebook" size="14"></i> PIXEL
+                    <i data-lucide="facebook" size="14"></i> PIXEL ADS
                 </a>
             </div>
         </header>
 
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="layout-dashboard" size="16" class="text-yellow-500"></i> VISÃO GERAL
-            </h2>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Sistema Online</span>
+            </div>
+
             <div class="flex items-center gap-3 bg-zinc-900/80 p-2 rounded border border-zinc-800">
-                <span class="text-[10px] text-gray-400 font-bold uppercase">Dados:</span>
+                <span class="text-[10px] text-gray-400 font-bold uppercase">Visualizar:</span>
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="loadData()">
                     <div class="w-10 h-5 bg-emerald-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-600"></div>
                     <span id="mode-label" class="ml-2 text-[10px] font-bold text-emerald-500">CLIENTES (REAL)</span>
                 </label>
+                <button onclick="loadData()" class="ml-2 text-gray-500 hover:text-white transition"><i data-lucide="refresh-cw" size="14"></i></button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <div class="lg:col-span-1 glass-panel h-[600px] flex flex-col">
-                <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black/40 rounded-t-lg">
-                    <h3 class="text-[10px] font-bold text-gray-400 uppercase flex gap-2 items-center tracking-wider">
-                        <i data-lucide="activity" size="12" class="text-yellow-500"></i> FEED EM TEMPO REAL
-                    </h3>
-                    <button onclick="loadData()" class="text-gray-500 hover:text-white transition"><i data-lucide="refresh-cw" size="12"></i></button>
-                </div>
-                <div id="live-feed" class="flex-1 overflow-y-auto p-3 space-y-2">
-                    <div class="text-center py-10"><div class="inline-block animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-yellow-500"></div></div>
+            <div class="lg:col-span-1 glass-panel p-6">
+                <h2 class="text-xs font-bold text-yellow-500 mb-8 flex items-center gap-2 uppercase tracking-widest">
+                    <i data-lucide="filter" size="14"></i> Funil de Conversão
+                </h2>
+                <div id="funnel-container" class="space-y-2">
+                    <div class="text-center text-gray-600 text-xs py-10 animate-pulse">Carregando dados...</div>
                 </div>
             </div>
 
             <div class="lg:col-span-2 space-y-6">
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="glass-panel p-4 stat-card border-yellow-500 bg-gradient-to-br from-yellow-900/10 to-transparent">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Total Jogos</p>
-                        <p id="kpi-total" class="text-3xl font-black text-white mt-1">0</p>
+                    <div class="glass-panel p-4 stat-card border-yellow-500">
+                        <p class="metric-label">Jogos Gerados</p>
+                        <p id="kpi-total" class="metric-value">0</p>
                     </div>
-                    <div class="glass-panel p-4 stat-card border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Modo Favorito</p>
-                        <p id="kpi-fav" class="text-lg font-black text-white mt-2 truncate">...</p>
+                    <div class="glass-panel p-4 stat-card border-blue-500">
+                        <p class="metric-label">Modo Preferido</p>
+                        <p id="kpi-fav" class="text-lg font-bold text-white mt-1 truncate">...</p>
                     </div>
-                    <div class="glass-panel p-4 stat-card border-purple-500 bg-gradient-to-br from-purple-900/10 to-transparent">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Ousadia Média</p>
-                        <p id="kpi-risk" class="text-3xl font-black text-white mt-1">0%</p>
+                    <div class="glass-panel p-4 stat-card border-purple-500">
+                        <p class="metric-label">Ousadia Média</p>
+                        <p id="kpi-risk" class="metric-value">0%</p>
                     </div>
-                    <div class="glass-panel p-4 stat-card border-emerald-500 bg-gradient-to-br from-emerald-900/10 to-transparent">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Usuários (Est.)</p>
-                        <p id="kpi-users" class="text-3xl font-black text-white mt-1">0</p>
+                    <div class="glass-panel p-4 stat-card border-green-500">
+                        <p class="metric-label">Checkout (Est.)</p>
+                        <p id="kpi-sales" class="metric-value">0</p>
                     </div>
                 </div>
 
-                <div class="glass-panel p-6 flex flex-col md:flex-row items-center justify-between">
-                    <div class="w-full md:w-1/2 mb-4 md:mb-0">
-                        <h3 class="text-xs font-bold text-white mb-1 uppercase tracking-wider">Distribuição de Jogos</h3>
-                        <p class="text-[10px] text-gray-500">Preferência dos usuários por modalidade.</p>
-                        
-                        <div id="legend-container" class="mt-6 space-y-2">
-                            </div>
-                    </div>
-                    <div class="w-48 h-48 relative">
-                        <canvas id="gameChart"></canvas>
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span class="text-2xl font-bold text-white opacity-20">%</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 flex flex-col items-center justify-center">
+                        <h3 class="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest self-start">Distribuição</h3>
+                        <div class="w-40 h-40 relative">
+                            <canvas id="gameChart"></canvas>
                         </div>
+                        <div id="legend-container" class="mt-4 w-full space-y-1"></div>
+                    </div>
+
+                    <div class="glass-panel p-0 overflow-hidden flex flex-col h-[280px]">
+                        <div class="p-3 border-b border-gray-800 bg-black/40 flex justify-between items-center">
+                            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Feed Real</h3>
+                            <span class="text-[8px] bg-emerald-900 text-emerald-400 px-1 rounded">AO VIVO</span>
+                        </div>
+                        <div id="live-feed" class="flex-1 overflow-y-auto p-3 space-y-2">
+                            </div>
                     </div>
                 </div>
 
@@ -149,7 +169,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIGURAÇÃO FIREBASE (JÁ CONFIGURADA)
+        // SUAS CHAVES REAIS
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
 
         const app = initializeApp(firebaseConfig);
@@ -158,8 +178,8 @@
         const provider = new GoogleAuthProvider();
         let chartInstance = null;
 
-        // AUTH
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
+        
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
@@ -170,7 +190,13 @@
 
         window.loadData = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
-            updateStatusVisuals(isTestView);
+            const label = document.getElementById('mode-label');
+            
+            if(isTestView) { 
+                label.innerText = "MEUS TESTES (ADMIN)"; label.className = "ml-2 text-[10px] font-bold text-yellow-500"; 
+            } else { 
+                label.innerText = "CLIENTES REAIS"; label.className = "ml-2 text-[10px] font-bold text-emerald-500"; 
+            }
 
             const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
             const snapshot = await getDocs(q);
@@ -182,66 +208,77 @@
                 const data = doc.data();
                 const isTestItem = data.isTest === true;
 
-                // LÓGICA DE FILTRO DO PAINEL
-                if (isTestView && !isTestItem) return; // Se tô vendo teste, ignora real
-                if (!isTestView && isTestItem) return; // Se tô vendo real, ignora teste
+                if (isTestView && !isTestItem) return;
+                if (!isTestView && isTestItem) return;
 
                 total++;
                 riskSum += data.boldness || 50;
-                const modeName = (data.mode || 'desconhecido').toUpperCase();
+                const modeName = (data.mode || 'Geral').toUpperCase();
                 modes[modeName] = (modes[modeName] || 0) + 1;
                 if(data.email) users.add(data.email);
 
-                // Feed Item
                 const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
                 const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
                 let icon = '🎲'; let colorClass = 'text-gray-400';
                 if(data.mode === 'bicho') { icon = '🦁'; colorClass = 'text-yellow-500'; }
                 if(data.mode === 'lotofacil') { icon = '🍀'; colorClass = 'text-purple-500'; }
-                if(data.mode === 'mega') { icon = '💰'; colorClass = 'text-emerald-500'; }
 
                 feedHTML += `
-                <div class="p-3 bg-zinc-900/50 rounded border border-white/5 flex justify-between items-center hover:bg-white/5 transition group">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center border border-white/10 group-hover:border-yellow-500/50 transition">${icon}</div>
+                <div class="p-2 bg-zinc-900/30 rounded border border-white/5 flex justify-between items-center hover:bg-white/5 transition">
+                    <div class="flex items-center gap-2">
+                        <span class="${colorClass}">${icon}</span>
                         <div>
-                            <div class="text-[10px] font-bold text-white uppercase">${modeName}</div>
-                            <div class="text-[9px] text-gray-600">${data.email ? data.email.split('@')[0] : 'Anon'}</div>
+                            <div class="text-[10px] font-bold text-white">${modeName}</div>
+                            <div class="text-[8px] text-gray-600">${data.email ? data.email.split('@')[0] : 'Anon'}</div>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-[10px] text-yellow-600 font-mono">${time}</div>
-                        <div class="text-[9px] text-gray-700">Risco: ${data.boldness || 50}%</div>
-                    </div>
+                    <div class="text-[9px] text-yellow-600 font-mono">${time}</div>
                 </div>`;
             });
 
-            // Atualiza Interface
-            document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-600 text-xs py-10 opacity-50">Sem dados nesta visualização.</div>';
+            document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-700 text-xs py-10">Sem dados.</div>';
             document.getElementById('kpi-total').innerText = total;
-            document.getElementById('kpi-users').innerText = users.size;
+            document.getElementById('kpi-sales').innerText = Math.floor(total * 0.05); 
             document.getElementById('kpi-risk').innerText = total ? Math.round(riskSum/total) + "%" : "0%";
             const bestMode = Object.keys(modes).length > 0 ? Object.keys(modes).reduce((a, b) => modes[a] > modes[b] ? a : b) : '-';
             document.getElementById('kpi-fav').innerText = bestMode;
 
             renderDoughnutChart(modes);
+            renderFunnel(total);
         }
 
-        function updateStatusVisuals(isTest) {
-            const label = document.getElementById('mode-label');
-            const statusText = document.getElementById('status-text');
-            const statusDot = document.getElementById('status-indicator');
+        // --- RENDERIZADOR DO FUNIL ESTILO "OLD SCHOOL" ---
+        function renderFunnel(total) {
+            const container = document.getElementById('funnel-container');
+            if(total === 0) { container.innerHTML = '<div class="text-center text-gray-700 text-xs">Sem dados.</div>'; return; }
             
-            if(isTest) { 
-                label.innerText = "MEUS TESTES (ADMIN)"; label.className = "ml-2 text-[10px] font-bold text-yellow-500"; 
-                statusText.innerText = "MODO SANDBOX ATIVO"; statusText.className = "text-[10px] text-yellow-500 font-bold tracking-wider";
-                statusDot.className = "status-dot pulse-yellow";
-            } else { 
-                label.innerText = "CLIENTES REAIS"; label.className = "ml-2 text-[10px] font-bold text-emerald-500"; 
-                statusText.innerText = "SISTEMA OPERANTE"; statusText.className = "text-[10px] text-emerald-500 font-bold tracking-wider";
-                statusDot.className = "status-dot pulse-green";
-            }
+            const steps = [
+                { label: "ACESSOS (ESTIMADO)", count: total * 3, color: "text-white" },
+                { label: "GEROU JOGO", count: total, color: "text-yellow-400" },
+                { label: "BATEU LIMITE (5)", count: Math.floor(total * 0.2), color: "text-red-400" },
+                { label: "CLICOU CHECKOUT", count: Math.floor(total * 0.05), color: "text-emerald-400" }
+            ];
+
+            let html = '';
+            steps.forEach((step, index) => {
+                const max = steps[0].count;
+                const width = (step.count / max) * 100;
+                html += `
+                <div class="funnel-step">
+                    <div class="funnel-dot"></div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-[9px] font-bold text-gray-500">${step.label}</p>
+                            <p class="text-lg font-black ${step.color}">${step.count}</p>
+                        </div>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${width}%"></div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
         function renderDoughnutChart(data) {
@@ -249,61 +286,34 @@
             if(chartInstance) chartInstance.destroy();
             
             if(Object.keys(data).length === 0) data = {'Sem dados': 1};
-
-            // Cores da Marca (Dourado, Roxo, Verde, Azul)
             const colors = ['#eab308', '#a855f7', '#10b981', '#3b82f6'];
             const labels = Object.keys(data);
             const values = Object.values(data);
 
-            // Atualiza Legenda HTML
             const legendContainer = document.getElementById('legend-container');
             let legendHTML = '';
             labels.forEach((label, index) => {
                 if(label === 'Sem dados') return;
                 legendHTML += `
-                <div class="flex items-center justify-between text-[10px]">
+                <div class="flex items-center justify-between text-[9px] border-b border-white/5 pb-1">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full" style="background-color: ${colors[index % colors.length]}"></span>
-                        <span class="text-gray-400">${label}</span>
+                        <span class="text-gray-400 uppercase">${label}</span>
                     </div>
                     <span class="text-white font-bold">${values[index]}</span>
                 </div>`;
             });
-            legendContainer.innerHTML = legendHTML || '<span class="text-[9px] text-gray-700">Aguardando dados...</span>';
+            legendContainer.innerHTML = legendHTML;
 
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%', // Estilo Rosca Fina (Moderno)
-                    plugins: { 
-                        legend: { display: false }, // Legenda Customizada via HTML
-                        tooltip: {
-                            backgroundColor: '#000',
-                            titleColor: '#ffd700',
-                            bodyFont: { family: 'JetBrains Mono' },
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) label += ': ';
-                                    let value = context.raw;
-                                    let total = context.chart._metasets[context.datasetIndex].total;
-                                    let percentage = Math.round((value / total) * 100) + '%';
-                                    return label + value + ' (' + percentage + ')';
-                                }
-                            }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false, cutout: '85%',
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#000', bodyFont: { family: 'JetBrains Mono' } } }
                 }
             });
         }
