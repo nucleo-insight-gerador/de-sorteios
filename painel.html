@@ -40,13 +40,17 @@
         .btn-tool { 
             display: flex; align-items: center; gap: 8px; padding: 10px 14px; 
             border-radius: 8px; font-size: 11px; font-weight: bold; transition: all 0.2s; 
-            border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; 
+            border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; cursor: pointer;
         }
         .btn-tool:hover { border-color: #ffd700; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1); }
         
         /* Botão Perigo (Delete) */
         .btn-danger { border-color: rgba(220, 38, 38, 0.3); color: #f87171; }
         .btn-danger:hover { border-color: #ef4444; background: rgba(220, 38, 38, 0.1); box-shadow: 0 0 15px rgba(220, 38, 38, 0.2); }
+
+        /* Botão Exportar (Novo) */
+        .btn-export { border-color: rgba(6, 182, 212, 0.3); color: #22d3ee; }
+        .btn-export:hover { border-color: #06b6d4; background: rgba(6, 182, 212, 0.1); box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); }
 
         /* Cards Coloridos */
         .stat-card { border-left: 3px solid; padding-left: 15px; background: rgba(255,255,255,0.02); transition: transform 0.2s; }
@@ -120,15 +124,21 @@
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 border border-yellow-500/30 rounded-lg p-1">
                 <div>
                     <h1 class="text-2xl font-black text-white tracking-widest">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
-                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.1</p>
+                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.2</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="exportReport()" class="btn-tool btn-export">
+                    <i data-lucide="clipboard-copy" size="14"></i> EXPORTAR RELATÓRIO
+                </button>
+                
                 <button onclick="openWipeModal()" class="btn-tool btn-danger">
                     <i data-lucide="trash" size="14"></i> LIMPAR DADOS
                 </button>
+                
                 <div class="w-[1px] h-8 bg-gray-800 mx-2"></div>
+                
                 <a href="https://clarity.microsoft.com/projects/view/v018s4v24n/dashboard" target="_blank" class="btn-tool text-orange-400">
                     <i data-lucide="flame" size="14"></i> CLARITY
                 </a>
@@ -227,6 +237,7 @@
         const provider = new GoogleAuthProvider();
         let chartInstance = null;
         let currentUser = null;
+        let exportData = ""; // Variável global para armazenar o relatório
 
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
         
@@ -254,6 +265,7 @@
             
             let total = 0, riskSum = 0, modes = {}, users = new Set();
             let feedHTML = '';
+            exportData = `RELATÓRIO NUCLEO INSIGHT\nData: ${new Date().toLocaleString()}\nTipo: ${isTestView ? "TESTES" : "CLIENTES REAIS"}\n--------------------------\n`;
 
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -270,6 +282,10 @@
 
                 const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
                 const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const userEmail = data.email ? data.email : 'Anonimo';
+                
+                // Adiciona ao relatório de texto
+                exportData += `[${time}] ${userEmail} -> ${modeName}\n`;
                 
                 let icon = '🎲'; let colorClass = 'text-gray-400';
                 if(data.mode === 'bicho') { icon = '🦁'; colorClass = 'text-yellow-500'; }
@@ -288,6 +304,9 @@
                 </div>`;
             });
 
+            // Finaliza o relatório
+            exportData += `--------------------------\nTOTAL: ${total} Jogos\nUSUÁRIOS ÚNICOS: ${users.size}`;
+
             document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-700 text-xs py-10">Sem dados.</div>';
             document.getElementById('kpi-total').innerText = total;
             document.getElementById('kpi-sales').innerText = Math.floor(total * 0.05); 
@@ -298,6 +317,16 @@
             renderDoughnutChart(modes);
             renderFunnel(total);
         }
+
+        // --- SISTEMA DE EXPORTAÇÃO (NOVO) ---
+        window.exportReport = () => {
+            if(!exportData) return alert("Sem dados para exportar.");
+            navigator.clipboard.writeText(exportData).then(() => {
+                alert("✅ RELATÓRIO COPIADO!\n\nCole (Ctrl+V) no WhatsApp ou Bloco de Notas.");
+            }).catch(err => {
+                alert("Erro ao copiar: " + err);
+            });
+        };
 
         // --- SISTEMA DE LIMPEZA COM HISTÓRICO ---
         window.openWipeModal = () => document.getElementById('wipe-modal').classList.remove('hidden');
@@ -312,7 +341,6 @@
             if (!confirm(`Tem certeza que deseja apagar TODOS os dados de ${wipeType.toUpperCase()}? Essa ação é irreversível.`)) return;
 
             try {
-                // 1. Busca os documentos para apagar
                 const q = query(collection(db, "history"), where("isTest", "==", isTestDelete));
                 const snapshot = await getDocs(q);
                 
@@ -322,7 +350,6 @@
                     return;
                 }
 
-                // 2. Apaga um por um (Simples e seguro)
                 let count = 0;
                 const deletePromises = [];
                 snapshot.forEach((doc) => {
@@ -331,7 +358,6 @@
                 });
                 await Promise.all(deletePromises);
 
-                // 3. Salva no Log de Admin (Histórico)
                 await addDoc(collection(db, "admin_logs"), {
                     action: "WIPE_DATA",
                     target: wipeType,
@@ -343,7 +369,7 @@
 
                 alert(`Sucesso! ${count} registros foram apagados.\nMotivo registrado: "${reason}"`);
                 closeWipeModal();
-                loadData(); // Atualiza a tela
+                loadData(); 
 
             } catch (error) {
                 console.error(error);
