@@ -23,9 +23,9 @@
         .metric-value { font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
         .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: bold; }
         
-        /* O FUNIL QUE VOCÊ GOSTOU (COM BOLINHAS E LINHAS) */
+        /* O FUNIL */
         .funnel-step { position: relative; padding-left: 25px; border-left: 2px solid #333; margin-bottom: 25px; }
-        .funnel-step:last-child { border-left: 2px solid transparent; } /* Remove linha do último */
+        .funnel-step:last-child { border-left: 2px solid transparent; } 
         
         .funnel-dot { 
             position: absolute; left: -6px; top: 0; width: 10px; height: 10px; 
@@ -43,6 +43,10 @@
             border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; 
         }
         .btn-tool:hover { border-color: #ffd700; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1); }
+        
+        /* Botão Perigo (Delete) */
+        .btn-danger { border-color: rgba(220, 38, 38, 0.3); color: #f87171; }
+        .btn-danger:hover { border-color: #ef4444; background: rgba(220, 38, 38, 0.1); box-shadow: 0 0 15px rgba(220, 38, 38, 0.2); }
 
         /* Cards Coloridos */
         .stat-card { border-left: 3px solid; padding-left: 15px; background: rgba(255,255,255,0.02); transition: transform 0.2s; }
@@ -53,6 +57,9 @@
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+
+        /* Modal Wipe */
+        .modal-wipe { background: rgba(20, 0, 0, 0.95); border: 1px solid #ef4444; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -68,6 +75,44 @@
         </div>
     </div>
 
+    <div id="wipe-modal" class="fixed inset-0 bg-black/90 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="modal-wipe p-8 rounded-xl max-w-md w-full shadow-2xl relative">
+            <button onclick="closeWipeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i data-lucide="x"></i></button>
+            
+            <div class="flex items-center gap-3 text-red-500 mb-4">
+                <i data-lucide="alert-triangle" size="32"></i>
+                <h2 class="text-xl font-black uppercase tracking-widest">Zona de Perigo</h2>
+            </div>
+            
+            <p class="text-gray-400 text-xs mb-6">Esta ação apagará permanentemente os registros do banco de dados. Um log desta ação será salvo.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500">O que você quer zerar?</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="wipeType" value="test" checked class="accent-red-500">
+                            <span class="text-sm text-blue-400 font-bold">DADOS DE TESTE</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="wipeType" value="real" class="accent-red-500">
+                            <span class="text-sm text-yellow-500 font-bold">CLIENTES REAIS</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Motivo (Obrigatório para Histórico):</label>
+                    <input type="text" id="wipeReason" class="w-full bg-black border border-red-900/50 rounded p-3 text-white text-sm mt-1 focus:border-red-500 outline-none" placeholder="Ex: Limpeza para lançamento...">
+                </div>
+
+                <button onclick="confirmWipe()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded uppercase tracking-widest transition mt-4 flex items-center justify-center gap-2">
+                    <i data-lucide="trash-2" size="16"></i> CONFIRMAR LIMPEZA
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="dashboard" class="max-w-7xl mx-auto hidden animate-fade-in">
         
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-6 gap-4">
@@ -75,11 +120,15 @@
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 border border-yellow-500/30 rounded-lg p-1">
                 <div>
                     <h1 class="text-2xl font-black text-white tracking-widest">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
-                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.0</p>
+                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.1</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="openWipeModal()" class="btn-tool btn-danger">
+                    <i data-lucide="trash" size="14"></i> LIMPAR DADOS
+                </button>
+                <div class="w-[1px] h-8 bg-gray-800 mx-2"></div>
                 <a href="https://clarity.microsoft.com/projects/view/v018s4v24n/dashboard" target="_blank" class="btn-tool text-orange-400">
                     <i data-lucide="flame" size="14"></i> CLARITY
                 </a>
@@ -103,7 +152,7 @@
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="loadData()">
                     <div class="w-10 h-5 bg-emerald-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-600"></div>
-                    <span id="mode-label" class="ml-2 text-[10px] font-bold text-emerald-500">CLIENTES (REAL)</span>
+                    <span id="mode-label" class="ml-2 text-[10px] font-bold text-emerald-500">CLIENTES REAIS</span>
                 </label>
                 <button onclick="loadData()" class="ml-2 text-gray-500 hover:text-white transition"><i data-lucide="refresh-cw" size="14"></i></button>
             </div>
@@ -167,7 +216,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // SUAS CHAVES REAIS
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
@@ -177,11 +226,13 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         let chartInstance = null;
+        let currentUser = null;
 
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
         
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                currentUser = user;
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('dashboard').classList.remove('hidden');
                 loadData();
@@ -248,7 +299,58 @@
             renderFunnel(total);
         }
 
-        // --- RENDERIZADOR DO FUNIL ESTILO "OLD SCHOOL" ---
+        // --- SISTEMA DE LIMPEZA COM HISTÓRICO ---
+        window.openWipeModal = () => document.getElementById('wipe-modal').classList.remove('hidden');
+        window.closeWipeModal = () => document.getElementById('wipe-modal').classList.add('hidden');
+
+        window.confirmWipe = async () => {
+            const wipeType = document.querySelector('input[name="wipeType"]:checked').value;
+            const reason = document.getElementById('wipeReason').value.trim();
+            const isTestDelete = wipeType === 'test';
+
+            if (!reason) return alert("Por favor, digite o motivo da limpeza para salvar no histórico.");
+            if (!confirm(`Tem certeza que deseja apagar TODOS os dados de ${wipeType.toUpperCase()}? Essa ação é irreversível.`)) return;
+
+            try {
+                // 1. Busca os documentos para apagar
+                const q = query(collection(db, "history"), where("isTest", "==", isTestDelete));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    alert("Não há dados desse tipo para apagar.");
+                    closeWipeModal();
+                    return;
+                }
+
+                // 2. Apaga um por um (Simples e seguro)
+                let count = 0;
+                const deletePromises = [];
+                snapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                    count++;
+                });
+                await Promise.all(deletePromises);
+
+                // 3. Salva no Log de Admin (Histórico)
+                await addDoc(collection(db, "admin_logs"), {
+                    action: "WIPE_DATA",
+                    target: wipeType,
+                    count: count,
+                    reason: reason,
+                    admin: currentUser.email,
+                    timestamp: serverTimestamp()
+                });
+
+                alert(`Sucesso! ${count} registros foram apagados.\nMotivo registrado: "${reason}"`);
+                closeWipeModal();
+                loadData(); // Atualiza a tela
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao apagar: " + error.message);
+            }
+        };
+
         function renderFunnel(total) {
             const container = document.getElementById('funnel-container');
             if(total === 0) { container.innerHTML = '<div class="text-center text-gray-700 text-xs">Sem dados.</div>'; return; }
