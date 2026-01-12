@@ -44,8 +44,8 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: rgba(255, 215, 0, 0.05); border: 1px solid var(--primary); color: var(--primary);
         }
-        .credit-box.red { background: rgba(255, 0, 85, 0.15); border: 2px solid var(--danger-color, #ff0055); color: var(--danger-color, #ff0055); animation: pulse-danger 0.8s infinite alternate; }
-        @keyframes pulse-danger { from { box-shadow: 0 0 5px #ff0055; transform: scale(1); } to { box-shadow: 0 0 15px #ff0055; transform: scale(1.02); } }
+        .credit-box.red { background: rgba(255, 0, 85, 0.15); border: 2px solid var(--hot); color: var(--hot); animation: pulse-danger 0.8s infinite alternate; }
+        @keyframes pulse-danger { from { box-shadow: 0 0 5px var(--hot); transform: scale(1); } to { box-shadow: 0 0 15px var(--hot); transform: scale(1.02); } }
         
         .vip-badge {
             background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000;
@@ -97,7 +97,7 @@
         .spin-container { display: flex; justify-content: center; gap: 4px; font-size: 28px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; text-shadow: 0 0 10px var(--primary); }
         .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
 
-        /* MOLDURA DO RESULTADO (CORREÇÃO DE CORTE) */
+        /* MOLDURA DO RESULTADO */
         .result-frame {
             background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
             border: 2px solid var(--primary);
@@ -107,50 +107,43 @@
             margin: 10px 0 20px 0;
             max-height: 55vh;
             overflow-y: auto;
-            /* AQUI ESTÁ O SEGREDO: PADDING MAIOR PARA AS BOLINHAS NÃO CORTAREM */
-            padding-top: 20px; 
+            overflow-x: hidden; /* Importante para não cortar na horizontal */
+            padding-top: 25px; /* Espaço extra para o badge não cortar */
             padding-right: 15px;
         }
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* BOLAS */
+        /* BOLAS - CORREÇÃO CRÍTICA DE OVERFLOW */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: var(--primary);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
-            position: relative; /* Base para o badge absoluto */
-            overflow: visible !important; /* FORÇA O BADGE A APARECER */
+            position: relative; 
+            overflow: visible !important; /* ISSO FAZ A BOLINHA APARECER FORA DA BOLA */
+            z-index: 10;
         }
         .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 
-        /* BADGES (BOLINHAS DE CIMA - POSIÇÃO CORRIGIDA) */
+        /* BADGES (BOLINHAS DE CIMA) */
         .ball::after { 
             content:''; position: absolute; 
-            /* POSIÇÃO EXATA NA QUINA SUPERIOR DIREITA */
+            /* POSIÇÃO EXATA */
             top: -2px; right: -2px; 
             width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; 
-            opacity: 0; transition: opacity 0.3s; z-index: 100;
+            opacity: 0; transition: opacity 0.3s; z-index: 20; /* Z-INDEX ALTO */
         }
         
-        /* Estilo Quente (VERDE) */
         .ball.hot { border-color: var(--hot) !important; color: #fff !important; animation: pulse-hot 0.8s infinite alternate !important; }
         .ball.hot::after { opacity:1; background:var(--hot); box-shadow: 0 0 8px var(--hot); }
-        @keyframes pulse-hot { from { box-shadow: 0 0 5px var(--hot); transform: scale(1); } to { box-shadow: 0 0 20px var(--hot); transform: scale(1.08); } }
+        @keyframes pulse-hot { from { box-shadow: 0 0 5px var(--hot); transform: scale(1); } to { box-shadow: 0 0 20px var(--hot), 0 0 30px var(--hot) inset; transform: scale(1.08); } }
 
-        /* Estilo Frio (AZUL) */
         .ball.cold { border-color: var(--cold) !important; color: #fff !important; animation: pulse-cold 1.5s infinite alternate !important; }
         .ball.cold::after { opacity:1; background:var(--cold); box-shadow: 0 0 8px var(--cold); }
         @keyframes pulse-cold { from { box-shadow: 0 0 5px var(--cold); opacity: 0.8; } to { box-shadow: 0 0 12px var(--cold); opacity: 1; } }
-
-        /* LEGENDA */
-        .legend-box { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
-        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; color: #ccc; }
-        .legend-box .ball { width: 30px; height: 30px; font-size: 12px; margin: 0; opacity: 1; transform: scale(1); background: linear-gradient(135deg, #222, #000); border:1px solid #444; }
-        .legend-box .ball::after { width: 10px; height: 10px; top: -2px; right: -2px; }
 
         .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
         .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
@@ -278,15 +271,6 @@
             
             <div class="result-frame">
                 <div id="numbersGrid" class="result-grid"></div>
-            </div>
-            
-            <div class="legend-box">
-                <div class="legend-item">
-                    <div class="ball hot">$$</div> Nº QUENTE (TENDÊNCIA)
-                </div>
-                <div class="legend-item">
-                    <div class="ball cold">$$</div> Nº FRIO (ZEBRA)
-                </div>
             </div>
             
             <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
@@ -468,7 +452,6 @@
         
         function addBall(n, grid) {
             const div = document.createElement('div'); div.className = 'ball'; 
-            // AGORA COM 60% DE CHANCE DE TER BADGE PARA GARANTIR VISIBILIDADE
             if(Math.random() > 0.4) { div.classList.add(Math.random()>0.5 ? 'hot' : 'cold'); }
             div.innerText = n<10 && n!==0 && n!=='00' ? '0'+n : n;
             setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
