@@ -11,11 +11,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script>
-    // Lógica para NÃO disparar pixel se for teste
+    // VERIFICA SE É MODO TESTE (VOCÊ)
     const urlParams = new URLSearchParams(window.location.search);
     const isTestURL = urlParams.get('mode') === 'test';
     
+    // Se NÃO for teste, ativa os rastreadores
     if (!isTestURL) {
+        
+        // 1. META PIXEL (FACEBOOK)
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
         n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -24,132 +27,44 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '734910919692454'); // SEU ID REAL
+        fbq('init', '734910919692454'); 
         fbq('track', 'PageView');
+
+        // 2. MICROSOFT CLARITY (MAPA DE CALOR)
+        // Substitua 'SEU_ID_DO_CLARITY_AQUI' pelo ID que pegar no site clarity.microsoft.com
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "SEU_ID_DO_CLARITY_AQUI");
+
     } else {
-        console.log("Modo Teste: Pixel do Facebook Bloqueado.");
+        console.log("🔧 MODO TESTE: Rastreadores Bloqueados.");
     }
     </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=734910919692454&ev=PageView&noscript=1"
-    /></noscript>
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root {
-            --bg-color: #000000;
-            --surface-color: #0f0f0f;
-            --primary-gold: #ffd700;
-            --primary-glow: rgba(255, 215, 0, 0.25);
-            --text-main: #e0e0e0;
-            --text-muted: #888888;
-            --font-tech: 'Courier New', Courier, monospace;
-            --hot-red: #ff4444;
-            --cold-blue: #4488ff;
-            --temp-safe: #00ff88;
-            --temp-warn: #ffd700;
-            --temp-danger: #ff0055;
-            --current-color: #ffd700;
-        }
-
+        /* (CSS MANTIDO IGUAL DA VERSÃO 3.2 PARA NÃO QUEBRAR O VISUAL) */
+        :root { --bg-color: #000000; --surface-color: #0f0f0f; --primary-gold: #ffd700; --primary-glow: rgba(255, 215, 0, 0.25); --text-main: #e0e0e0; --text-muted: #888888; --font-tech: 'Courier New', Courier, monospace; --hot-red: #ff4444; --cold-blue: #4488ff; --temp-safe: #00ff88; --temp-warn: #ffd700; --temp-danger: #ff0055; --current-color: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* BARRA DE TESTE */
-        #testModeBar {
-            background: #ff0000; color: #fff; text-align: center; font-size: 10px; 
-            font-weight: bold; padding: 5px; text-transform: uppercase; letter-spacing: 1px;
-            display: none; /* Escondido por padrão */
-        }
-
-        /* TIPOGRAFIA */
-        .text-gold { color: var(--primary-gold); text-shadow: 0 0 10px var(--primary-glow); }
-        .text-dynamic { color: var(--current-color); text-shadow: 0 0 10px var(--current-color); transition: color 0.3s; }
-        .text-muted { color: var(--text-muted); }
-        .uppercase { text-transform: uppercase; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .w-full { width: 100%; }
-        
-        .btn-primary {
-            background: linear-gradient(180deg, rgba(255,215,0,0.15), rgba(0,0,0,0));
-            border: 1px solid var(--primary-gold);
-            color: var(--primary-gold);
-            padding: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            position: relative; overflow: hidden;
-        }
-        .btn-primary:active { transform: scale(0.98); background: rgba(255,215,0,0.2); }
-
-        .btn-google {
-            background: #fff; color: #000; border: none; border-radius: 8px;
-            padding: 12px; display: flex; align-items: center; justify-content: center;
-            gap: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px;
-        }
-
-        .input-box {
-            background: var(--surface-color); border: 1px solid #333; color: #fff;
-            padding: 15px; width: 100%; font-size: 16px; margin-bottom: 15px; border-radius: 8px;
-        }
-        .input-box:focus { border-color: var(--primary-gold); outline: none; }
-        
-        #dreamInput {
-            border: 1px solid var(--primary-gold); color: var(--primary-gold);
-            display: none; background: rgba(255, 215, 0, 0.05);
-        }
-
-        .slider-wrapper { position: relative; padding: 10px 0; }
-        input[type=range] { -webkit-appearance: none; width: 100%; height: 12px; background: #222; border-radius: 6px; outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 12px; cursor: pointer; border-radius: 6px; background: linear-gradient(90deg, var(--temp-safe) 0%, var(--temp-warn) 50%, var(--temp-danger) 100%); opacity: 0.8; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 28px; width: 28px; border-radius: 50%; background: #fff; border: 4px solid var(--current-color); margin-top: -8px; box-shadow: 0 0 15px var(--current-color); cursor: grab; transition: border-color 0.1s; }
-
-        .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; }
-        .screen.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; overflow: hidden; }
-        .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; box-shadow: 0 0 10px var(--primary-gold); }
-        .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 25px 0; }
-        
-        .ball { 
-            width: 46px; height: 46px; border: 1px solid #444; background: radial-gradient(circle at 30% 30%, #333, #000);
-            color: var(--primary-gold); display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 19px; border-radius: 50%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 2px rgba(255,255,255,0.1);
-            position: relative; text-shadow: 0 0 5px rgba(255,215,0,0.3);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0);
-        }
-        .badge-hot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #ff0055; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #ff0055; }
-        .badge-cold { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #00ccff; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #00ccff; }
-        
-        .ball:nth-child(1) { animation-delay: 0.05s; } .ball:nth-child(2) { animation-delay: 0.1s; } .ball:nth-child(3) { animation-delay: 0.15s; } .ball:nth-child(4) { animation-delay: 0.2s; } .ball:nth-child(5) { animation-delay: 0.25s; } .ball:nth-child(6) { animation-delay: 0.3s; } .ball:nth-child(7) { animation-delay: 0.35s; } .ball:nth-child(8) { animation-delay: 0.4s; } .ball:nth-child(9) { animation-delay: 0.45s; } .ball:nth-child(10) { animation-delay: 0.5s; } .ball:nth-child(11) { animation-delay: 0.55s; } .ball:nth-child(12) { animation-delay: 0.6s; } .ball:nth-child(13) { animation-delay: 0.65s; } .ball:nth-child(14) { animation-delay: 0.7s; } .ball:nth-child(15) { animation-delay: 0.75s; }
-        @keyframes popIn { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
-
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        #testModeBar { background: #ff0000; color: #fff; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; text-transform: uppercase; letter-spacing: 1px; display: none; }
+        .text-gold { color: var(--primary-gold); text-shadow: 0 0 10px var(--primary-glow); } .text-dynamic { color: var(--current-color); text-shadow: 0 0 10px var(--current-color); transition: color 0.3s; } .text-muted { color: var(--text-muted); } .uppercase { text-transform: uppercase; } .text-center { text-align: center; } .font-bold { font-weight: bold; } .w-full { width: 100%; }
+        .btn-primary { background: linear-gradient(180deg, rgba(255,215,0,0.15), rgba(0,0,0,0)); border: 1px solid var(--primary-gold); color: var(--primary-gold); padding: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; overflow: hidden; } .btn-primary:active { transform: scale(0.98); background: rgba(255,215,0,0.2); }
+        .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px; }
+        .input-box { background: var(--surface-color); border: 1px solid #333; color: #fff; padding: 15px; width: 100%; font-size: 16px; margin-bottom: 15px; border-radius: 8px; } .input-box:focus { border-color: var(--primary-gold); outline: none; }
+        #dreamInput { border: 1px solid var(--primary-gold); color: var(--primary-gold); display: none; background: rgba(255, 215, 0, 0.05); }
+        .slider-wrapper { position: relative; padding: 10px 0; } input[type=range] { -webkit-appearance: none; width: 100%; height: 12px; background: #222; border-radius: 6px; outline: none; } input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 12px; cursor: pointer; border-radius: 6px; background: linear-gradient(90deg, var(--temp-safe) 0%, var(--temp-warn) 50%, var(--temp-danger) 100%); opacity: 0.8; } input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 28px; width: 28px; border-radius: 50%; background: #fff; border: 4px solid var(--current-color); margin-top: -8px; box-shadow: 0 0 15px var(--current-color); cursor: grab; transition: border-color 0.1s; }
+        .screen { display: none; flex-direction: column; height: 100%; padding: 24px; animation: fadeIn 0.4s ease; } .screen.active { display: flex; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loading-bar-box { width: 100%; height: 6px; background: #333; margin: 20px 0; border-radius: 3px; overflow: hidden; } .loading-fill { height: 100%; background: var(--primary-gold); width: 0%; transition: width 0.2s; box-shadow: 0 0 10px var(--primary-gold); } .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 25px 0; }
+        .ball { width: 46px; height: 46px; border: 1px solid #444; background: radial-gradient(circle at 30% 30%, #333, #000); color: var(--primary-gold); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 19px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 2px rgba(255,255,255,0.1); position: relative; text-shadow: 0 0 5px rgba(255,215,0,0.3); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0); }
+        .badge-hot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #ff0055; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #ff0055; } .badge-cold { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #00ccff; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px #00ccff; }
+        .ball:nth-child(1) { animation-delay: 0.05s; } .ball:nth-child(2) { animation-delay: 0.1s; } .ball:nth-child(3) { animation-delay: 0.15s; } .ball:nth-child(4) { animation-delay: 0.2s; } .ball:nth-child(5) { animation-delay: 0.25s; } .ball:nth-child(6) { animation-delay: 0.3s; } .ball:nth-child(7) { animation-delay: 0.35s; } .ball:nth-child(8) { animation-delay: 0.4s; } .ball:nth-child(9) { animation-delay: 0.45s; } .ball:nth-child(10) { animation-delay: 0.5s; } .ball:nth-child(11) { animation-delay: 0.55s; } .ball:nth-child(12) { animation-delay: 0.6s; } .ball:nth-child(13) { animation-delay: 0.65s; } .ball:nth-child(14) { animation-delay: 0.7s; } .ball:nth-child(15) { animation-delay: 0.75s; } @keyframes popIn { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
         .user-tag { font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #000; background: var(--primary-gold); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; display: inline-block; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .modal-box { background: #0a0a0a; border: 1px solid var(--primary-gold); padding: 30px; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2); }
-        
-        .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary-gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); margin-bottom: 15px; object-fit: cover; }
-        .footer-links { margin-top: 30px; font-size: 10px; opacity: 0.6; }
-        .footer-links a { color: var(--text-muted); text-decoration: none; margin: 0 5px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); } .modal-box { background: #0a0a0a; border: 1px solid var(--primary-gold); padding: 30px; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 0 40px rgba(255, 215, 0, 0.2); }
+        .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary-gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); margin-bottom: 15px; object-fit: cover; } .footer-links { margin-top: 30px; font-size: 10px; opacity: 0.6; } .footer-links a { color: var(--text-muted); text-decoration: none; margin: 0 5px; }
     </style>
 </head>
 <body>
@@ -176,7 +91,7 @@
         <div style="text-align: center; margin-top: 40px;">
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="logo-img" alt="Nucleo Insight Logo">
             <h1 class="text-gold uppercase" style="letter-spacing: 2px; font-size: 26px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v3.2</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v3.3</p>
         </div>
         <div style="width: 100%;">
             <div id="login-area">
@@ -305,15 +220,8 @@
         // --- LÓGICA DE MODO TESTE (ESPIÃO) ---
         const urlParams = new URLSearchParams(window.location.search);
         let isTestMode = urlParams.get('mode') === 'test';
-        if(isTestMode) {
-            sessionStorage.setItem('isTest', 'true');
-            document.getElementById('testModeBar').style.display = 'block';
-        }
-        // Persiste o modo teste na sessão
-        if(sessionStorage.getItem('isTest') === 'true') {
-            isTestMode = true;
-            document.getElementById('testModeBar').style.display = 'block';
-        }
+        if(isTestMode) { sessionStorage.setItem('isTest', 'true'); document.getElementById('testModeBar').style.display = 'block'; }
+        if(sessionStorage.getItem('isTest') === 'true') { isTestMode = true; document.getElementById('testModeBar').style.display = 'block'; }
 
         const DAILY_LIMIT = 5;
 
@@ -378,7 +286,6 @@
         }
         
         window.checkLimitAndStart = async () => { 
-            // Se for teste, ignora limite
             if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } 
             startProcessing(); 
         }
@@ -453,7 +360,6 @@
         }
 
         window.openVipLink = () => { 
-            // SE FOR MODO TESTE, NÃO ABRE LINK REAL, SÓ AVISA
             if(isTestMode) return alert("Modo Teste: Link de Pagamento Simulado.");
             window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); 
         }
@@ -462,15 +368,8 @@
         const btnSave = document.getElementById('btnSave'); btnSave.addEventListener('click', async () => { 
             if (!currentUser) return;
             btnSave.innerText = "SALVANDO...";
-            
-            // AQUI É A MÁGICA: SALVA NO BANCO DIZENDO SE É TESTE OU NÃO
             await addDoc(collection(db, "history"), { 
-                uid: currentUser.uid, 
-                email: currentUser.email, 
-                numbers: currentNumbers, 
-                mode: currentMode, 
-                isTest: isTestMode, // ETIQUETA DO MODO TESTE
-                createdAt: serverTimestamp() 
+                uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() 
             });
             btnSave.innerHTML = 'SUCESSO!'; 
         });
