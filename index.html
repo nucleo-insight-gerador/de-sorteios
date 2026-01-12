@@ -31,13 +31,13 @@
             height: 28px; overflow: hidden; white-space: nowrap; position: relative; z-index: 10; display: flex; align-items: center;
         }
         .marquee-content { 
-            display: inline-block; animation: marquee 25s linear infinite; 
+            display: inline-block; animation: marquee 30s linear infinite; 
             font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #00ff88; text-transform: uppercase; font-weight: bold;
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        .games-wrapper { overflow-y: auto; max-height: 40vh; padding: 5px; margin-bottom: 10px; }
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .games-wrapper { overflow-y: auto; max-height: 45vh; padding: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 10px; }
         
         .game-card { 
             background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.9)); 
@@ -82,6 +82,9 @@
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
         }
+        /* Estilo especial para trevos/especiais */
+        .ball.special { border-color: #00ff88; color: #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+        
         .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 
@@ -109,7 +112,7 @@
 
     <div class="marquee-container">
         <div class="marquee-content">
-            💰 R$ 2.300,00 RETIRADO POR CARLOS M. • 🍀 ANA J. FEZ 14 PONTOS AGORA • 🦁 GRUPO DO LEÃO SAIU NO RIO • 💎 MÉTODO V6.0 ATIVO • 💰 R$ 2.300,00 RETIRADO POR CARLOS M. • 🍀 ANA J. FEZ 14 PONTOS AGORA
+            💰 R$ 12.500,00 NA MILIONÁRIA • 🍀 ANA J. FEZ 14 PONTOS • 🦁 DEU LEÃO NO RIO • 💎 SUPER SETE ACUMULADO • 💰 R$ 500,00 NA QUINA DE ONTEM • 🚀 SISTEMA ONLINE
         </div>
     </div>
     
@@ -137,7 +140,7 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #000; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase;">Nucleo <span style="color:var(--primary)">Insight</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.2 • SONIC EDITION</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">SYSTEM v6.3 • FULL ARSENAL</p>
         
         <div style="width:100%; max-width:280px; margin-top:40px;">
             <button id="btnLogin" class="btn-google" onclick="playSound('click')">
@@ -160,18 +163,24 @@
 
         <div style="margin-bottom:15px;">
             <label style="color:#888; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:block;">SELECIONE A OPERAÇÃO</label>
+            
             <div class="games-wrapper">
                 <div class="game-grid">
                     <div class="game-card active" onclick="selectGame('lotofacil', this)"><div class="game-icon">🍀</div><div class="game-title">Lotofácil</div></div>
                     <div class="game-card" onclick="selectGame('mega', this)"><div class="game-icon">💰</div><div class="game-title">Mega Sena</div></div>
                     <div class="game-card" onclick="selectGame('quina', this)"><div class="game-icon">🔷</div><div class="game-title">Quina</div></div>
                     <div class="game-card" onclick="selectGame('bicho', this)"><div class="game-icon">🦁</div><div class="game-title">Palpite Bicho</div></div>
-                    <div class="game-card" onclick="selectGame('lotomania', this)"><div class="game-icon">🎱</div><div class="game-title">Lotomania</div></div>
+                    
+                    <div class="game-card" onclick="selectGame('milionaria', this)"><div class="game-icon">💎</div><div class="game-title">+Milionária</div></div>
+                    <div class="game-card" onclick="selectGame('supersete', this)"><div class="game-icon">7️⃣</div><div class="game-title">Super Sete</div></div>
+                    
                     <div class="game-card" onclick="selectGame('timemania', this)"><div class="game-icon">⚽</div><div class="game-title">Timemania</div></div>
+                    <div class="game-card" onclick="selectGame('lotomania', this)"><div class="game-icon">🎱</div><div class="game-title">Lotomania</div></div>
                     <div class="game-card" onclick="selectGame('diadesorte', this)"><div class="game-icon">📅</div><div class="game-title">Dia de Sorte</div></div>
                     <div class="game-card" onclick="selectGame('duplasena', this)"><div class="game-icon">🎲</div><div class="game-title">Dupla Sena</div></div>
                 </div>
             </div>
+            
             <input type="hidden" id="gameType" value="lotofacil">
             <input type="text" id="dreamInput" class="input-box" placeholder="Descreva o sonho aqui..." style="display:none; text-align:center; border-color:var(--primary); color:var(--primary); font-weight:bold;">
         </div>
@@ -182,7 +191,10 @@
                 <span id="boldnessValue" style="font-size:12px; font-weight:bold; color:#fff;">50%</span>
             </div>
             <input type="range" min="10" max="90" value="50" oninput="updateBoldness(this.value)">
-            <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:8px; color:#555;"><span>SEGURANÇA</span><span>RISCO MÁXIMO</span></div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:8px; color:#555;">
+                <span>SEGURANÇA</span>
+                <span>RISCO MÁXIMO</span>
+            </div>
         </div>
 
         <div style="margin-top:auto;"><button onclick="checkLimitAndStart()" class="btn-pulse">GERAR SINAL DE ALTA PRECISÃO</button></div>
@@ -230,23 +242,14 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // --- AUDIO ENGINE (NOVOS SONS) ---
+        // --- AUDIO ENGINE ---
         const sfx = {
-            click: new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"), // Tech Click
-            win: new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"),   // Coin/Win
-            lock: new Audio("https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3")   // Error
+            click: new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"),
+            win: new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"),
+            lock: new Audio("https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3")
         };
-        // Ajuste de volume
         sfx.click.volume = 0.4; sfx.win.volume = 0.6; sfx.lock.volume = 0.5;
-
-        window.playSound = (type) => {
-            try {
-                if(sfx[type]) {
-                    sfx[type].currentTime = 0;
-                    sfx[type].play().catch(e => console.log("Audio blocked until interaction"));
-                }
-            } catch(e) {}
-        }
+        window.playSound = (type) => { try { if(sfx[type]) { sfx[type].currentTime = 0; sfx[type].play().catch(e=>{}); } } catch(e){} }
 
         // --- BACKGROUND ---
         const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
@@ -258,7 +261,7 @@
         window.addEventListener('resize', resize); resize(); initParticles(); animate();
 
         const names = ["João M.", "Carlos S.", "Ana P.", "Pedro H.", "Lucas F."];
-        const actions = ["Lotofácil", "Mega Sena", "Quina", "Bicho"];
+        const actions = ["+Milionária", "Lotofácil", "Super Sete", "Bicho"];
         setInterval(() => { if(Math.random()>0.5) { 
             const t = document.getElementById('social-toast'); 
             const n = names[Math.floor(Math.random()*names.length)];
@@ -267,34 +270,14 @@
             t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 4000);
         }}, 10000);
 
-        // --- GAME LOGIC ---
-        window.selectGame = (mode, el) => {
-            playSound('click'); // Som
-            currentMode = mode; document.getElementById('gameType').value = mode;
-            document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
-            const inp = document.getElementById('dreamInput');
-            inp.style.display = (mode === 'bicho') ? 'block' : 'none';
-        }
-
-        window.updateBoldness = (val) => { currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
-
-        async function fetchRealLotteryData(mode) {
-            const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena'};
-            if(!map[mode]) return null;
-            try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); return r.ok ? await r.json() : null; } catch(e) { return null; }
-        }
-
-        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
-
+        // --- AUTH ---
         document.getElementById('btnLogin').addEventListener('click', async () => {
-            playSound('click');
-            document.getElementById('loadingLogin').style.display = 'block';
+            playSound('click'); document.getElementById('loadingLogin').style.display = 'block';
             try { await setPersistence(auth, browserLocalPersistence); await signInWithPopup(auth, provider); } 
-            catch (error) { console.log("Popup falhou", error); await signInWithRedirect(auth, provider); }
+            catch (error) { await signInWithRedirect(auth, provider); }
         });
-        window.forceRedirectLogin = async () => { document.getElementById('loadingLogin').innerText = "Redirecionando..."; document.getElementById('loadingLogin').style.display = 'block'; await signInWithRedirect(auth, provider); }
-        getRedirectResult(auth).then(() => console.log("Redirect OK"));
+        window.forceRedirectLogin = async () => { document.getElementById('loadingLogin').innerText="Redirecionando..."; document.getElementById('loadingLogin').style.display='block'; await signInWithRedirect(auth, provider); }
+        getRedirectResult(auth).then(() => console.log("OK"));
         onAuthStateChanged(auth, (user) => { if(user) { currentUser=user; if(!isTestMode) logEvent(analytics,'login'); document.getElementById('userIdDisplay').innerText=user.email.split('@')[0]; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
 
         async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
@@ -303,12 +286,27 @@
         
         window.checkLimitAndStart = async () => { 
             playSound('click');
-            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
-                playSound('lock'); // Som de bloqueio
-                document.getElementById('paywallModal').style.display = 'flex'; return; 
-            } 
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playSound('lock'); document.getElementById('paywallModal').style.display = 'flex'; return; } 
             startProcessing(); 
         }
+
+        window.selectGame = (mode, el) => {
+            playSound('click');
+            currentMode = mode; document.getElementById('gameType').value = mode;
+            document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
+            const inp = document.getElementById('dreamInput');
+            inp.style.display = (mode === 'bicho') ? 'block' : 'none';
+        }
+        window.updateBoldness = (val) => { currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
+
+        async function fetchRealLotteryData(mode) {
+            const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
+            if(!map[mode]) return null;
+            try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); return r.ok ? await r.json() : null; } catch(e) { return null; }
+        }
+
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
         window.startProcessing = () => {
             showScreen('screen-loading');
@@ -330,7 +328,7 @@
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
             let seed = getDailySeed(); let isSafe = currentBoldness < 40; let realData = null;
-            if(isSafe && currentMode!=='bicho') realData = await fetchRealLotteryData(currentMode);
+            if(isSafe && currentMode!=='bicho' && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
             if (currentMode === 'bicho') {
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
@@ -338,6 +336,26 @@
                 const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 animalRes.innerText = `🦁 ${animals[group]} (G${group})`; animalRes.style.display='block';
                 logText.innerText = "Padrão Identificado: Algoritmo Onírico"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
+                renderBalls(currentNumbers);
+            } else if (currentMode === 'milionaria') {
+                // 6 Numeros (1-50) + 2 Trevos (1-6)
+                let mainNums = new Set();
+                while(mainNums.size < 6) mainNums.add(Math.floor(Math.random() * 50) + 1);
+                let trevos = new Set();
+                while(trevos.size < 2) trevos.add(Math.floor(Math.random() * 6) + 1);
+                
+                let sortedMain = Array.from(mainNums).sort((a,b)=>a-b);
+                let sortedTrevos = Array.from(trevos).sort((a,b)=>a-b);
+                currentNumbers = [...sortedMain, ...sortedTrevos]; // For saving
+                
+                logText.innerText = "Estratégia: Matriz de Alta Volatilidade"; apiStatus.innerText = "FONTE: IA GENERATIVA";
+                sortedMain.forEach(n => addBall(n, grid));
+                sortedTrevos.forEach(n => addBall(n, grid, true)); // Special ball
+            } else if (currentMode === 'supersete') {
+                // 7 Colunas (0-9)
+                currentNumbers = [];
+                for(let i=0; i<7; i++) currentNumbers.push(Math.floor(Math.random()*10));
+                logText.innerText = "Estratégia: Análise Colunar"; apiStatus.innerText = "FONTE: MATRIX CODE";
                 renderBalls(currentNumbers);
             } else {
                 let max=25, count=15; 
@@ -348,7 +366,7 @@
                 if(currentMode==='diadesorte'){max=31;count=7;}
 
                 let nums = new Set();
-                if(isSafe && realData) {
+                if(isSafe && realData && realData.dezenas) {
                     let last = realData.dezenas.map(d=>parseInt(d));
                     for(let i=0; i<Math.min(last.length, Math.floor(count/2)); i++) nums.add(last[i]);
                     logText.innerText = `Base: Concurso ${realData.numero}`; apiStatus.innerText = "FONTE: CAIXA (API OFICIAL)";
@@ -362,15 +380,18 @@
 
             if(currentUser) { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() }); }
             showScreen('screen-result');
-            playSound('win'); // SOM DE VITÓRIA NO FINAL
+            playSound('win');
         }
 
         function renderBalls(numbers) {
             const grid = document.getElementById('numbersGrid');
-            numbers.forEach((n, i) => {
-                const div = document.createElement('div'); div.className = 'ball'; div.innerText = n<10?'0'+n:n;
-                div.style.animationDelay = (i * 0.05) + 's'; setTimeout(() => div.classList.add('reveal'), 50); grid.appendChild(div);
-            });
+            numbers.forEach((n, i) => { addBall(n, grid); });
+        }
+        
+        function addBall(n, grid, isSpecial=false) {
+            const div = document.createElement('div'); div.className = isSpecial ? 'ball special' : 'ball'; 
+            div.innerText = n<10 && n!==0 && n!=='00' ? '0'+n : n;
+            setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
         }
 
         window.openVipLink = () => { if(isTestMode) return alert("Modo Teste"); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
