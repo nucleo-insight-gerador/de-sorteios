@@ -11,16 +11,24 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '734910919692454');
-    fbq('track', 'PageView');
+    // Lógica para NÃO disparar pixel se for teste
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestURL = urlParams.get('mode') === 'test';
+    
+    if (!isTestURL) {
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '734910919692454'); // SEU ID REAL
+        fbq('track', 'PageView');
+    } else {
+        console.log("Modo Teste: Pixel do Facebook Bloqueado.");
+    }
     </script>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=734910919692454&ev=PageView&noscript=1"
@@ -56,7 +64,14 @@
             flex-direction: column;
         }
 
-        /* ESTILOS VISUAIS (MANTIDOS DA V3.0) */
+        /* BARRA DE TESTE */
+        #testModeBar {
+            background: #ff0000; color: #fff; text-align: center; font-size: 10px; 
+            font-weight: bold; padding: 5px; text-transform: uppercase; letter-spacing: 1px;
+            display: none; /* Escondido por padrão */
+        }
+
+        /* TIPOGRAFIA */
         .text-gold { color: var(--primary-gold); text-shadow: 0 0 10px var(--primary-glow); }
         .text-dynamic { color: var(--current-color); text-shadow: 0 0 10px var(--current-color); transition: color 0.3s; }
         .text-muted { color: var(--text-muted); }
@@ -139,6 +154,8 @@
 </head>
 <body>
 
+    <div id="testModeBar">🔧 MODO TESTE ATIVO - DADOS NÃO SERÃO CONTABILIZADOS</div>
+
     <div id="paywallModal" class="modal-overlay">
         <div class="modal-box">
             <i data-lucide="lock" size="48" class="text-gold" style="margin-bottom: 20px;"></i>
@@ -155,11 +172,11 @@
         </div>
     </div>
 
-    <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 60px;">
-        <div style="text-align: center;">
+    <div id="screen-home" class="screen active" style="justify-content: space-between; padding-top: 20px;">
+        <div style="text-align: center; margin-top: 40px;">
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="logo-img" alt="Nucleo Insight Logo">
             <h1 class="text-gold uppercase" style="letter-spacing: 2px; font-size: 26px;">Nucleo Insight</h1>
-            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v3.1</p>
+            <p class="text-muted" style="font-size: 12px; margin-top: 8px; letter-spacing: 3px;">INTELLIGENCE v3.2</p>
         </div>
         <div style="width: 100%;">
             <div id="login-area">
@@ -174,7 +191,7 @@
                 <a href="termos.html" target="_blank">Termos de Uso</a> • 
                 <a href="privacidade.html" target="_blank">Privacidade</a>
             </div>
-            <p class="text-muted text-center" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Server-Side Validation • Tracking Active</p>
+            <p class="text-muted text-center" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Server-Side Validation • Data Connected</p>
         </div>
     </div>
 
@@ -262,7 +279,7 @@
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
-        // FIREBASE CONFIG
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ",
             authDomain: "nucleo-insight-gerador.firebaseapp.com",
@@ -275,7 +292,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app); // ANALYTICS ATIVO
+        const analytics = getAnalytics(app); 
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
@@ -285,6 +302,19 @@
         let userUsage = 0;
         let isVip = false;
         
+        // --- LÓGICA DE MODO TESTE (ESPIÃO) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        let isTestMode = urlParams.get('mode') === 'test';
+        if(isTestMode) {
+            sessionStorage.setItem('isTest', 'true');
+            document.getElementById('testModeBar').style.display = 'block';
+        }
+        // Persiste o modo teste na sessão
+        if(sessionStorage.getItem('isTest') === 'true') {
+            isTestMode = true;
+            document.getElementById('testModeBar').style.display = 'block';
+        }
+
         const DAILY_LIMIT = 5;
 
         // FETCH API REAL
@@ -297,12 +327,11 @@
                 const data = await response.json();
                 return data;
             } catch (e) {
-                console.log("Usando Fallback Intelligence v3.1");
+                console.log("Usando Fallback Intelligence v3.2");
                 return null;
             }
         }
 
-        // LÓGICA DE SEED
         function getDailySeed() { const today = new Date(); return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate(); }
         function seededRandom(seed) { var x = Math.sin(seed++) * 10000; return x - Math.floor(x); }
 
@@ -333,7 +362,7 @@
         }
 
         async function incrementServerUsage() {
-            if (!currentUser || isVip) return;
+            if (!currentUser || isVip || isTestMode) return; // MODO TESTE NÃO CONTA
             const today = new Date().toDateString();
             const usageRef = doc(db, "usage", currentUser.uid);
             userUsage++; await updateDoc(usageRef, { count: userUsage, date: today });
@@ -341,13 +370,23 @@
         }
 
         function updateVipStatus() { const tag = document.getElementById('userInfo'); tag.innerText = "VIP"; tag.style.backgroundColor = "#ffd700"; tag.style.color = "#000"; tag.style.boxShadow = "0 0 10px #ffd700"; }
-        function updateUsageDisplay() { const display = document.getElementById('usageCount'); if (isVip) { display.innerText = "ILIMITADO"; display.style.color = "#22c55e"; } else { display.innerText = `${userUsage} / ${DAILY_LIMIT}`; display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700"; } }
-        window.checkLimitAndStart = async () => { if (!isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
+        function updateUsageDisplay() { 
+            const display = document.getElementById('usageCount'); 
+            if (isTestMode) { display.innerText = "ILIMITADO (TEST)"; display.style.color = "#4488ff"; return; }
+            if (isVip) { display.innerText = "ILIMITADO"; display.style.color = "#22c55e"; } 
+            else { display.innerText = `${userUsage} / ${DAILY_LIMIT}`; display.style.color = userUsage >= DAILY_LIMIT ? "#ef4444" : "#ffd700"; } 
+        }
+        
+        window.checkLimitAndStart = async () => { 
+            // Se for teste, ignora limite
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } 
+            startProcessing(); 
+        }
 
         const btnLogin = document.getElementById('btnLogin');
         btnLogin.addEventListener('click', () => { signInWithPopup(auth, provider).catch((error) => alert(error.message)); });
 
-        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; logEvent(analytics, 'login'); document.getElementById('userInfo').innerText = "FREE"; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; if(!isTestMode) logEvent(analytics, 'login'); document.getElementById('userInfo').innerText = "FREE"; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
 
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
         const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
@@ -413,10 +452,28 @@
             showScreen('screen-result');
         }
 
-        window.openVipLink = () => { window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
+        window.openVipLink = () => { 
+            // SE FOR MODO TESTE, NÃO ABRE LINK REAL, SÓ AVISA
+            if(isTestMode) return alert("Modo Teste: Link de Pagamento Simulado.");
+            window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); 
+        }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => showScreen('screen-ritual');
-        const btnSave = document.getElementById('btnSave'); btnSave.addEventListener('click', async () => { if (!currentUser) return; btnSave.innerText = "SALVANDO..."; await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, createdAt: serverTimestamp() }); btnSave.innerHTML = 'SUCESSO!'; });
+        const btnSave = document.getElementById('btnSave'); btnSave.addEventListener('click', async () => { 
+            if (!currentUser) return;
+            btnSave.innerText = "SALVANDO...";
+            
+            // AQUI É A MÁGICA: SALVA NO BANCO DIZENDO SE É TESTE OU NÃO
+            await addDoc(collection(db, "history"), { 
+                uid: currentUser.uid, 
+                email: currentUser.email, 
+                numbers: currentNumbers, 
+                mode: currentMode, 
+                isTest: isTestMode, // ETIQUETA DO MODO TESTE
+                createdAt: serverTimestamp() 
+            });
+            btnSave.innerHTML = 'SUCESSO!'; 
+        });
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         lucide.createIcons();
     </script>
