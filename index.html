@@ -106,6 +106,16 @@
         #social-toast.visible { transform: translateX(-50%) translateY(0); }
         .toast-avatar { width: 24px; height: 24px; background: linear-gradient(45deg, #ffd700, #ffaa00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 10px; }
     </style>
+    
+    <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestURL = urlParams.get('mode') === 'test';
+    if (!isTestURL) {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '734910919692454'); fbq('track', 'PageView');
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "v018s4v24n");
+    }
+    </script>
 </head>
 <body>
 
@@ -143,7 +153,7 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 2px;">NUCLEO <span style="color:var(--primary)">INSIGHT</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.4</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.5</p>
         
         <div style="width:100%; max-width:300px; margin-top:40px; position: relative; z-index: 100;">
             <button id="btnLogin" class="btn-google">
@@ -151,6 +161,7 @@
                 ENTRAR COM GOOGLE
             </button>
             <p id="loadingLogin" style="color:#ffd700; font-size:10px; margin-top:10px; display:none;">Conectando...</p>
+            <p id="debugLog" style="color:#ff4444; font-size:10px; margin-top:10px; display:none; border:1px solid #ff4444; padding:5px; background:rgba(50,0,0,0.8);">Aguardando...</p>
             <p style="color:#333; font-size:9px; margin-top:15px;">🔒 CONEXÃO CRIPTOGRAFADA</p>
         </div>
     </div>
@@ -217,11 +228,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
-        // CONFIGURAÇÃO ORIGINAL
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
         
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
@@ -272,21 +282,21 @@
         function updateUI() { const d = document.getElementById('usageCount'); if(isTestMode) { d.innerText = "∞ (TEST)"; d.style.color = "#4488ff"; } else if(isVip) { d.innerText = "ILIMITADO"; d.style.color = "#00ff88"; } else { d.innerText = `${userUsage} / ${DAILY_LIMIT}`; d.style.color = userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700"; } }
         window.checkLimitAndStart = async () => { if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
 
-        // --- LOGIN FORCE FIX (V5.4) ---
+        // --- LOGIN CLEAN FIX (v5.5) ---
         const btnLogin = document.getElementById('btnLogin');
+        const debugLog = document.getElementById('debugLog');
         const loadingLogin = document.getElementById('loadingLogin');
         
         btnLogin.addEventListener('click', async () => {
             loadingLogin.style.display = 'block';
+            debugLog.style.display = 'none';
             try {
-                // FORÇA PERSISTENCIA LOCAL (CORRIGE ERRO DE PÁGINA RECARREGANDO SEM LOGIN)
-                await setPersistence(auth, browserLocalPersistence);
-                // USA POPUP (MAIS ESTÁVEL QUE REDIRECT EM DISPOSITIVOS MÓVEIS/WEBAPPS)
+                // SEM PERSISTENCIA FORÇADA (Padrão é melhor)
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 loadingLogin.style.display = 'none';
-                // ALERTA DE ERRO PARA DEBUG
-                alert("ERRO AO LOGAR: " + error.code + "\n" + error.message);
+                debugLog.innerText = "ERRO: " + error.code + " | " + error.message;
+                debugLog.style.display = 'block';
             }
         });
 
