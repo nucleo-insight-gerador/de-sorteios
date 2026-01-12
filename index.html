@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        /* MUDANÇA DE COR AQUI: HOT AGORA É VERDE */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -98,16 +97,29 @@
         .spin-container { display: flex; justify-content: center; gap: 4px; font-size: 28px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; text-shadow: 0 0 10px var(--primary); }
         .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
 
-        .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; max-height: 50vh; overflow-y: auto; padding: 10px; }
+        /* NOVA MOLDURA DO RESULTADO */
+        .result-frame {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
+            margin: 10px 0 20px 0;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        .result-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
         
-        /* BOLAS E ANIMAÇÕES */
+        /* BOLAS E ANIMAÇÕES (CORREÇÃO DE VISIBILIDADE) */
         .ball { 
-            width: 44px; height: 44px; background: linear-gradient(135deg, #1a1a1a, #000); 
-            border: 1px solid #333; color: var(--primary);
+            width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
+            border: 1px solid #444; color: var(--primary);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
-            position: relative; /* Importante para o posicionamento absoluto do badge */
+            position: relative; 
+            overflow: visible !important; /* ESSENCIAL PARA O BADGE APARECER */
         }
         .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
@@ -115,15 +127,15 @@
         /* BADGES COLORIDOS EM CIMA (BEM COLADINHO) */
         .ball::after { 
             content:''; position: absolute; 
-            top:-3px; right:-3px; /* Posição exata no canto superior direito */
-            width:13px; height:13px; border-radius:50%; border:1px solid rgba(0,0,0,0.8); 
-            opacity:0; transition: opacity 0.3s; z-index: 2;
+            top:-4px; right:-4px; /* Posição ajustada */
+            width:14px; height:14px; border-radius:50%; border:2px solid rgba(0,0,0,0.8); 
+            opacity:0; transition: opacity 0.3s; z-index: 10;
         }
         
-        /* Estilo Quente (VERDE) */
-        .ball.hot { border-color: var(--hot) !important; color: #fff !important; animation: pulse-hot 1s infinite alternate !important; }
+        /* Estilo Quente (VERDE) - PULSAR MAIS FORTE */
+        .ball.hot { border-color: var(--hot) !important; color: #fff !important; animation: pulse-hot 0.8s infinite alternate !important; }
         .ball.hot::after { opacity:1; background:var(--hot); box-shadow: 0 0 8px var(--hot); }
-        @keyframes pulse-hot { from { box-shadow: 0 0 5px var(--hot); transform: scale(1); } to { box-shadow: 0 0 15px var(--hot); transform: scale(1.05); } }
+        @keyframes pulse-hot { from { box-shadow: 0 0 5px var(--hot); transform: scale(1); } to { box-shadow: 0 0 20px var(--hot), 0 0 30px var(--hot) inset; transform: scale(1.1); } }
 
         /* Estilo Frio (AZUL) */
         .ball.cold { border-color: var(--cold) !important; color: #fff !important; animation: pulse-cold 1.5s infinite alternate !important; }
@@ -133,8 +145,8 @@
         /* LEGENDA COM VISUAL CORRETO */
         .legend-box { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
         .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; color: #ccc; }
-        .legend-box .ball { width: 30px; height: 30px; font-size: 12px; margin: 0; opacity: 1; transform: scale(1); }
-        .legend-box .ball::after { width: 10px; height: 10px; top: -2px; right: -2px; }
+        .legend-box .ball { width: 30px; height: 30px; font-size: 12px; margin: 0; opacity: 1; transform: scale(1); background: linear-gradient(135deg, #222, #000); border:1px solid #444; }
+        .legend-box .ball::after { width: 10px; height: 10px; top: -3px; right: -3px; border-width:1px; }
 
         .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
         .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
@@ -260,7 +272,9 @@
         <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
             <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
             
-            <div id="numbersGrid" class="result-grid"></div>
+            <div class="result-frame">
+                <div id="numbersGrid" class="result-grid"></div>
+            </div>
             
             <div class="legend-box">
                 <div class="legend-item">
