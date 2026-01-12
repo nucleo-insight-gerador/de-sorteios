@@ -143,13 +143,14 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 2px;">NUCLEO <span style="color:var(--primary)">INSIGHT</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.2</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.3</p>
         
         <div style="width:100%; max-width:300px; margin-top:40px; position: relative; z-index: 100;">
             <button id="btnLogin" class="btn-google">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> 
                 ENTRAR COM GOOGLE
             </button>
+            <p id="loadingLogin" style="color:#ffd700; font-size:10px; margin-top:10px; display:none;">Conectando ao Google...</p>
             <p id="loginError" style="color:#ff4444; font-size:10px; margin-top:10px; display:none;">Erro ao conectar.</p>
             <p style="color:#333; font-size:9px; margin-top:15px;">🔒 CONEXÃO CRIPTOGRAFADA</p>
         </div>
@@ -217,11 +218,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
-        // CHAVES ORIGINAIS (QUE FUNCIONARAM NA v3.6)
+        // CHAVES ORIGINAIS
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
         
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
@@ -272,23 +273,42 @@
         function updateUI() { const d = document.getElementById('usageCount'); if(isTestMode) { d.innerText = "∞ (TEST)"; d.style.color = "#4488ff"; } else if(isVip) { d.innerText = "ILIMITADO"; d.style.color = "#00ff88"; } else { d.innerText = `${userUsage} / ${DAILY_LIMIT}`; d.style.color = userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700"; } }
         window.checkLimitAndStart = async () => { if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
 
-        // --- LOGIN DEBUG ---
+        // --- LOGIN FIX REDIRECT (FORÇA BRUTA) ---
         const btnLogin = document.getElementById('btnLogin');
         const loginError = document.getElementById('loginError');
+        const loadingLogin = document.getElementById('loadingLogin');
         
-        btnLogin.addEventListener('click', async () => { 
+        btnLogin.addEventListener('click', () => { 
+            loadingLogin.style.display = 'block';
             loginError.style.display = 'none';
-            try { 
-                await signInWithPopup(auth, provider); 
-            } catch(e) { 
-                loginError.innerText = "ERRO: " + e.message;
-                loginError.style.display = 'block';
-                // Alerta explícito para debugging se necessário
-                alert("Erro ao logar: " + e.code + "\n\nSe for 'auth/unauthorized-domain', adicione o link no Firebase!");
-            }
+            // USA REDIRECT EM VEZ DE POPUP (Resolve 100% de bloqueios de popup)
+            signInWithRedirect(auth, provider);
         });
 
-        onAuthStateChanged(auth, (user) => { if(user) { currentUser=user; if(!isTestMode) logEvent(analytics,'login'); document.getElementById('userInfo').innerText="FREE"; document.getElementById('userIdDisplay').innerText = user.email.split('@')[0]; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
+        // VERIFICA SE VOLTOU DO REDIRECT
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    console.log("Login bem sucedido via redirect");
+                }
+            }).catch((error) => {
+                loadingLogin.style.display = 'none';
+                loginError.innerText = "ERRO: " + error.message;
+                loginError.style.display = 'block';
+            });
+
+        onAuthStateChanged(auth, (user) => { 
+            if(user) { 
+                currentUser=user; 
+                if(!isTestMode) logEvent(analytics,'login'); 
+                document.getElementById('userInfo').innerText="FREE"; 
+                document.getElementById('userIdDisplay').innerText = user.email.split('@')[0]; 
+                showScreen('screen-ritual'); 
+                checkServerUsage(); 
+            } else { 
+                showScreen('screen-home'); 
+            } 
+        });
 
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
         const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
