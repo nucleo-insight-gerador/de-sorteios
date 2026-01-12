@@ -13,56 +13,30 @@
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
 
     <style>
-        /* --- ESTILO "OLD SCHOOL" RESTAURADO --- */
         body { background-color: #000000; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; background-image: radial-gradient(circle at 50% 0%, #1a1a00 0%, #000 70%); }
-        
-        /* Painéis de Vidro Escuro */
         .glass-panel { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
-        
-        /* Tipografia */
         .metric-value { font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
         .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: bold; }
         
-        /* O FUNIL */
         .funnel-step { position: relative; padding-left: 25px; border-left: 2px solid #333; margin-bottom: 25px; }
         .funnel-step:last-child { border-left: 2px solid transparent; } 
-        
-        .funnel-dot { 
-            position: absolute; left: -6px; top: 0; width: 10px; height: 10px; 
-            background: #ffd700; border-radius: 50%; box-shadow: 0 0 10px #ffd700;
-            z-index: 10;
-        }
-        
+        .funnel-dot { position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #ffd700; border-radius: 50%; box-shadow: 0 0 10px #ffd700; z-index: 10; }
         .progress-bar-bg { background: #222; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 8px; }
         .progress-bar-fill { height: 100%; background: #ffd700; width: 0%; transition: width 1s; box-shadow: 0 0 5px #ffd700; }
         
-        /* Botões de Ferramentas */
-        .btn-tool { 
-            display: flex; align-items: center; gap: 8px; padding: 10px 14px; 
-            border-radius: 8px; font-size: 11px; font-weight: bold; transition: all 0.2s; 
-            border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; cursor: pointer;
-        }
+        .btn-tool { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.05); background: #0a0a0a; cursor: pointer; }
         .btn-tool:hover { border-color: #ffd700; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1); }
-        
-        /* Botão Perigo (Delete) */
         .btn-danger { border-color: rgba(220, 38, 38, 0.3); color: #f87171; }
         .btn-danger:hover { border-color: #ef4444; background: rgba(220, 38, 38, 0.1); box-shadow: 0 0 15px rgba(220, 38, 38, 0.2); }
-
-        /* Botão Exportar (Novo) */
         .btn-export { border-color: rgba(6, 182, 212, 0.3); color: #22d3ee; }
         .btn-export:hover { border-color: #06b6d4; background: rgba(6, 182, 212, 0.1); box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); }
-
-        /* Cards Coloridos */
         .stat-card { border-left: 3px solid; padding-left: 15px; background: rgba(255,255,255,0.02); transition: transform 0.2s; }
         .stat-card:hover { transform: translateX(5px); background: rgba(255,255,255,0.04); }
-
-        /* Scrollbar */
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #ffd700; }
-
-        /* Modal Wipe */
         .modal-wipe { background: rgba(20, 0, 0, 0.95); border: 1px solid #ef4444; }
     </style>
 </head>
@@ -82,72 +56,44 @@
     <div id="wipe-modal" class="fixed inset-0 bg-black/90 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
         <div class="modal-wipe p-8 rounded-xl max-w-md w-full shadow-2xl relative">
             <button onclick="closeWipeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i data-lucide="x"></i></button>
-            
             <div class="flex items-center gap-3 text-red-500 mb-4">
                 <i data-lucide="alert-triangle" size="32"></i>
                 <h2 class="text-xl font-black uppercase tracking-widest">Zona de Perigo</h2>
             </div>
-            
-            <p class="text-gray-400 text-xs mb-6">Esta ação apagará permanentemente os registros do banco de dados. Um log desta ação será salvo.</p>
-            
+            <p class="text-gray-400 text-xs mb-6">Esta ação apagará permanentemente os registros. Log será salvo.</p>
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500">O que você quer zerar?</label>
+                    <label class="text-[10px] uppercase font-bold text-gray-500">O que zerar?</label>
                     <div class="flex gap-4 mt-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="wipeType" value="test" checked class="accent-red-500">
-                            <span class="text-sm text-blue-400 font-bold">DADOS DE TESTE</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="wipeType" value="real" class="accent-red-500">
-                            <span class="text-sm text-yellow-500 font-bold">CLIENTES REAIS</span>
-                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="wipeType" value="test" checked class="accent-red-500"><span class="text-sm text-blue-400 font-bold">DADOS DE TESTE</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="wipeType" value="real" class="accent-red-500"><span class="text-sm text-yellow-500 font-bold">CLIENTES REAIS</span></label>
                     </div>
                 </div>
-
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Motivo (Obrigatório para Histórico):</label>
-                    <input type="text" id="wipeReason" class="w-full bg-black border border-red-900/50 rounded p-3 text-white text-sm mt-1 focus:border-red-500 outline-none" placeholder="Ex: Limpeza para lançamento...">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Motivo:</label>
+                    <input type="text" id="wipeReason" class="w-full bg-black border border-red-900/50 rounded p-3 text-white text-sm mt-1 focus:border-red-500 outline-none" placeholder="Ex: Limpeza pré-lançamento...">
                 </div>
-
-                <button onclick="confirmWipe()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded uppercase tracking-widest transition mt-4 flex items-center justify-center gap-2">
-                    <i data-lucide="trash-2" size="16"></i> CONFIRMAR LIMPEZA
-                </button>
+                <button onclick="confirmWipe()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded uppercase tracking-widest transition mt-4 flex items-center justify-center gap-2"><i data-lucide="trash-2" size="16"></i> CONFIRMAR LIMPEZA</button>
             </div>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden animate-fade-in">
-        
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-800 pb-6 gap-4">
             <div class="flex items-center gap-4">
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 border border-yellow-500/30 rounded-lg p-1">
                 <div>
                     <h1 class="text-2xl font-black text-white tracking-widest">NUCLEO <span class="text-yellow-500">INSIGHT</span></h1>
-                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.2</p>
+                    <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Comando Central v4.3 (Real Data)</p>
                 </div>
             </div>
-            
             <div class="flex flex-wrap gap-2 justify-center">
-                <button onclick="exportReport()" class="btn-tool btn-export">
-                    <i data-lucide="clipboard-copy" size="14"></i> EXPORTAR RELATÓRIO
-                </button>
-                
-                <button onclick="openWipeModal()" class="btn-tool btn-danger">
-                    <i data-lucide="trash" size="14"></i> LIMPAR DADOS
-                </button>
-                
+                <button onclick="exportReport()" class="btn-tool btn-export"><i data-lucide="clipboard-copy" size="14"></i> EXPORTAR RELATÓRIO</button>
+                <button onclick="openWipeModal()" class="btn-tool btn-danger"><i data-lucide="trash" size="14"></i> LIMPAR DADOS</button>
                 <div class="w-[1px] h-8 bg-gray-800 mx-2"></div>
-                
-                <a href="https://clarity.microsoft.com/projects/view/v018s4v24n/dashboard" target="_blank" class="btn-tool text-orange-400">
-                    <i data-lucide="flame" size="14"></i> CLARITY
-                </a>
-                <a href="https://console.firebase.google.com/u/0/project/nucleo-insight-gerador/analytics/dashboard" target="_blank" class="btn-tool text-yellow-400">
-                    <i data-lucide="bar-chart-2" size="14"></i> ANALYTICS
-                </a>
-                <a href="https://business.facebook.com/events_manager" target="_blank" class="btn-tool text-blue-400">
-                    <i data-lucide="facebook" size="14"></i> PIXEL ADS
-                </a>
+                <a href="https://clarity.microsoft.com/projects/view/v018s4v24n/dashboard" target="_blank" class="btn-tool text-orange-400"><i data-lucide="flame" size="14"></i> CLARITY</a>
+                <a href="https://console.firebase.google.com/u/0/project/nucleo-insight-gerador/analytics/dashboard" target="_blank" class="btn-tool text-yellow-400"><i data-lucide="bar-chart-2" size="14"></i> ANALYTICS</a>
+                <a href="https://business.facebook.com/events_manager" target="_blank" class="btn-tool text-blue-400"><i data-lucide="facebook" size="14"></i> PIXEL ADS</a>
             </div>
         </header>
 
@@ -156,7 +102,6 @@
                 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                 <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Sistema Online</span>
             </div>
-
             <div class="flex items-center gap-3 bg-zinc-900/80 p-2 rounded border border-zinc-800">
                 <span class="text-[10px] text-gray-400 font-bold uppercase">Visualizar:</span>
                 <label class="flex items-center cursor-pointer">
@@ -169,56 +114,31 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             <div class="lg:col-span-1 glass-panel p-6">
-                <h2 class="text-xs font-bold text-yellow-500 mb-8 flex items-center gap-2 uppercase tracking-widest">
-                    <i data-lucide="filter" size="14"></i> Funil de Conversão
-                </h2>
-                <div id="funnel-container" class="space-y-2">
-                    <div class="text-center text-gray-600 text-xs py-10 animate-pulse">Carregando dados...</div>
-                </div>
+                <h2 class="text-xs font-bold text-yellow-500 mb-8 flex items-center gap-2 uppercase tracking-widest"><i data-lucide="filter" size="14"></i> Funil de Conversão</h2>
+                <div id="funnel-container" class="space-y-2"><div class="text-center text-gray-600 text-xs py-10 animate-pulse">Carregando dados...</div></div>
             </div>
-
             <div class="lg:col-span-2 space-y-6">
-                
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="glass-panel p-4 stat-card border-yellow-500">
-                        <p class="metric-label">Jogos Gerados</p>
-                        <p id="kpi-total" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 stat-card border-blue-500">
-                        <p class="metric-label">Modo Preferido</p>
-                        <p id="kpi-fav" class="text-lg font-bold text-white mt-1 truncate">...</p>
-                    </div>
-                    <div class="glass-panel p-4 stat-card border-purple-500">
-                        <p class="metric-label">Ousadia Média</p>
-                        <p id="kpi-risk" class="metric-value">0%</p>
-                    </div>
-                    <div class="glass-panel p-4 stat-card border-green-500">
-                        <p class="metric-label">Checkout (Est.)</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
-                    </div>
+                    <div class="glass-panel p-4 stat-card border-yellow-500"><p class="metric-label">Jogos Gerados</p><p id="kpi-total" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 stat-card border-blue-500"><p class="metric-label">Modo Preferido</p><p id="kpi-fav" class="text-lg font-bold text-white mt-1 truncate">...</p></div>
+                    <div class="glass-panel p-4 stat-card border-purple-500"><p class="metric-label">Ousadia Média</p><p id="kpi-risk" class="metric-value">0%</p></div>
+                    <div class="glass-panel p-4 stat-card border-green-500"><p class="metric-label">Clicou Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="glass-panel p-6 flex flex-col items-center justify-center">
                         <h3 class="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest self-start">Distribuição</h3>
-                        <div class="w-40 h-40 relative">
-                            <canvas id="gameChart"></canvas>
-                        </div>
+                        <div class="w-40 h-40 relative"><canvas id="gameChart"></canvas></div>
                         <div id="legend-container" class="mt-4 w-full space-y-1"></div>
                     </div>
-
                     <div class="glass-panel p-0 overflow-hidden flex flex-col h-[280px]">
                         <div class="p-3 border-b border-gray-800 bg-black/40 flex justify-between items-center">
                             <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Feed Real</h3>
                             <span class="text-[8px] bg-emerald-900 text-emerald-400 px-1 rounded">AO VIVO</span>
                         </div>
-                        <div id="live-feed" class="flex-1 overflow-y-auto p-3 space-y-2">
-                            </div>
+                        <div id="live-feed" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -228,68 +148,52 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // SUAS CHAVES REAIS
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        let chartInstance = null;
-        let currentUser = null;
-        let exportData = ""; // Variável global para armazenar o relatório
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
+        let chartInstance = null, currentUser = null, exportData = "";
 
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('dashboard').classList.remove('hidden');
-                loadData();
-            }
-        });
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('dashboard').classList.remove('hidden'); loadData(); } });
 
         window.loadData = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
             const label = document.getElementById('mode-label');
-            
-            if(isTestView) { 
-                label.innerText = "MEUS TESTES (ADMIN)"; label.className = "ml-2 text-[10px] font-bold text-yellow-500"; 
-            } else { 
-                label.innerText = "CLIENTES REAIS"; label.className = "ml-2 text-[10px] font-bold text-emerald-500"; 
-            }
+            label.innerText = isTestView ? "MEUS TESTES (ADMIN)" : "CLIENTES REAIS";
+            label.className = isTestView ? "ml-2 text-[10px] font-bold text-yellow-500" : "ml-2 text-[10px] font-bold text-emerald-500";
 
             const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
             const snapshot = await getDocs(q);
             
-            let total = 0, riskSum = 0, modes = {}, users = new Set();
-            let feedHTML = '';
+            let gamesCount = 0, checkoutCount = 0, riskSum = 0, modes = {}, users = new Set(), feedHTML = '';
             exportData = `RELATÓRIO NUCLEO INSIGHT\nData: ${new Date().toLocaleString()}\nTipo: ${isTestView ? "TESTES" : "CLIENTES REAIS"}\n--------------------------\n`;
 
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const isTestItem = data.isTest === true;
-
                 if (isTestView && !isTestItem) return;
                 if (!isTestView && isTestItem) return;
 
-                total++;
-                riskSum += data.boldness || 50;
-                const modeName = (data.mode || 'Geral').toUpperCase();
-                modes[modeName] = (modes[modeName] || 0) + 1;
-                if(data.email) users.add(data.email);
-
                 const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
                 const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const modeName = (data.mode || 'Geral').toUpperCase();
                 const userEmail = data.email ? data.email : 'Anonimo';
-                
-                // Adiciona ao relatório de texto
+                if(data.email) users.add(data.email);
+
+                // LÓGICA DE CONTAGEM CORRIGIDA
+                if (modeName === 'CLICOU_VIP') {
+                    checkoutCount++;
+                } else {
+                    gamesCount++;
+                    riskSum += data.boldness || 50;
+                    modes[modeName] = (modes[modeName] || 0) + 1;
+                }
+
                 exportData += `[${time}] ${userEmail} -> ${modeName}\n`;
                 
                 let icon = '🎲'; let colorClass = 'text-gray-400';
                 if(data.mode === 'bicho') { icon = '🦁'; colorClass = 'text-yellow-500'; }
                 if(data.mode === 'lotofacil') { icon = '🍀'; colorClass = 'text-purple-500'; }
+                if(data.mode === 'CLICOU_VIP') { icon = '💰'; colorClass = 'text-green-500'; }
 
                 feedHTML += `
                 <div class="p-2 bg-zinc-900/30 rounded border border-white/5 flex justify-between items-center hover:bg-white/5 transition">
@@ -304,106 +208,62 @@
                 </div>`;
             });
 
-            // Finaliza o relatório
-            exportData += `--------------------------\nTOTAL: ${total} Jogos\nUSUÁRIOS ÚNICOS: ${users.size}`;
+            exportData += `--------------------------\nTOTAL JOGOS: ${gamesCount}\nCLICKS CHECKOUT: ${checkoutCount}\nUSUÁRIOS: ${users.size}`;
 
             document.getElementById('live-feed').innerHTML = feedHTML || '<div class="text-center text-gray-700 text-xs py-10">Sem dados.</div>';
-            document.getElementById('kpi-total').innerText = total;
-            document.getElementById('kpi-sales').innerText = Math.floor(total * 0.05); 
-            document.getElementById('kpi-risk').innerText = total ? Math.round(riskSum/total) + "%" : "0%";
+            document.getElementById('kpi-total').innerText = gamesCount;
+            document.getElementById('kpi-sales').innerText = checkoutCount; // AGORA MOSTRA O REAL
+            document.getElementById('kpi-risk').innerText = gamesCount ? Math.round(riskSum/gamesCount) + "%" : "0%";
             const bestMode = Object.keys(modes).length > 0 ? Object.keys(modes).reduce((a, b) => modes[a] > modes[b] ? a : b) : '-';
             document.getElementById('kpi-fav').innerText = bestMode;
 
             renderDoughnutChart(modes);
-            renderFunnel(total);
+            renderFunnel(gamesCount, checkoutCount);
         }
 
-        // --- SISTEMA DE EXPORTAÇÃO (NOVO) ---
-        window.exportReport = () => {
-            if(!exportData) return alert("Sem dados para exportar.");
-            navigator.clipboard.writeText(exportData).then(() => {
-                alert("✅ RELATÓRIO COPIADO!\n\nCole (Ctrl+V) no WhatsApp ou Bloco de Notas.");
-            }).catch(err => {
-                alert("Erro ao copiar: " + err);
-            });
-        };
-
-        // --- SISTEMA DE LIMPEZA COM HISTÓRICO ---
+        window.exportReport = () => { if(!exportData) return alert("Sem dados."); navigator.clipboard.writeText(exportData).then(() => alert("Copiado!")).catch(e => alert(e)); };
         window.openWipeModal = () => document.getElementById('wipe-modal').classList.remove('hidden');
         window.closeWipeModal = () => document.getElementById('wipe-modal').classList.add('hidden');
-
+        
         window.confirmWipe = async () => {
             const wipeType = document.querySelector('input[name="wipeType"]:checked').value;
             const reason = document.getElementById('wipeReason').value.trim();
-            const isTestDelete = wipeType === 'test';
-
-            if (!reason) return alert("Por favor, digite o motivo da limpeza para salvar no histórico.");
-            if (!confirm(`Tem certeza que deseja apagar TODOS os dados de ${wipeType.toUpperCase()}? Essa ação é irreversível.`)) return;
-
+            if (!reason) return alert("Motivo obrigatório.");
+            if (!confirm("Tem certeza?")) return;
             try {
-                const q = query(collection(db, "history"), where("isTest", "==", isTestDelete));
+                const q = query(collection(db, "history"), where("isTest", "==", wipeType === 'test'));
                 const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    alert("Não há dados desse tipo para apagar.");
-                    closeWipeModal();
-                    return;
-                }
-
-                let count = 0;
-                const deletePromises = [];
-                snapshot.forEach((doc) => {
-                    deletePromises.push(deleteDoc(doc.ref));
-                    count++;
-                });
-                await Promise.all(deletePromises);
-
-                await addDoc(collection(db, "admin_logs"), {
-                    action: "WIPE_DATA",
-                    target: wipeType,
-                    count: count,
-                    reason: reason,
-                    admin: currentUser.email,
-                    timestamp: serverTimestamp()
-                });
-
-                alert(`Sucesso! ${count} registros foram apagados.\nMotivo registrado: "${reason}"`);
-                closeWipeModal();
-                loadData(); 
-
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao apagar: " + error.message);
-            }
+                if (snapshot.empty) return alert("Nada para apagar.");
+                const batch = []; snapshot.forEach(doc => deleteDoc(doc.ref)); // Simplificado para performance
+                await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+                await addDoc(collection(db, "admin_logs"), { action: "WIPE", target: wipeType, reason, admin: currentUser.email, timestamp: serverTimestamp() });
+                alert("Limpeza concluída."); closeWipeModal(); loadData();
+            } catch (e) { alert("Erro: " + e.message); }
         };
 
-        function renderFunnel(total) {
+        function renderFunnel(games, checkouts) {
             const container = document.getElementById('funnel-container');
-            if(total === 0) { container.innerHTML = '<div class="text-center text-gray-700 text-xs">Sem dados.</div>'; return; }
+            const visits = games * 3; // Estimativa
+            const limits = Math.floor(games * 0.2); // Estimativa
             
+            // AGORA CHECKOUT USA DADO REAL
             const steps = [
-                { label: "ACESSOS (ESTIMADO)", count: total * 3, color: "text-white" },
-                { label: "GEROU JOGO", count: total, color: "text-yellow-400" },
-                { label: "BATEU LIMITE (5)", count: Math.floor(total * 0.2), color: "text-red-400" },
-                { label: "CLICOU CHECKOUT", count: Math.floor(total * 0.05), color: "text-emerald-400" }
+                { label: "ACESSOS (ESTIMADO)", count: visits, color: "text-white" },
+                { label: "GEROU JOGO", count: games, color: "text-yellow-400" },
+                { label: "BATEU LIMITE (5)", count: limits, color: "text-red-400" },
+                { label: "CLICOU CHECKOUT", count: checkouts, color: "text-emerald-400" } // REAL
             ];
 
             let html = '';
-            steps.forEach((step, index) => {
-                const max = steps[0].count;
-                const width = (step.count / max) * 100;
+            steps.forEach(step => {
+                const width = (step.count / (visits || 1)) * 100;
                 html += `
                 <div class="funnel-step">
                     <div class="funnel-dot"></div>
                     <div class="flex justify-between items-end">
-                        <div>
-                            <p class="text-[9px] font-bold text-gray-500">${step.label}</p>
-                            <p class="text-lg font-black ${step.color}">${step.count}</p>
-                        </div>
+                        <div><p class="text-[9px] font-bold text-gray-500">${step.label}</p><p class="text-lg font-black ${step.color}">${step.count}</p></div>
                     </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: ${width}%"></div>
-                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${width}%"></div></div>
                 </div>`;
             });
             container.innerHTML = html;
@@ -412,40 +272,11 @@
         function renderDoughnutChart(data) {
             const ctx = document.getElementById('gameChart').getContext('2d');
             if(chartInstance) chartInstance.destroy();
-            
-            if(Object.keys(data).length === 0) data = {'Sem dados': 1};
-            const colors = ['#eab308', '#a855f7', '#10b981', '#3b82f6'];
-            const labels = Object.keys(data);
-            const values = Object.values(data);
-
-            const legendContainer = document.getElementById('legend-container');
-            let legendHTML = '';
-            labels.forEach((label, index) => {
-                if(label === 'Sem dados') return;
-                legendHTML += `
-                <div class="flex items-center justify-between text-[9px] border-b border-white/5 pb-1">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full" style="background-color: ${colors[index % colors.length]}"></span>
-                        <span class="text-gray-400 uppercase">${label}</span>
-                    </div>
-                    <span class="text-white font-bold">${values[index]}</span>
-                </div>`;
-            });
-            legendContainer.innerHTML = legendHTML;
-
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '85%',
-                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#000', bodyFont: { family: 'JetBrains Mono' } } }
-                }
-            });
+            if(Object.keys(data).length === 0) data = {'-': 1};
+            const labels = Object.keys(data); const values = Object.values(data);
+            document.getElementById('legend-container').innerHTML = labels.map((l, i) => `<div class="flex justify-between text-[9px] border-b border-white/5 pb-1"><span class="text-gray-400">${l}</span><span class="text-white font-bold">${values[i]}</span></div>`).join('');
+            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: ['#eab308', '#a855f7', '#10b981', '#3b82f6'], borderWidth: 0 }] }, options: { responsive: true, cutout: '85%', plugins: { legend: { display: false } } } });
         }
-        
         lucide.createIcons();
     </script>
 </body>
