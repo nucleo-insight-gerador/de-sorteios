@@ -24,7 +24,7 @@
         /* --- FUNDO VIVO (CANVAS) --- */
         #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.3; pointer-events: none; }
 
-        /* --- TICKER DE GANHADORES (MARQUEE) --- */
+        /* --- TICKER --- */
         .marquee-container { 
             background: rgba(0, 255, 136, 0.1); border-bottom: 1px solid rgba(0, 255, 136, 0.2); 
             height: 30px; overflow: hidden; white-space: nowrap; position: relative; z-index: 10; display: flex; align-items: center;
@@ -36,9 +36,9 @@
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
         /* --- UI ELEMENTS --- */
-        .z-content { position: relative; z-index: 2; }
+        .z-content { position: relative; z-index: 50; } /* Z-INDEX AUMENTADO PARA CLIQUE */
         
-        /* BOTÃO PULSANTE (O CORAÇÃO) */
+        /* BOTÃO PULSANTE */
         .btn-pulse {
             background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
             border: none; color: #000; padding: 20px;
@@ -57,7 +57,7 @@
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); transform: scale(1.02); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); transform: scale(1); } }
         @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-        /* CARDS DE JOGO (CYBERPUNK) */
+        /* CARDS DE JOGO */
         .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
         .game-card { 
             background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; 
@@ -67,36 +67,27 @@
             border-color: var(--primary); background: rgba(255, 215, 0, 0.15); 
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); 
         }
-        .game-card.active::before {
-            content: '●'; color: var(--primary); position: absolute; top: 5px; right: 5px; font-size: 8px;
-        }
+        .game-card.active::before { content: '●'; color: var(--primary); position: absolute; top: 5px; right: 5px; font-size: 8px; }
 
-        /* SLIDER NEON */
+        /* SLIDER */
         input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: #222; border-radius: 3px; outline: none; } 
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); box-shadow: 0 0 10px var(--primary); cursor: grab; }
 
-        /* SCREENS & TRANSITIONS */
+        /* SCREENS */
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; position: relative; z-index: 2; }
         .screen.active { display: flex; animation: fadeUp 0.4s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LOADING MATRIX STYLE */
+        /* LOADING & BALLS */
         .matrix-text { color: var(--primary); font-family: 'JetBrains Mono'; font-size: 12px; text-align: center; margin-top: 10px; opacity: 0.8; }
         .spin-container { display: flex; justify-content: center; gap: 5px; font-size: 24px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; }
         .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
-
-        /* RESULT BALLS (SLOT EFFECT) */
         .result-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 30px 0; perspective: 1000px; }
         .ball { 
-            width: 48px; height: 48px; 
-            background: linear-gradient(135deg, #222, #000); 
-            border: 1px solid #444; color: var(--primary);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-family: 'JetBrains Mono'; font-weight: 800; font-size: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            opacity: 0; transform: rotateX(90deg); /* Começa escondido */
+            width: 48px; height: 48px; background: linear-gradient(135deg, #222, #000); border: 1px solid #444; color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; transform: rotateX(90deg); 
         }
-        /* Classe para animar a entrada */
         .ball.reveal { animation: flipIn 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes flipIn { from { opacity: 0; transform: rotateX(90deg) translateY(20px); } to { opacity: 1; transform: rotateX(0) translateY(0); } }
 
@@ -144,10 +135,10 @@
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover; position:relative; z-index:2;">
         </div>
         <h1 style="font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 2px;">NUCLEO <span style="color:var(--primary)">INSIGHT</span></h1>
-        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.0</p>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:4px;">QUANTUM INTELLIGENCE v5.1</p>
         
-        <div style="width:100%; max-width:300px; margin-top:40px;">
-            <button id="btnLogin" class="btn-google w-full" style="font-family:'Rajdhani'; font-weight:bold; text-transform:uppercase;">
+        <div style="width:100%; max-width:300px; margin-top:40px; position: relative; z-index: 100;">
+            <button id="btnLogin" class="btn-google w-full" style="font-family:'Rajdhani'; font-weight:bold; text-transform:uppercase; z-index:100; cursor:pointer;">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Iniciar Sessão Segura
             </button>
             <p style="color:#333; font-size:9px; margin-top:15px;">🔒 CONEXÃO CRIPTOGRAFADA</p>
@@ -199,16 +190,13 @@
         </div>
 
         <div style="margin-top:auto;">
-            <button onclick="checkLimitAndStart()" class="btn-pulse">
-                DECODIFICAR PADRÃO
-            </button>
+            <button onclick="checkLimitAndStart()" class="btn-pulse">DECODIFICAR PADRÃO</button>
         </div>
     </div>
 
     <div id="screen-loading" class="screen z-content" style="justify-content:center; align-items:center;">
         <i data-lucide="cpu" size="64" class="text-gold" style="animation:spin 3s linear infinite;"></i>
-        <div class="spin-container" id="spinContainer">
-            </div>
+        <div class="spin-container" id="spinContainer"></div>
         <div id="terminalText" class="matrix-text">INICIALIZANDO NEURAL CORE...</div>
     </div>
 
@@ -244,7 +232,9 @@
         import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
+        // CHAVES ORIGINAIS (QUE FUNCIONARAM NA v3.6)
         const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
+        
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
@@ -256,73 +246,31 @@
         const isTestMode = sessionStorage.getItem('isTest') === 'true';
         const DAILY_LIMIT = 5;
 
-        // --- BACKGROUND CANVAS (NETWORK EFFECT) ---
-        const canvas = document.getElementById('neural-canvas');
-        const ctx = canvas.getContext('2d');
+        // --- VISUAL EFFECTS ---
+        const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
         let width, height, particles = [];
-        
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-        class Particle {
-            constructor() { this.x = Math.random()*width; this.y = Math.random()*height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; this.size = Math.random()*2; }
-            update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>width) this.vx*=-1; if(this.y<0||this.y>height) this.vy*=-1; }
-            draw() { ctx.fillStyle = 'rgba(255, 215, 0, 0.3)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); }
-        }
+        class Particle { constructor() { this.x = Math.random()*width; this.y = Math.random()*height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; this.size = Math.random()*2; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>width) this.vx*=-1; if(this.y<0||this.y>height) this.vy*=-1; } draw() { ctx.fillStyle = 'rgba(255, 215, 0, 0.3)'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); } }
         function initParticles() { particles = []; for(let i=0; i<50; i++) particles.push(new Particle()); }
-        function animateParticles() {
-            ctx.clearRect(0,0,width,height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            // Lines
-            for(let i=0; i<particles.length; i++) {
-                for(let j=i; j<particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x; let dy = particles[i].y - particles[j].y; let dist = Math.sqrt(dx*dx + dy*dy);
-                    if(dist < 100) { ctx.strokeStyle = `rgba(255, 215, 0, ${0.1 - dist/1000})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); }
-                }
-            }
-            requestAnimationFrame(animateParticles);
-        }
+        function animateParticles() { ctx.clearRect(0,0,width,height); particles.forEach(p => { p.update(); p.draw(); }); for(let i=0; i<particles.length; i++) { for(let j=i; j<particles.length; j++) { let dx = particles[i].x - particles[j].x; let dy = particles[i].y - particles[j].y; let dist = Math.sqrt(dx*dx + dy*dy); if(dist < 100) { ctx.strokeStyle = `rgba(255, 215, 0, ${0.1 - dist/1000})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); } } } requestAnimationFrame(animateParticles); }
         window.addEventListener('resize', resize); resize(); initParticles(); animateParticles();
 
-        // --- LOGIC ---
-        window.selectGame = (mode, el) => {
-            currentMode = mode; document.getElementById('gameType').value = mode;
-            document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active');
-            const inp = document.getElementById('dreamInput');
-            if(mode === 'bicho') { inp.style.display = 'block'; inp.focus(); } else { inp.style.display = 'none'; }
-        }
+        window.selectGame = (mode, el) => { currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); if(mode === 'bicho') { inp.style.display = 'block'; inp.focus(); } else { inp.style.display = 'none'; } }
+        window.updateBoldness = (val) => { currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; const root = document.documentElement; if(val < 35) root.style.setProperty('--current-color', '#00ff88'); else if(val < 70) root.style.setProperty('--current-color', '#ffd700'); else root.style.setProperty('--current-color', '#ff0055'); }
 
-        window.updateBoldness = (val) => {
-            currentBoldness = val; 
-            document.getElementById('boldnessValue').innerText = val + '%';
-            const root = document.documentElement;
-            if(val < 35) root.style.setProperty('--current-color', '#00ff88');
-            else if(val < 70) root.style.setProperty('--current-color', '#ffd700');
-            else root.style.setProperty('--current-color', '#ff0055');
-        }
-
-        async function fetchRealLotteryData(mode) {
-            const map = {'lotofacil': 'lotofacil', 'mega': 'megasena', 'quina': 'quina'};
-            if(!map[mode]) return null;
-            try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); if(!r.ok) throw Error(); return await r.json(); } catch(e) { return null; }
-        }
+        async function fetchRealLotteryData(mode) { const map = {'lotofacil': 'lotofacil', 'mega': 'megasena', 'quina': 'quina'}; if(!map[mode]) return null; try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); if(!r.ok) throw Error(); return await r.json(); } catch(e) { return null; } }
         function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
         function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
-        async function checkServerUsage() {
-            if (!currentUser) return;
-            const today = new Date().toDateString(); const ref = doc(db, "usage", currentUser.uid);
-            try { const snap = await getDoc(ref); if(snap.exists()) { const d = snap.data(); if(d.date===today) userUsage=d.count; else { userUsage=0; await setDoc(ref,{date:today,count:0,email:currentUser.email},{merge:true}); } if(d.isVip) isVip=true; } else { userUsage=0; await setDoc(ref,{date:today,count:0,email:currentUser.email,isVip:false}); } updateUI(); } catch(e){}
-        }
+        async function checkServerUsage() { if (!currentUser) return; const today = new Date().toDateString(); const ref = doc(db, "usage", currentUser.uid); try { const snap = await getDoc(ref); if(snap.exists()) { const d = snap.data(); if(d.date===today) userUsage=d.count; else { userUsage=0; await setDoc(ref,{date:today,count:0,email:currentUser.email},{merge:true}); } if(d.isVip) isVip=true; } else { userUsage=0; await setDoc(ref,{date:today,count:0,email:currentUser.email,isVip:false}); } updateUI(); } catch(e){} }
         async function increment() { if(!currentUser || isVip || isTestMode) return; const today=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:today}); updateUI(); }
-        function updateUI() { 
-            const d = document.getElementById('usageCount'); 
-            if(isTestMode) { d.innerText = "∞ (TEST)"; d.style.color = "#4488ff"; }
-            else if(isVip) { d.innerText = "ILIMITADO"; d.style.color = "#00ff88"; }
-            else { d.innerText = `${userUsage} / ${DAILY_LIMIT}`; d.style.color = userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700"; }
-        }
-        
+        function updateUI() { const d = document.getElementById('usageCount'); if(isTestMode) { d.innerText = "∞ (TEST)"; d.style.color = "#4488ff"; } else if(isVip) { d.innerText = "ILIMITADO"; d.style.color = "#00ff88"; } else { d.innerText = `${userUsage} / ${DAILY_LIMIT}`; d.style.color = userUsage>=DAILY_LIMIT?"#ff4444":"#ffd700"; } }
         window.checkLimitAndStart = async () => { if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
 
-        document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
+        // --- LOGIN FIX ---
+        document.getElementById('btnLogin').addEventListener('click', async () => { 
+            try { await signInWithPopup(auth, provider); } catch(e) { alert("Erro ao logar: " + e.message); }
+        });
         onAuthStateChanged(auth, (user) => { if(user) { currentUser=user; if(!isTestMode) logEvent(analytics,'login'); document.getElementById('userInfo').innerText="FREE"; document.getElementById('userIdDisplay').innerText = user.email.split('@')[0]; showScreen('screen-ritual'); checkServerUsage(); } else { showScreen('screen-home'); } });
 
         const dreamDictionary = {'avestruz':1,'ovo':1,'aguia':2,'voar':2,'burro':3,'borboleta':4,'cachorro':5,'cabra':6,'carneiro':7,'camelo':8,'cobra':9,'coelho':10,'cavalo':11,'elefante':12,'galo':13,'gato':14,'jacare':15,'leao':16,'macaco':17,'porco':18,'pavao':19,'peru':20,'touro':21,'tigre':22,'urso':23,'veado':24,'vaca':25};
@@ -333,33 +281,20 @@
             const term = document.getElementById('terminalText');
             const msgs = ["INJETANDO CÓDIGO...", "ACESSANDO CAIXA_GOV_BR...", "VARRENDO PADRÕES...", "CALIBRANDO ALGORITMO..."];
             let step = 0;
-            
-            // MATRIX EFFECT ON LOADING
             const spin = document.getElementById('spinContainer');
             const spinInterval = setInterval(() => {
                 spin.innerHTML = '';
-                for(let i=0; i<6; i++) {
-                    const d = document.createElement('div');
-                    d.className = 'spin-digit';
-                    d.innerText = Math.floor(Math.random()*10);
-                    d.style.opacity = Math.random();
-                    spin.appendChild(d);
-                }
+                for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className = 'spin-digit'; d.innerText = Math.floor(Math.random()*10); d.style.opacity = Math.random(); spin.appendChild(d); }
                 if(step < msgs.length && Math.random() > 0.8) { term.innerText = msgs[step++]; }
             }, 80);
-
-            setTimeout(() => { clearInterval(spinInterval); generateResult(); }, 3500); // 3.5s de suspense
+            setTimeout(() => { clearInterval(spinInterval); generateResult(); }, 3500); 
         }
 
         async function generateResult() {
             await increment();
             currentMode = document.getElementById('gameType').value; 
-            const grid = document.getElementById('numbersGrid'); 
-            const animalRes = document.getElementById('animalResult'); 
-            const logText = document.getElementById('logText');
-            const apiStatus = document.getElementById('apiStatus');
+            const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
-            
             let seed = getDailySeed(); let isSafeMode = currentBoldness < 40; let realData = null;
             if(isSafeMode && (currentMode==='lotofacil'||currentMode==='mega')) realData = await fetchRealLotteryData(currentMode);
 
@@ -376,37 +311,21 @@
                 let max=25, count=15; if (currentMode==='mega'){max=60;count=6;} if (currentMode==='quina'){max=80;count=5;}
                 let nums = new Set();
                 if(isSafeMode) {
-                    if(realData) {
-                        let last = realData.dezenas.map(d=>parseInt(d));
-                        for(let i=0; i<Math.floor(count/2); i++) nums.add(last[i]);
-                        logText.innerText = `Base: Concurso ${realData.numero}`; apiStatus.innerText = "FONTE: CAIXA ECONÔMICA FEDERAL";
-                    } else {
-                        logText.innerText = "Base: Histórico Estatístico"; apiStatus.innerText = "FONTE: DATABASE INTERNA";
-                    }
+                    if(realData) { let last = realData.dezenas.map(d=>parseInt(d)); for(let i=0; i<Math.floor(count/2); i++) nums.add(last[i]); logText.innerText = `Base: Concurso ${realData.numero}`; apiStatus.innerText = "FONTE: CAIXA ECONÔMICA FEDERAL"; } else { logText.innerText = "Base: Histórico Estatístico"; apiStatus.innerText = "FONTE: DATABASE INTERNA"; }
                     while(nums.size < count) nums.add(Math.floor(seededRandom(seed++) * max) + 1);
-                } else {
-                    while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1);
-                    logText.innerText = "Estratégia: Quebra de Padrão (Caos)"; apiStatus.innerText = "FONTE: ENTROPIA PURA";
-                }
+                } else { while(nums.size < count) nums.add(Math.floor(Math.random() * max) + 1); logText.innerText = "Estratégia: Quebra de Padrão (Caos)"; apiStatus.innerText = "FONTE: ENTROPIA PURA"; }
                 currentNumbers = Array.from(nums).sort((a,b)=>a-b);
                 renderBalls(currentNumbers);
             }
-
-            if(currentUser) {
-                await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() });
-            }
+            if(currentUser) { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, numbers: currentNumbers, mode: currentMode, isTest: isTestMode, createdAt: serverTimestamp() }); }
             showScreen('screen-result');
         }
 
         function renderBalls(numbers) {
             const grid = document.getElementById('numbersGrid');
             numbers.forEach((n, i) => {
-                const div = document.createElement('div'); 
-                div.className = 'ball'; 
-                div.innerText = n < 10 ? '0'+n : n;
-                div.style.animationDelay = (i * 0.1) + 's'; // Efeito cascata
-                setTimeout(() => div.classList.add('reveal'), 100);
-                grid.appendChild(div);
+                const div = document.createElement('div'); div.className = 'ball'; div.innerText = n < 10 ? '0'+n : n;
+                div.style.animationDelay = (i * 0.1) + 's'; setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
             });
         }
 
