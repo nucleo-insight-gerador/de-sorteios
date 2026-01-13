@@ -407,16 +407,18 @@
             logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' });
         }
 
-        // FUNÇÃO CENTRALIZADA DE LOG
+        // FUNÇÃO CENTRALIZADA DE LOG - CORRIGIDA
         async function logAction(actionName, details = {}) {
             if(!currentUser) return;
             try {
+                // AGORA INCLUÍMOS A ORIGEM (UTM) EM TUDO
                 await addDoc(collection(db, "history"), { 
                     uid: currentUser.uid, 
                     email: currentUser.email, 
-                    mode: actionName, // Nome da ação (ex: AJUSTOU_INTENSIDADE)
-                    details: details, // Dados extras
-                    source: utmSource, // Origem do link (Zap, Insta)
+                    mode: actionName, 
+                    details: details, 
+                    source: utmSource, // ESSENCIAL PARA O PAINEL SABER A ORIGEM
+                    campaign: utmCampaign, // ESSENCIAL TAMBÉM
                     isTest: isTestMode, 
                     createdAt: serverTimestamp() 
                 });
