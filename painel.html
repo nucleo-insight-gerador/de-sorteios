@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper Admin | Gestão Total</title>
+    <title>Sniper Admin | Rastreamento Total</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,7 +47,7 @@
         <div class="text-center p-8 border border-indigo-500/30 rounded-xl bg-slate-900/50 backdrop-blur glass-panel">
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-16 h-16 mx-auto mb-4 animate-pulse">
             <h1 class="text-2xl text-white font-black mb-1 tracking-tight">SNIPER <span class="text-indigo-500">ADMIN</span></h1>
-            <p class="text-xs text-slate-400 mb-6 font-mono">RASTREAMENTO AVANÇADO v9.0</p>
+            <p class="text-xs text-slate-400 mb-6 font-mono">RASTREAMENTO AVANÇADO v9.1</p>
             <button id="btnLogin" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 mx-auto shadow-lg shadow-indigo-500/20">
                 <i data-lucide="lock" size="16"></i> ACESSAR PAINEL
             </button>
@@ -61,7 +61,7 @@
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 rounded-lg border border-indigo-500/20 p-1">
                 <div>
                     <h1 class="text-3xl font-black text-white tracking-tight">NUCLEO <span class="text-indigo-500">INSIGHT</span></h1>
-                    <p class="text-xs text-indigo-400 mt-1 font-mono">Painel de Controle v9.0 (Full Trace)</p>
+                    <p class="text-xs text-indigo-400 mt-1 font-mono">Painel de Controle v9.1 (Full Gestures)</p>
                 </div>
             </div>
             
@@ -151,6 +151,7 @@
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
         onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('dashboard').classList.remove('hidden'); loadData(); } });
 
+        // LOAD DATA - AGORA COM DETALHAMENTO VISUAL
         window.loadData = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
             
@@ -165,7 +166,6 @@
                 badgeLabel.innerText = "DADOS REAIS"; badgeLabel.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded border border-emerald-500/30";
             }
 
-            // BUSCA TUDO E FILTRA NA MÃO (PARA PEGAR ANTIGOS)
             const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(500));
             const snapshot = await getDocs(q);
             
@@ -173,25 +173,31 @@
 
             snapshot.forEach(doc => {
                 const data = doc.data();
+                let isTestItem = data.isTest === true;
                 
-                // LÓGICA DE FILTRO ROBUSTA (Resolve o problema dos dados antigos)
-                let isTestItem = data.isTest === true; // Se for true, é teste. Se for false ou undefined, é real.
-                
-                if (isTestView && !isTestItem) return; // Quero teste, mas item é real -> Pula
-                if (!isTestView && isTestItem) return; // Quero real, mas item é teste -> Pula
+                if (isTestView && !isTestItem) return; 
+                if (!isTestView && isTestItem) return; 
 
-                // AGRUPAMENTO POR EMAIL (Sessão)
+                // AGRUPAMENTO POR EMAIL
                 const userKey = data.email || 'Anonimo';
                 if (!sessions[userKey]) sessions[userKey] = { user: userKey, events: [] };
                 sessions[userKey].events.push(data);
 
+                // KPI COUNTER
                 const modeName = (data.mode || 'GERAL').toUpperCase();
-                if (modeName === 'CLICOU_VIP') checkoutCount++; else { gamesCount++; riskSum += data.boldness || 50; modes[modeName] = (modes[modeName] || 0) + 1; }
+                // Não conta "Gestos" (Acesso, Slider) nos KPIs principais de jogos
+                if (modeName === 'CLICOU_VIP') {
+                    checkoutCount++; 
+                } else if (!modeName.includes('ACESSOU') && !modeName.includes('AJUSTOU')) {
+                    gamesCount++; 
+                    riskSum += data.boldness || 50; 
+                    modes[modeName] = (modes[modeName] || 0) + 1; 
+                }
             });
 
             globalReportData = { sessions, gamesCount, checkoutCount, isTestView };
             
-            // Renderiza Feed Agrupado
+            // RENDERIZAÇÃO DO FEED
             const feedEl = document.getElementById('live-feed');
             feedEl.innerHTML = '';
             
@@ -204,17 +210,38 @@
                     const actionsCount = session.events.length;
                     const cardId = `sess-${idx}`;
 
-                    // HTML dos Detalhes (Lista de Gestos)
+                    // HTML DOS DETALHES (LISTA DE GESTOS COM ETIQUETAS)
                     let detailsHTML = session.events.map(evt => {
                         const evtTime = evt.createdAt ? new Date(evt.createdAt.seconds * 1000).toLocaleTimeString() : '--:--';
-                        const evtName = (evt.mode || 'Ação').toUpperCase();
-                        let icon = '🎲';
-                        if(evtName === 'CLICOU_VIP') icon = '💰 <span class="text-emerald-400 font-bold">CHECKOUT</span>';
-                        else if(evtName === 'BICHO') icon = '🦁';
-                        else if(evtName === 'LOTOFACIL') icon = '🍀';
+                        let evtName = (evt.mode || 'Ação').toUpperCase();
+                        let extraInfo = "";
+                        let icon = '🔹';
+
+                        if(evtName === 'CLICOU_VIP') {
+                            icon = '💰'; 
+                            evtName = '<span class="text-emerald-400 font-bold">CHECKOUT VIP</span>';
+                        }
+                        else if(evtName === 'ACESSOU_APP') {
+                            icon = '🚪';
+                            // MOSTRA ORIGEM
+                            if(evt.source && evt.source !== 'Direto') {
+                                extraInfo += `<span class="text-[9px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1 rounded ml-2 uppercase">${evt.source}</span>`;
+                            }
+                            if(evt.campaign && evt.campaign !== 'Orgânico') {
+                                extraInfo += `<span class="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-1 rounded ml-1 uppercase">${evt.campaign}</span>`;
+                            }
+                        }
+                        else if(evtName === 'AJUSTOU_INTENSIDADE') {
+                            icon = '🎚️';
+                            if(evt.details?.valor) extraInfo = `<span class="text-[10px] text-blue-400 font-mono ml-2">[${evt.details.valor}]</span>`;
+                        }
+                        else {
+                            icon = '🎲'; // Jogos
+                        }
                         
-                        return `<div class="flex justify-between text-[10px] text-slate-400 py-1 border-b border-white/5 last:border-0">
-                            <span>${icon} ${evtName}</span> <span class="font-mono">${evtTime}</span>
+                        return `<div class="flex justify-between items-center text-[10px] text-slate-400 py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
+                            <div class="flex items-center">${icon} <span class="ml-2">${evtName}</span> ${extraInfo}</div>
+                            <span class="font-mono opacity-50">${evtTime}</span>
                         </div>`;
                     }).join('');
 
@@ -230,7 +257,7 @@
                                 <button class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">▼</button>
                             </div>
                         </div>
-                        <div id="${cardId}" class="hidden-details mt-2 pl-2 border-l-2 border-white/10 bg-black/20 p-2 rounded" style="display:none;">
+                        <div id="${cardId}" class="hidden-details mt-2 border-t border-white/10 bg-black/20 rounded" style="display:none;">
                             ${detailsHTML}
                         </div>
                     </div>`;
@@ -260,7 +287,7 @@
             chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, cutout: '85%', plugins: { legend: { display: false } } } });
         }
 
-        // COPIAR RELATÓRIO DETALHADO
+        // COPIAR RELATÓRIO DETALHADO (ATUALIZADO PARA INCLUIR DETALHES)
         window.copyReport = () => {
             if(!globalReportData.sessions) return alert("Nada para copiar.");
             let text = `📊 *RELATÓRIO DETALHADO NUCLEO INSIGHT*\n📅 ${new Date().toLocaleString()}\nMODO: ${globalReportData.isTestView ? 'TESTE' : 'REAL'}\n\n`;
@@ -269,7 +296,11 @@
                 text += `👤 *${s.user}*\n`;
                 s.events.forEach(e => {
                     const t = e.createdAt ? new Date(e.createdAt.seconds * 1000).toLocaleTimeString() : '-';
-                    const m = (e.mode || '').toUpperCase();
+                    let m = (e.mode || '').toUpperCase();
+                    // Inclui os detalhes no texto copiado
+                    if(e.source && e.source !== 'Direto') m += ` [Origem: ${e.source}]`;
+                    if(e.details?.valor) m += ` [Valor: ${e.details.valor}]`;
+                    
                     text += `   ├─ [${t}] ${m}\n`;
                 });
                 text += `   └─ ----------------\n`;
@@ -282,35 +313,47 @@
         window.openWipeModal = () => document.getElementById('wipe-modal').classList.remove('hidden');
         window.closeWipeModal = () => document.getElementById('wipe-modal').classList.add('hidden');
         
-        window.saveLinkToFirebase = async () => { /* MESMO CODIGO ANTERIOR */ };
-        window.copyFinalLink = () => { /* MESMO CODIGO */ };
+        window.saveLinkToFirebase = async () => {
+            let nameInput = document.getElementById('linkName').value;
+            let cleanName = nameInput.replace(/https?:\/\//g, "").replace(/\//g, "").replace(/\\/g, "").replace(/\s/g, "").split('?')[0];
+            if(!cleanName) return alert("Digite apenas uma palavra para o link (ex: zap). NÃO COLE URLS!");
+            document.getElementById('linkName').value = cleanName;
+            const btn = document.getElementById('btnSaveLink');
+            btn.innerText = "Salvando..."; btn.disabled = true;
+            const source = document.getElementById('utmSource').value || 'direct';
+            const campaign = document.getElementById('utmCampaign').value || 'none';
+            const longUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/?utm_source=${source}&utm_campaign=${campaign}`;
+            const shortUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/r.html?id=${cleanName}`;
+            try {
+                await setDoc(doc(db, "short_links", cleanName), { target: longUrl, clicks: 0, created_at: new Date() });
+                document.getElementById('finalLinkDisplay').innerText = shortUrl;
+                document.getElementById('codeResult').classList.remove('hidden');
+                btn.innerText = "✅ SALVO!"; setTimeout(() => { btn.innerText = "💾 SALVAR LINK"; btn.disabled = false; }, 3000);
+            } catch (error) { console.error(error); alert("Erro ao salvar."); btn.innerText = "Erro!"; btn.disabled = false; }
+        };
+        
+        window.copyFinalLink = () => {
+            const link = document.getElementById('finalLinkDisplay').innerText;
+            navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
+        }
 
-        // TRATOR DE LIMPEZA (CORRIGIDO PARA APAGAR TUDO)
         window.confirmWipe = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
             const reason = document.getElementById('wipeReason').value;
             if(reason !== 'DELETAR') return alert("Digite DELETAR para confirmar.");
-
             try {
-                // PEGA TUDO SEM FILTRO NO BANCO (FILTRAREMOS NO CLIENTE)
                 const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(500));
                 const snapshot = await getDocs(q);
                 const promises = [];
-
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    let isTestItem = data.isTest === true; // Normaliza
-
-                    // SE ESTOU VENDO TESTE, APAGO O QUE É TESTE
-                    // SE ESTOU VENDO REAL, APAGO O QUE É REAL (OU SEM CAMPO DEFINIDO)
+                    let isTestItem = data.isTest === true;
                     if ((isTestView && isTestItem) || (!isTestView && !isTestItem)) {
                         promises.push(deleteDoc(doc.ref));
                     }
                 });
-
                 await Promise.all(promises);
                 if(currentUser) await addDoc(collection(db, "admin_logs"), { action: "WIPE_FULL", target: isTestView ? "TEST" : "REAL", reason, admin: currentUser.email, timestamp: serverTimestamp() });
-                
                 alert(`Limpeza Concluída! ${promises.length} registros apagados.`);
                 location.reload(); 
             } catch (e) { alert("Erro: " + e.message); }
