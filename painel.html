@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper Admin | Rastreamento Total</title>
+    <title>Sniper Admin | Master</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,7 +47,7 @@
         <div class="text-center p-8 border border-indigo-500/30 rounded-xl bg-slate-900/50 backdrop-blur glass-panel">
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-16 h-16 mx-auto mb-4 animate-pulse">
             <h1 class="text-2xl text-white font-black mb-1 tracking-tight">SNIPER <span class="text-indigo-500">ADMIN</span></h1>
-            <p class="text-xs text-slate-400 mb-6 font-mono">RASTREAMENTO AVANÇADO v9.1</p>
+            <p class="text-xs text-slate-400 mb-6 font-mono">VERSÃO FINAL v9.2</p>
             <button id="btnLogin" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 mx-auto shadow-lg shadow-indigo-500/20">
                 <i data-lucide="lock" size="16"></i> ACESSAR PAINEL
             </button>
@@ -61,7 +61,7 @@
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 rounded-lg border border-indigo-500/20 p-1">
                 <div>
                     <h1 class="text-3xl font-black text-white tracking-tight">NUCLEO <span class="text-indigo-500">INSIGHT</span></h1>
-                    <p class="text-xs text-indigo-400 mt-1 font-mono">Painel de Controle v9.1 (Full Gestures)</p>
+                    <p class="text-xs text-indigo-400 mt-1 font-mono">Comando Central</p>
                 </div>
             </div>
             
@@ -75,6 +75,11 @@
                 </div>
 
                 <div class="flex gap-2 no-print">
+                    <a href="https://nucleo-insight-gerador.github.io/de-sorteios/?mode=test" target="_blank" 
+                       class="bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                        <i data-lucide="test-tube" size="14"></i> MODO TESTE SEGURO
+                    </a>
+                    
                     <button onclick="copyReport()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"><i data-lucide="clipboard" size="14"></i> COPIAR DETALHADO</button>
                     <button onclick="loadData()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"><i data-lucide="refresh-cw" size="14"></i> ATUALIZAR</button>
                 </div>
@@ -151,7 +156,6 @@
         document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, provider));
         onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('dashboard').classList.remove('hidden'); loadData(); } });
 
-        // LOAD DATA - AGORA COM DETALHAMENTO VISUAL
         window.loadData = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
             
@@ -178,14 +182,11 @@
                 if (isTestView && !isTestItem) return; 
                 if (!isTestView && isTestItem) return; 
 
-                // AGRUPAMENTO POR EMAIL
                 const userKey = data.email || 'Anonimo';
                 if (!sessions[userKey]) sessions[userKey] = { user: userKey, events: [] };
                 sessions[userKey].events.push(data);
 
-                // KPI COUNTER
                 const modeName = (data.mode || 'GERAL').toUpperCase();
-                // Não conta "Gestos" (Acesso, Slider) nos KPIs principais de jogos
                 if (modeName === 'CLICOU_VIP') {
                     checkoutCount++; 
                 } else if (!modeName.includes('ACESSOU') && !modeName.includes('AJUSTOU')) {
@@ -197,7 +198,6 @@
 
             globalReportData = { sessions, gamesCount, checkoutCount, isTestView };
             
-            // RENDERIZAÇÃO DO FEED
             const feedEl = document.getElementById('live-feed');
             feedEl.innerHTML = '';
             
@@ -210,7 +210,6 @@
                     const actionsCount = session.events.length;
                     const cardId = `sess-${idx}`;
 
-                    // HTML DOS DETALHES (LISTA DE GESTOS COM ETIQUETAS)
                     let detailsHTML = session.events.map(evt => {
                         const evtTime = evt.createdAt ? new Date(evt.createdAt.seconds * 1000).toLocaleTimeString() : '--:--';
                         let evtName = (evt.mode || 'Ação').toUpperCase();
@@ -223,44 +222,21 @@
                         }
                         else if(evtName === 'ACESSOU_APP') {
                             icon = '🚪';
-                            // MOSTRA ORIGEM
-                            if(evt.source && evt.source !== 'Direto') {
-                                extraInfo += `<span class="text-[9px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1 rounded ml-2 uppercase">${evt.source}</span>`;
-                            }
-                            if(evt.campaign && evt.campaign !== 'Orgânico') {
-                                extraInfo += `<span class="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-1 rounded ml-1 uppercase">${evt.campaign}</span>`;
-                            }
+                            if(evt.source && evt.source !== 'Direto') extraInfo += `<span class="text-[9px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1 rounded ml-2 uppercase">${evt.source}</span>`;
+                            if(evt.campaign && evt.campaign !== 'Orgânico') extraInfo += `<span class="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-1 rounded ml-1 uppercase">${evt.campaign}</span>`;
                         }
                         else if(evtName === 'AJUSTOU_INTENSIDADE') {
                             icon = '🎚️';
                             if(evt.details?.valor) extraInfo = `<span class="text-[10px] text-blue-400 font-mono ml-2">[${evt.details.valor}]</span>`;
                         }
                         else {
-                            icon = '🎲'; // Jogos
+                            icon = '🎲'; 
                         }
                         
-                        return `<div class="flex justify-between items-center text-[10px] text-slate-400 py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
-                            <div class="flex items-center">${icon} <span class="ml-2">${evtName}</span> ${extraInfo}</div>
-                            <span class="font-mono opacity-50">${evtTime}</span>
-                        </div>`;
+                        return `<div class="flex justify-between items-center text-[10px] text-slate-400 py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center">${icon} <span class="ml-2">${evtName}</span> ${extraInfo}</div><span class="font-mono opacity-50">${evtTime}</span></div>`;
                     }).join('');
 
-                    feedEl.innerHTML += `
-                    <div class="p-3 bg-slate-800/50 rounded border border-white/5 mb-2 hover:border-indigo-500/30 transition">
-                        <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('${cardId}').classList.toggle('hidden-details'); document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'block' ? 'none' : 'block';">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-white">${session.user.split('@')[0]}</span>
-                                <span class="text-[9px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">${time}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] text-slate-400">${actionsCount} ações</span>
-                                <button class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">▼</button>
-                            </div>
-                        </div>
-                        <div id="${cardId}" class="hidden-details mt-2 border-t border-white/10 bg-black/20 rounded" style="display:none;">
-                            ${detailsHTML}
-                        </div>
-                    </div>`;
+                    feedEl.innerHTML += `<div class="p-3 bg-slate-800/50 rounded border border-white/5 mb-2 hover:border-indigo-500/30 transition"><div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('${cardId}').classList.toggle('hidden-details'); document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'block' ? 'none' : 'block';"><div class="flex items-center gap-2"><span class="text-xs font-bold text-white">${session.user.split('@')[0]}</span><span class="text-[9px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">${time}</span></div><div class="flex items-center gap-2"><span class="text-[10px] text-slate-400">${actionsCount} ações</span><button class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">▼</button></div></div><div id="${cardId}" class="hidden-details mt-2 border-t border-white/10 bg-black/20 rounded" style="display:none;">${detailsHTML}</div></div>`;
                 });
             }
 
@@ -287,25 +263,20 @@
             chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, cutout: '85%', plugins: { legend: { display: false } } } });
         }
 
-        // COPIAR RELATÓRIO DETALHADO (ATUALIZADO PARA INCLUIR DETALHES)
         window.copyReport = () => {
             if(!globalReportData.sessions) return alert("Nada para copiar.");
             let text = `📊 *RELATÓRIO DETALHADO NUCLEO INSIGHT*\n📅 ${new Date().toLocaleString()}\nMODO: ${globalReportData.isTestView ? 'TESTE' : 'REAL'}\n\n`;
-            
             Object.values(globalReportData.sessions).forEach(s => {
                 text += `👤 *${s.user}*\n`;
                 s.events.forEach(e => {
                     const t = e.createdAt ? new Date(e.createdAt.seconds * 1000).toLocaleTimeString() : '-';
                     let m = (e.mode || '').toUpperCase();
-                    // Inclui os detalhes no texto copiado
                     if(e.source && e.source !== 'Direto') m += ` [Origem: ${e.source}]`;
                     if(e.details?.valor) m += ` [Valor: ${e.details.valor}]`;
-                    
                     text += `   ├─ [${t}] ${m}\n`;
                 });
                 text += `   └─ ----------------\n`;
             });
-            
             text += `\nRESUMO FINAL:\nJogos: ${globalReportData.gamesCount}\nCheckouts: ${globalReportData.checkoutCount}`;
             navigator.clipboard.writeText(text).then(() => alert("✅ Relatório Detalhado Copiado!"));
         };
@@ -322,6 +293,7 @@
             btn.innerText = "Salvando..."; btn.disabled = true;
             const source = document.getElementById('utmSource').value || 'direct';
             const campaign = document.getElementById('utmCampaign').value || 'none';
+            // LINK FINAL COM PARÂMETROS
             const longUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/?utm_source=${source}&utm_campaign=${campaign}`;
             const shortUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/r.html?id=${cleanName}`;
             try {
