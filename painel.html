@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper Admin | Master</title>
+    <title>Sniper Admin | Metrics Fix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -28,7 +28,6 @@
         .hidden-details { display: none; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -47,7 +46,7 @@
         <div class="text-center p-8 border border-indigo-500/30 rounded-xl bg-slate-900/50 backdrop-blur glass-panel">
             <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-16 h-16 mx-auto mb-4 animate-pulse">
             <h1 class="text-2xl text-white font-black mb-1 tracking-tight">SNIPER <span class="text-indigo-500">ADMIN</span></h1>
-            <p class="text-xs text-slate-400 mb-6 font-mono">VERSÃO FINAL v9.2</p>
+            <p class="text-xs text-slate-400 mb-6 font-mono">CORREÇÃO MÉTRICAS v9.3</p>
             <button id="btnLogin" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 mx-auto shadow-lg shadow-indigo-500/20">
                 <i data-lucide="lock" size="16"></i> ACESSAR PAINEL
             </button>
@@ -61,7 +60,7 @@
                 <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" class="w-12 h-12 rounded-lg border border-indigo-500/20 p-1">
                 <div>
                     <h1 class="text-3xl font-black text-white tracking-tight">NUCLEO <span class="text-indigo-500">INSIGHT</span></h1>
-                    <p class="text-xs text-indigo-400 mt-1 font-mono">Comando Central</p>
+                    <p class="text-xs text-indigo-400 mt-1 font-mono">Painel de Controle v9.3</p>
                 </div>
             </div>
             
@@ -75,12 +74,11 @@
                 </div>
 
                 <div class="flex gap-2 no-print">
-                    <a href="https://nucleo-insight-gerador.github.io/de-sorteios/?mode=test" target="_blank" 
-                       class="bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                        <i data-lucide="test-tube" size="14"></i> MODO TESTE SEGURO
+                    <a href="https://nucleo-insight-gerador.github.io/de-sorteios/?mode=test" target="_blank" class="bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                        <i data-lucide="test-tube" size="14"></i> MODO TESTE
                     </a>
                     
-                    <button onclick="copyReport()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"><i data-lucide="clipboard" size="14"></i> COPIAR DETALHADO</button>
+                    <button onclick="copyReport()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"><i data-lucide="clipboard" size="14"></i> COPIAR</button>
                     <button onclick="loadData()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2"><i data-lucide="refresh-cw" size="14"></i> ATUALIZAR</button>
                 </div>
             </div>
@@ -121,7 +119,7 @@
             <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="md:col-span-2"><div class="flex"><span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span><input type="text" id="linkName" placeholder="Ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none"></div></div>
-                <div><input type="text" id="utmSource" value="instagram" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 rounded placeholder-gray-600" placeholder="Source"></div>
+                <div><input type="text" id="utmSource" value="instagram" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 rounded placeholder-gray-600" placeholder="Source (Origem)"></div>
                 <div><input type="text" id="utmCampaign" placeholder="bio" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 rounded placeholder-gray-600"></div>
             </div>
             <button onclick="saveLinkToFirebase()" id="btnSaveLink" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs transition mb-4">💾 SALVAR LINK</button>
@@ -159,7 +157,6 @@
         window.loadData = async () => {
             const isTestView = document.getElementById('toggle-test').checked;
             
-            // Labels
             const modeLabel = document.getElementById('mode-label');
             const badgeLabel = document.getElementById('feed-badge');
             if(isTestView) {
@@ -173,7 +170,7 @@
             const q = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(500));
             const snapshot = await getDocs(q);
             
-            let gamesCount = 0, checkoutCount = 0, riskSum = 0, modes = {}, sessions = {};
+            let gamesCount = 0, checkoutCount = 0, riskSum = 0, visitsCount = 0, modes = {}, sessions = {};
 
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -186,12 +183,25 @@
                 if (!sessions[userKey]) sessions[userKey] = { user: userKey, events: [] };
                 sessions[userKey].events.push(data);
 
+                // --- CORREÇÃO DAS MÉTRICAS ---
                 const modeName = (data.mode || 'GERAL').toUpperCase();
+                
                 if (modeName === 'CLICOU_VIP') {
                     checkoutCount++; 
-                } else if (!modeName.includes('ACESSOU') && !modeName.includes('AJUSTOU')) {
+                } 
+                else if (modeName.includes('ACESSOU')) {
+                    // AGORA CONTAMOS OS ACESSOS REAIS PARA O FUNIL
+                    visitsCount++;
+                }
+                else if (!modeName.includes('AJUSTOU')) {
+                    // AQUI SÃO OS JOGOS (Ex: QUINA, MEGA)
                     gamesCount++; 
-                    riskSum += data.boldness || 50; 
+                    // Correção: Lê a intensidade do novo local (details)
+                    let intensity = 50;
+                    if (data.details && data.details.intensity) intensity = parseInt(data.details.intensity);
+                    else if (data.boldness) intensity = data.boldness;
+                    riskSum += intensity;
+                    
                     modes[modeName] = (modes[modeName] || 0) + 1; 
                 }
             });
@@ -245,14 +255,23 @@
             document.getElementById('kpi-risk').innerText = gamesCount ? Math.round(riskSum/gamesCount) + "%" : "0%";
             document.getElementById('kpi-fav').innerText = Object.keys(modes).length > 0 ? Object.keys(modes).reduce((a, b) => modes[a] > modes[b] ? a : b) : '-';
 
-            renderFunnel(gamesCount, checkoutCount);
+            // ATUALIZA FUNIL COM DADOS REAIS DE VISITAS
+            renderFunnel(visitsCount, gamesCount, checkoutCount);
             renderChart(modes);
         };
 
-        function renderFunnel(games, checkouts) {
+        function renderFunnel(visits, games, checkouts) {
             const container = document.getElementById('funnel-container');
-            const visits = games * 3 || 0; const limits = Math.floor(games * 0.2) || 0;
-            const steps = [{ label: "ACESSOS (ESTIMADO)", count: visits, color: "text-white" }, { label: "GEROU JOGO", count: games, color: "text-indigo-400" }, { label: "BATEU LIMITE", count: limits, color: "text-amber-400" }, { label: "CHECKOUT (CLIQUE)", count: checkouts, color: "text-emerald-400" }];
+            // Se não houver visitas registradas mas houver jogos (dados legados), estima
+            const finalVisits = visits > 0 ? visits : (games * 2); 
+            const limits = Math.floor(games * 0.2); // Estimativa de paywall
+            
+            const steps = [
+                { label: "ACESSOS REAIS", count: finalVisits, color: "text-white" }, 
+                { label: "GEROU JOGO", count: games, color: "text-indigo-400" }, 
+                { label: "BATEU LIMITE", count: limits, color: "text-amber-400" }, 
+                { label: "CHECKOUT (CLIQUE)", count: checkouts, color: "text-emerald-400" }
+            ];
             container.innerHTML = steps.map((s, i) => { const max = steps[0].count || 1; const width = (s.count / max) * 100; return `<div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="metric-label">${s.label}</p><p class="text-xl font-black ${s.color}">${s.count}</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${width}%"></div></div></div>`; }).join('');
         }
 
@@ -293,7 +312,6 @@
             btn.innerText = "Salvando..."; btn.disabled = true;
             const source = document.getElementById('utmSource').value || 'direct';
             const campaign = document.getElementById('utmCampaign').value || 'none';
-            // LINK FINAL COM PARÂMETROS
             const longUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/?utm_source=${source}&utm_campaign=${campaign}`;
             const shortUrl = `https://nucleo-insight-gerador.github.io/de-sorteios/r.html?id=${cleanName}`;
             try {
