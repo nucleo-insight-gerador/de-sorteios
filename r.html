@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecionando...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <style>body{background:#000;color:#fff;font-family:monospace;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;}</style>
+</head>
+<body>
+    <div style="text-align:center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <p style="margin-top:20px;color:#666;">Acessando sistema...</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function redirect() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (!id) return window.location.href = 'index.html';
+
+            try {
+                const docRef = doc(db, "short_links", id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    await updateDoc(docRef, { clicks: increment(1) });
+                    window.location.href = docSnap.data().target;
+                } else {
+                    document.body.innerHTML = "<h1 style='color:red'>Link não encontrado.</h1>";
+                }
+            } catch (error) {
+                console.error(error);
+                window.location.href = 'index.html';
+            }
+        }
+        redirect();
+    </script>
+    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+</body>
+</html>
