@@ -375,7 +375,7 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // PWA INSTALL LOGIC
+        // --- PWA INSTALL LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -517,13 +517,14 @@
         function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
         function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
-        // --- SISTEMA DE REGRAS DE JOGO BLINDADO (v8.4) ---
+        // --- SISTEMA DE REGRAS DE JOGO BLINDADO (v9.0) ---
+        // Configuração segura para garantir a contagem correta
         const gameConfig = {
             'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
             'mega':      { max: 60, count: 6,  name: 'MEGA SENA' },
             'quina':     { max: 80, count: 5,  name: 'QUINA' },
-            'lotomania': { max: 99, count: 50, name: 'LOTOMANIA' }, // Corrigido para 50
-            'timemania': { max: 80, count: 10, name: 'TIMEMANIA' }, // Corrigido para 10 (Aposta)
+            'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' }, // Max 100 para cobrir 00-99
+            'timemania': { max: 80, count: 10, name: 'TIMEMANIA' },
             'diadesorte':{ max: 31, count: 7,  name: 'DIA DE SORTE' },
             'duplasena': { max: 50, count: 6,  name: 'DUPLA SENA' },
             'milionaria':{ max: 50, count: 6,  name: '+MILIONÁRIA' },
@@ -550,7 +551,6 @@
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
-            // LÓGICA PRINCIPAL CORRIGIDA (v8.4)
             const config = gameConfig[currentMode];
             
             if (currentMode === 'bicho') {
@@ -567,7 +567,6 @@
                 let isSafe = currentBoldness < 40; 
                 let realData = null;
                 
-                // Tenta buscar dados reais se for modo conservador
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let nums = new Set();
@@ -577,10 +576,9 @@
                     logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
                     renderBalls(currentNumbers);
                 } else {
-                    // LÓGICA HÍBRIDA (Passado + Futuro)
+                    // 1. TENTA USAR DADOS REAIS SE FOR SEGURO
                     if(isSafe && realData && realData.dezenas) {
                         let last = realData.dezenas.map(d=>parseInt(d));
-                        // Pega no máximo metade do jogo anterior para não ficar repetitivo demais
                         let keepCount = Math.min(last.length, Math.floor(config.count * 0.6));
                         for(let i=0; i<keepCount; i++) nums.add(last[i]);
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
@@ -588,17 +586,36 @@
                         logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
                     }
                     
-                    // Completa o resto do jogo com números inteligentes
-                    while(nums.size < config.count) {
-                        let n = Math.floor(seededRandom(seed++) * config.max) + 1;
-                        if(currentMode === 'lotomania' && n === 100) n = 0; // Trata o 00 da Lotomania
-                        nums.add(n);
+                    // 2. PREENCHE O RESTO COM LÓGICA DE BARALHO (SEM REPETIÇÃO)
+                    // Cria lista de disponíveis
+                    let available = [];
+                    let start = 1; 
+                    let end = config.max;
+                    
+                    if(currentMode === 'lotomania') { start = 0; end = 99; } // Ajuste especial Lotomania 00-99
+
+                    // Popula todos os números possíveis
+                    for(let i=start; i<=end; i++) {
+                        if(!nums.has(i)) available.push(i);
+                    }
+
+                    // Embaralha (Shuffle)
+                    for (let i = available.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [available[i], available[j]] = [available[j], available[i]];
+                    }
+
+                    // Pega os necessários para completar
+                    let needed = config.count - nums.size;
+                    for(let k=0; k<needed; k++) {
+                        if(available[k] !== undefined) nums.add(available[k]);
                     }
                     
                     currentNumbers = Array.from(nums).sort((a,b)=>a-b);
-                    // Correção visual para Lotomania (0 vira 00)
+                    
+                    // Formatação Visual Lotomania (0 -> 00)
                     if(currentMode === 'lotomania') {
-                        currentNumbers = currentNumbers.map(n => n === 0 ? 100 : n).sort((a,b)=>a-b).map(n => n === 100 ? 0 : n);
+                       // Mantém 0 como 0 para ordenação, o visual trata depois
                     }
                     renderBalls(currentNumbers);
                 }
@@ -617,10 +634,11 @@
         function addBall(n, grid) {
             const div = document.createElement('div'); div.className = 'ball'; 
             if(Math.random() > 0.2) { div.classList.add(Math.random()>0.5 ? 'hot' : 'cold'); }
-            // Formatação do zero (0 -> 00)
+            
             let txt = n;
             if(n === 0) txt = '00';
             else if(n < 10) txt = '0'+n;
+            
             div.innerText = txt;
             setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
         }
