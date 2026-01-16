@@ -12,7 +12,18 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "bec7d24b-53e5-4069-a592-d797a347a051",
+        });
+      });
+    </script>
+
     <style>
+        /* CONFIGURAÇÃO DE CORES (VERDE NEON MANTIDO) */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -131,7 +142,7 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* ESTILOS DAS BOLAS (MAPA DE CALOR) */
+        /* ESTILOS DAS BOLAS */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -150,7 +161,7 @@
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
         
-        /* ESTILO PARA BOLA TRAVADA (SINAL OCULTO) */
+        /* FEATURE 3: ESTILO PARA BOLA TRAVADA (SINAL OCULTO) */
         .ball.locked { 
             filter: blur(5px); 
             pointer-events: auto; 
@@ -180,7 +191,7 @@
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
         
-        /* BARRA DE CONFIANÇA (FEATURE 2) */
+        /* FEATURE 2: BARRA DE CONFIANÇA */
         .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 15px auto; text-align: center; }
         .confidence-label { font-size: 10px; color: #00ff88; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
         .confidence-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333; }
@@ -434,11 +445,11 @@
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
         // --- MUDANÇA 1: LÓGICA DO SINAL OCULTO ---
-        window.checkLimitAndStart = async () => { 
-            playClick(); 
+        window.checkLimitAndStart = async () => { 
+            playClick(); 
             // Se excedeu o limite, ativa o modo CADEADO, mas NÃO PARA.
-            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
-                isLockedMode = true; 
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
+                isLockedMode = true; 
             } else {
                 isLockedMode = false;
             }
