@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
@@ -37,6 +38,28 @@
             font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #00ff88; text-transform: uppercase; font-weight: bold;
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+        /* --- NOVO: BOTÃO DE INSTALAR (SALVAR ACESSO) --- */
+        #installBtnContainer {
+            position: absolute; top: 40px; right: 10px; z-index: 100; display: none;
+        }
+        .btn-install-app {
+            background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
+            font-size: 10px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 5px; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
+
+        /* --- NOVO: MODAL DE INSTALAÇÃO --- */
+        #installModal {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
+            border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
+            padding: 20px; z-index: 6000; transform: translateY(100%); transition: transform 0.3s ease-out;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+        }
+        #installModal.show { transform: translateY(0); }
 
         #creditContainer { margin-bottom: 10px; flex-shrink: 0; }
         .credit-box { 
@@ -182,6 +205,12 @@
     <div id="testModeBar">🔧 MODO ADMIN</div>
     <canvas id="neural-canvas"></canvas>
 
+    <div id="installBtnContainer">
+        <button onclick="promptInstall()" class="btn-install-app">
+            <i data-lucide="download" size="14"></i> SALVAR APP SECRETO
+        </button>
+    </div>
+
     <div class="marquee-container">
         <div class="marquee-content">
             💰 R$ 12.500,00 NA MILIONÁRIA • 🍀 ANA J. FEZ 14 PONTOS • 🦁 DEU LEÃO NO RIO • 💎 SUPER SETE ACUMULADO • 💰 R$ 500,00 NA QUINA DE ONTEM • 🚀 SALA DE SINAIS ATIVA
@@ -194,6 +223,28 @@
             <p style="color:#fff; font-size:10px; font-weight:bold; text-transform:uppercase;">Novo Sinal Identificado</p>
             <p style="color:#888; font-size:9px;" id="toast-desc">...</p>
         </div>
+    </div>
+
+    <div id="installModal">
+        <i data-lucide="smartphone" size="40" class="text-gold mb-3"></i>
+        <h3 style="color:#fff; font-weight:900; font-size:16px; margin-bottom:5px;">NÃO PERCA SEU ACESSO!</h3>
+        <p style="color:#999; font-size:12px; margin-bottom:20px; line-height:1.4;">Salve o aplicativo agora para garantir seus 5 sinais gratuitos de amanhã.</p>
+        
+        <div id="androidInstallBtn" style="display:none; width:100%;">
+            <button onclick="triggerNativeInstall()" class="btn-pulse" style="padding:12px; font-size:14px; margin-bottom:10px;">📲 SALVAR APLICATIVO AGORA</button>
+        </div>
+        
+        <div id="iosInstructions" style="display:none; text-align:center; background:#222; padding:15px; border-radius:10px; width:100%;">
+            <p style="color:#fff; font-size:12px; margin-bottom:10px;">Para salvar no iPhone:</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px;">
+                1. Toque em <i data-lucide="share" size="14"></i> Compartilhar
+            </div>
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px; margin-top:5px;">
+                2. Selecione <i data-lucide="plus-square" size="14"></i> <b>Adicionar à Tela de Início</b>
+            </div>
+        </div>
+
+        <button onclick="dismissInstall()" style="background:none; border:none; color:#555; font-size:11px; margin-top:15px; text-decoration:underline;">Agora não (correr risco de perder)</button>
     </div>
 
     <div id="paywallModal" class="modal-overlay">
@@ -324,7 +375,48 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // CAPTURA UTMS DA URL (ORIGEM)
+        // --- PWA INSTALL LOGIC (NOVO) ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtnContainer').style.display = 'block';
+            document.getElementById('androidInstallBtn').style.display = 'block';
+            
+            // Auto Show Popup (Só uma vez para não incomodar)
+            if(!localStorage.getItem('installPromptShown')) {
+                setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000);
+                localStorage.setItem('installPromptShown', 'true');
+            }
+        });
+
+        // Detect iOS
+        const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test( userAgent ); }
+        if (isIos() && !window.navigator.standalone) {
+            document.getElementById('installBtnContainer').style.display = 'block';
+            document.getElementById('iosInstructions').style.display = 'block';
+            // Show popup once for iOS too
+            if(!localStorage.getItem('installPromptShown')) {
+                setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000);
+                localStorage.setItem('installPromptShown', 'true');
+            }
+        }
+
+        window.promptInstall = () => document.getElementById('installModal').classList.add('show');
+        window.dismissInstall = () => document.getElementById('installModal').classList.remove('show');
+
+        window.triggerNativeInstall = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if(outcome === 'accepted') {
+                    document.getElementById('installBtnContainer').style.display = 'none';
+                }
+                deferredPrompt = null;
+                dismissInstall();
+            }
+        };
+
         const urlParams = new URLSearchParams(window.location.search);
         const utmSource = urlParams.get('utm_source') || 'Direto';
         const utmCampaign = urlParams.get('utm_campaign') || 'Orgânico';
@@ -377,8 +469,6 @@
                 document.getElementById('userIdDisplay').innerText=user.email.split('@')[0]; 
                 showScreen('screen-ritual'); 
                 checkServerUsage(); 
-                
-                // TRACKING: LOGA A ENTRADA COM A ORIGEM (UTM)
                 logAction('ACESSOU_APP', { source: utmSource, campaign: utmCampaign });
             } else { showScreen('screen-home'); } 
         });
@@ -399,26 +489,19 @@
 
         window.checkLimitAndStart = async () => { playClick(); if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playError(); document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
         window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
-        
         window.updateBoldness = (val) => { playSlide(val); currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
-        
-        // TRACKING: GESTO DO SLIDER
-        window.trackSliderChange = (val) => {
-            logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' });
-        }
+        window.trackSliderChange = (val) => { logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' }); }
 
-        // FUNÇÃO CENTRALIZADA DE LOG - CORRIGIDA
         async function logAction(actionName, details = {}) {
             if(!currentUser) return;
             try {
-                // AGORA INCLUÍMOS A ORIGEM (UTM) EM TUDO
                 await addDoc(collection(db, "history"), { 
                     uid: currentUser.uid, 
                     email: currentUser.email, 
                     mode: actionName, 
                     details: details, 
-                    source: utmSource, // ESSENCIAL PARA O PAINEL SABER A ORIGEM
-                    campaign: utmCampaign, // ESSENCIAL TAMBÉM
+                    source: utmSource, 
+                    campaign: utmCampaign, 
                     isTest: isTestMode, 
                     createdAt: serverTimestamp() 
                 });
@@ -493,7 +576,6 @@
                 }
             }
 
-            // TRACKING: LOGA O JOGO GERADO
             logAction(currentMode, { numbers: currentNumbers, intensity: currentBoldness });
             showScreen('screen-result');
             playWin();
@@ -514,10 +596,7 @@
         window.openVipLink = async () => { 
             if(isTestMode) return alert("Modo Teste: Checkout simulado.");
             if(typeof fbq === 'function') fbq('track', 'InitiateCheckout');
-            
-            // TRACKING: LOGA O CLIQUE NO CHECKOUT
             logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() });
-            
             window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); 
         }
 
