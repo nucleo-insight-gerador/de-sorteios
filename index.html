@@ -39,7 +39,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* --- NOVO: BOTÃO DE INSTALAR (SALVAR ACESSO) --- */
+        /* BOTÃO DE INSTALAR (SALVAR ACESSO) */
         #installBtnContainer {
             position: absolute; top: 40px; right: 10px; z-index: 100; display: none;
         }
@@ -51,7 +51,7 @@
         }
         @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
 
-        /* --- NOVO: MODAL DE INSTALAÇÃO --- */
+        /* MODAL DE INSTALAÇÃO */
         #installModal {
             position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
             border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
@@ -375,7 +375,7 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // --- PWA INSTALL LOGIC (NOVO) ---
+        // PWA INSTALL LOGIC
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -383,7 +383,7 @@
             document.getElementById('installBtnContainer').style.display = 'block';
             document.getElementById('androidInstallBtn').style.display = 'block';
             
-            // Auto Show Popup (Só uma vez para não incomodar)
+            // Auto Show Popup (Only once)
             if(!localStorage.getItem('installPromptShown')) {
                 setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000);
                 localStorage.setItem('installPromptShown', 'true');
@@ -554,7 +554,9 @@
                 let max=25, count=15; 
                 if(currentMode==='mega' || currentMode==='duplasena'){max=60;count=6;} 
                 if(currentMode==='quina'){max=80;count=5;} if(currentMode==='timemania'){max=80;count=10;}
-                if(currentMode==='lotomania'){max=99;count=20;} if(currentMode==='diadesorte'){max=31;count=7;}
+                // CORREÇÃO CRÍTICA: LOTOMANIA AGORA GERA 50 NÚMEROS
+                if(currentMode==='lotomania'){max=99;count=50;} 
+                if(currentMode==='diadesorte'){max=31;count=7;}
                 if(currentMode==='milionaria'){max=50;count=6;} if(currentMode==='supersete'){max=9;count=7;}
 
                 let nums = new Set();
