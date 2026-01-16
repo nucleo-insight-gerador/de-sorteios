@@ -13,7 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #ffcc00; --cold: #00ccff; --neutral: #333333; }
+        /* MUDANÇA AQUI: --hot AGORA É VERDE NEON */
+        :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body { 
@@ -131,7 +132,6 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* ESTILOS DAS BOLAS (MAPA DE CALOR) */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -158,7 +158,7 @@
         .ball.cold::after { background: var(--cold); }
 
         .ball.neutral { border-color: #555; color: #888; }
-        .ball.neutral::after { display: none; } /* Neutra não tem bolinha de status */
+        .ball.neutral::after { display: none; } 
 
         .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
@@ -437,9 +437,11 @@
                 renderBalls(currentNumbers);
             } else {
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-                let realData = null; let isSafe = currentBoldness < 40;
+                // MUDANÇA PRINCIPAL AQUI: isSafe AGORA É <= 60 (ANTES ERA < 40)
+                let isSafe = currentBoldness <= 60; 
+                let realData = null; 
                 
-                // Busca API se necessário
+                // Busca API se necessário e se for "Seguro" (agora padrão)
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
