@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        /* MUDANÇA AQUI: --hot AGORA É VERDE NEON */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -132,6 +131,7 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
+        /* ESTILOS DAS BOLAS (MAPA DE CALOR) */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -437,11 +437,9 @@
                 renderBalls(currentNumbers);
             } else {
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-                // MUDANÇA PRINCIPAL AQUI: isSafe AGORA É <= 60 (ANTES ERA < 40)
-                let isSafe = currentBoldness <= 60; 
-                let realData = null; 
+                let realData = null; let isSafe = currentBoldness <= 60;
                 
-                // Busca API se necessário e se for "Seguro" (agora padrão)
+                // Busca API se necessário
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
@@ -455,7 +453,21 @@
                     if(isSafe && realData && realData.dezenas) {
                         poolHot = realData.dezenas.map(d => parseInt(d));
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
-                    } else {
+                    } 
+                    
+                    // --- FALLBACK DO "QUENTE" (CRÍTICO) ---
+                    // Se a API falhar ou estiver vazia, cria "fake hot"
+                    if (poolHot.length === 0 && isSafe) {
+                        logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
+                        apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
+                        // Gera 15 números "quentes" falsos baseados na semente do dia
+                        let seed = getDailySeed();
+                        for(let i=0; i<15; i++) {
+                            let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
+                            if(currentMode === 'lotomania' && fakeHot === 100) fakeHot = 0;
+                            poolHot.push(fakeHot);
+                        }
+                    } else if (!isSafe) {
                         logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
                     }
 
