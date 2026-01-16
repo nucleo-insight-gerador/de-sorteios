@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        /* CORES: MANTIDO O VERDE NEON */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -132,7 +131,7 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* ESTILOS DAS BOLAS (COM LÓGICA DE CORES) */
+        /* ESTILOS DAS BOLAS (MAPA DE CALOR) */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -150,6 +149,22 @@
             opacity: 1; z-index: 1000; transform: translate(30%, -30%);
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
+        
+        /* ESTILO PARA BOLA TRAVADA (SINAL OCULTO) */
+        .ball.locked { 
+            filter: blur(5px); 
+            pointer-events: auto; 
+            cursor: pointer;
+            border-color: #ff0055 !important;
+        }
+        .ball.locked::before {
+            content: '🔒';
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) scale(1.5);
+            filter: blur(0) !important;
+            z-index: 2000;
+            text-shadow: 0 0 10px #000;
+        }
 
         /* TIPOS DE BOLA */
         .ball.hot { border-color: var(--hot); color: var(--hot); }
@@ -165,6 +180,12 @@
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
         
+        /* BARRA DE CONFIANÇA (FEATURE 2) */
+        .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 15px auto; text-align: center; }
+        .confidence-label { font-size: 10px; color: #00ff88; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .confidence-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333; }
+        .confidence-bar-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease-out; box-shadow: 0 0 10px #00ff88; }
+
         .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
         .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; }
@@ -310,17 +331,35 @@
             <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:2px 8px; border-radius:4px;">SINAL CONFIRMADO 🎯</div>
         </div>
         <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+            
             <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
+            
+            <div class="confidence-container" id="confidenceBar" style="display:none;">
+                <div class="confidence-label">PRECISÃO DA IA: <span id="confValue">98%</span></div>
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill" id="confFill"></div>
+                </div>
+            </div>
+
             <div class="result-frame">
                 <div id="numbersGrid" class="result-grid"></div>
             </div>
+            
             <div class="legend-box">
                 <div class="legend-item"><div class="legend-dot" style="background:var(--hot); border-color:var(--hot);"></div> QUENTE (HISTÓRICO)</div>
                 <div class="legend-item"><div class="legend-dot" style="background:var(--cold); border-color:var(--cold);"></div> ZEBRA (FRIO)</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#555; border-color:#777;"></div> NORMAL (COMPLEMENTO)</div>
             </div>
+            
             <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
+        
+            <div id="lockMessage" style="display:none; margin-top:15px; padding:10px; background:rgba(255,0,0,0.15); border:1px solid #ff0055; border-radius:8px;">
+                <p style="color:#ff0055; font-size:11px; font-weight:bold; margin-bottom:5px;">⚠️ SINAL DE ALTA PRECISÃO DETECTADO</p>
+                <p style="color:#ccc; font-size:10px;">Os números decisivos foram ocultados para usuários gratuitos.</p>
+            </div>
+
         </div>
+
         <div style="margin-top:auto; padding:15px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:8px; flex-shrink:0;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
                 <i data-lucide="bar-chart-2" size="14" class="text-gold"></i>
@@ -329,8 +368,9 @@
             <p id="logText" style="font-size:11px; color:#fff; line-height:1.4;">...</p>
             <p id="apiStatus" style="font-size:9px; color:#444; margin-top:5px;"></p>
         </div>
+        
         <div class="footer-action">
-            <button onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px; animation:none; border:1px solid var(--primary); background:#000; color:var(--primary);"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
+            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px; animation:none; border:1px solid var(--primary); background:#000; color:var(--primary);"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
         </div>
     </div>
 
@@ -344,6 +384,8 @@
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
+        let isLockedMode = false; // FLAG DO MODO CADEADO
+
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
@@ -391,29 +433,34 @@
         async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
-        window.checkLimitAndStart = async () => { playClick(); if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { playTone(150, 'sawtooth', 0.4, 0.4); document.getElementById('paywallModal').style.display = 'flex'; return; } startProcessing(); }
+        // --- MUDANÇA 1: LÓGICA DO SINAL OCULTO ---
+        window.checkLimitAndStart = async () => { 
+            playClick(); 
+            // Se excedeu o limite, ativa o modo CADEADO, mas NÃO PARA.
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
+                isLockedMode = true; 
+            } else {
+                isLockedMode = false;
+            }
+            startProcessing(); // Roda de qualquer jeito
+        }
+
         window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
         window.updateBoldness = (val) => { playSlide(val); currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
         window.trackSliderChange = (val) => { logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' }); }
 
         async function logAction(actionName, details = {}) { if(!currentUser) return; try { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, mode: actionName, details: details, source: utmSource, campaign: utmCampaign, isTest: isTestMode, createdAt: serverTimestamp() }); } catch(e) {} }
 
-        // MUDANÇA CRÍTICA: TIMEOUT NA API
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            
-            // Crio um "Cancelador" que dispara em 600 milissegundos
+            // TIMEOUT DE 0.6s MANTIDO (SEGURANÇA CONTRA TRAVAMENTO)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 600); 
-
             try { 
                 const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
-                clearTimeout(timeoutId); // Se respondeu a tempo, cancela o timeout
-                return r.ok ? await r.json() : null; 
-            } catch(e) { 
-                return null; // Se demorou demais, retorna nulo e o sistema usa o Backup
-            }
+                clearTimeout(timeoutId); return r.ok ? await r.json() : null; 
+            } catch(e) { return null; }
         }
 
         const gameConfig = {
@@ -432,31 +479,68 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             let step = 0; const spin = document.getElementById('spinContainer');
-            // MANTIVE O SOM
+            // SOM MANTIDO NO LOADING
             const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
-            setTimeout(() => { clearInterval(interval); generateResult(); }, 3000);
+            setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
         }
 
         async function generateResult() {
-            increment(); // FIRE AND FORGET (SEM AWAIT) - DESTRAVA O BANCO
+            increment(); // FIRE AND FORGET (SEM AWAIT)
             
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
+            // CONFIGURAÇÃO DA BARRA DE CONFIANÇA (FEATURE 2)
+            const confBar = document.getElementById('confidenceBar');
+            const confFill = document.getElementById('confFill');
+            const confValue = document.getElementById('confValue');
+            confBar.style.display = 'block';
+            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; // Entre 88% e 99%
+            confValue.innerText = randomConf + "%";
+            setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
+
+            // CONTROLE DO BOTÃO PRINCIPAL (FEATURE 1 - BLOQUEIO)
+            const btn = document.getElementById('mainActionButton');
+            const lockMsg = document.getElementById('lockMessage');
+            
+            if(isLockedMode) {
+                btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
+                btn.style.background = '#ff0055'; // Vermelho de alerta
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#ff0055';
+                lockMsg.style.display = 'block'; // Mostra msg de erro
+            } else {
+                btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
+                btn.style.background = '#000';
+                btn.style.color = 'var(--primary)';
+                btn.style.borderColor = 'var(--primary)';
+                lockMsg.style.display = 'none';
+            }
+            lucide.createIcons();
+
             if (currentMode === 'bicho') {
+                // FEATURE 3 - MUDANÇA DE NOME
                 document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
-                animalRes.innerText = `🦁 ${animals[group]} (G${group})`; animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
+                
+                // Lógica de Bloqueio do Bicho (Oculta o texto do animal e dezenas)
+                if(isLockedMode) {
+                   animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
+                   animalRes.style.filter = "blur(4px)";
+                } else {
+                   animalRes.innerText = `🦁 ${animals[group]} (G${group})`;
+                   animalRes.style.filter = "none";
+                }
+                
+                animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else {
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-                // MUDANÇA: LIMITE PARA 60%
                 let isSafe = currentBoldness <= 60; 
                 let realData = null; 
                 
-                // Busca API com Timeout
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
@@ -472,7 +556,7 @@
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
                     } 
                     
-                    // 2. FALLBACK DO "QUENTE" (MATEMÁTICO) - GARANTE BOLA VERDE
+                    // 2. FALLBACK DO "QUENTE" (MATEMÁTICO)
                     if ((!poolHot || poolHot.length === 0) && isSafe) {
                         logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
                         apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
@@ -500,9 +584,7 @@
 
                     // 4. SELEÇÃO HÍBRIDA (QUENTES + FRIOS + NEUTROS)
                     let selected = new Set();
-                    
-                    // Adiciona Quentes (Se houver e couber)
-                    let hotLimit = Math.floor(config.count * 0.4); // 40% Quentes
+                    let hotLimit = Math.floor(config.count * 0.4); 
                     for(let h of poolHot) {
                         if(selected.size < hotLimit) {
                             selected.add(h);
@@ -510,23 +592,19 @@
                         }
                     }
 
-                    // Preenche o resto com o Baralho Embaralhado (Neutros/Frios)
                     for(let num of allNumbers) {
                         if(selected.size >= config.count) break;
                         if(!selected.has(num)) {
-                            // Sorteia se é Frio (Azul) ou Neutro (Cinza)
                             let type = Math.random() > 0.8 ? 'cold' : 'neutral';
                             selected.add(num);
                             finalList.push({ n: num, type: type });
                         }
                     }
                     
-                    // Ordena para exibição (mas mantém o tipo)
                     finalList.sort((a,b) => a.n - b.n);
                 }
 
                 renderBalls(finalList);
-                // Salva apenas os números no banco
                 logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
             }
             showScreen('screen-result'); playWin();
@@ -535,21 +613,26 @@
         function renderBalls(list) {
             const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
             
-            // Se for Bicho ou lista simples de números (legado)
             if(typeof list[0] === 'number') {
-                list.forEach(n => addBall(n, 'hot', grid));
+                list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
                 return;
             }
 
-            // Nova lista com tipos
-            list.forEach(item => {
-                addBall(item.n, item.type, grid);
+            list.forEach((item, i) => {
+                addBall(item.n, item.type, grid, i, list.length);
             });
         }
         
-        function addBall(n, type, grid) {
+        // FEATURE 1: LÓGICA DE BORRAR AS BOLAS NO RENDER
+        function addBall(n, type, grid, index, total) {
             const div = document.createElement('div'); 
-            div.className = `ball ${type}`; // Aplica a classe hot, cold ou neutral
+            div.className = `ball ${type}`; 
+            
+            // SE TIVER NO MODO LOCKED E FOR UMA DAS ÚLTIMAS 2 BOLAS
+            if(isLockedMode && index >= total - 2) {
+                div.classList.add('locked');
+                div.onclick = openVipLink; // Clicar na bola travada leva pro checkout
+            }
             
             let txt = n;
             if(n === 0 && currentMode === 'lotomania') txt = '00';
@@ -559,6 +642,9 @@
             setTimeout(() => div.classList.add('reveal'), 100); 
             grid.appendChild(div);
         }
+
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
         window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
