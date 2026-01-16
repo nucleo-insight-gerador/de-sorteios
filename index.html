@@ -18,8 +18,8 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "bec7d24b-53e5-4069-a592-d797a347a051",
-          // FORÇA O CAMINHO E O ESCOPO (A VACINA)
-          path: "/de-sorteios/",
+          // AQUI ESTÁ O SEGREDO: ENDEREÇO COMPLETO, SEM ATALHOS
+          path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
           serviceWorkerParam: { scope: "/de-sorteios/" },
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js"
