@@ -375,27 +375,23 @@
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
 
-        // PWA INSTALL LOGIC
+        // --- PWA INSTALL LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('installBtnContainer').style.display = 'block';
             document.getElementById('androidInstallBtn').style.display = 'block';
-            
-            // Auto Show Popup (Only once)
             if(!localStorage.getItem('installPromptShown')) {
                 setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000);
                 localStorage.setItem('installPromptShown', 'true');
             }
         });
 
-        // Detect iOS
         const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test( userAgent ); }
         if (isIos() && !window.navigator.standalone) {
             document.getElementById('installBtnContainer').style.display = 'block';
             document.getElementById('iosInstructions').style.display = 'block';
-            // Show popup once for iOS too
             if(!localStorage.getItem('installPromptShown')) {
                 setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000);
                 localStorage.setItem('installPromptShown', 'true');
@@ -409,11 +405,8 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if(outcome === 'accepted') {
-                    document.getElementById('installBtnContainer').style.display = 'none';
-                }
-                deferredPrompt = null;
-                dismissInstall();
+                if(outcome === 'accepted') { document.getElementById('installBtnContainer').style.display = 'none'; }
+                deferredPrompt = null; dismissInstall();
             }
         };
 
@@ -517,6 +510,19 @@
         function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
         function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
+        // --- SISTEMA DE REGRAS DE JOGO BLINDADO (v8.4) ---
+        const gameConfig = {
+            'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
+            'mega':      { max: 60, count: 6,  name: 'MEGA SENA' },
+            'quina':     { max: 80, count: 5,  name: 'QUINA' },
+            'lotomania': { max: 99, count: 50, name: 'LOTOMANIA' }, // Corrigido para 50
+            'timemania': { max: 80, count: 10, name: 'TIMEMANIA' }, // Corrigido para 10 (Aposta)
+            'diadesorte':{ max: 31, count: 7,  name: 'DIA DE SORTE' },
+            'duplasena': { max: 50, count: 6,  name: 'DUPLA SENA' },
+            'milionaria':{ max: 50, count: 6,  name: '+MILIONÁRIA' },
+            'supersete': { max: 9,  count: 7,  name: 'SUPER SETE' }
+        };
+
         window.startProcessing = () => {
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
@@ -537,13 +543,11 @@
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             
-            const prettyNames = { 'lotofacil': 'LOTOFÁCIL', 'mega': 'MEGA SENA', 'quina': 'QUINA', 'bicho': 'JOGO DO BICHO', 'milionaria': '+MILIONÁRIA', 'supersete': 'SUPER SETE', 'timemania': 'TIMEMANIA', 'lotomania': 'LOTOMANIA', 'diadesorte': 'DIA DE SORTE', 'duplasena': 'DUPLA SENA' };
-            document.getElementById('resultTitle').innerText = `SINAL DE ${prettyNames[currentMode]} PRONTO 🎯`;
-
-            let seed = getDailySeed(); let isSafe = currentBoldness < 40; let realData = null;
-            if(isSafe && currentMode!=='bicho' && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
-
+            // LÓGICA PRINCIPAL CORRIGIDA (v8.4)
+            const config = gameConfig[currentMode];
+            
             if (currentMode === 'bicho') {
+                document.getElementById('resultTitle').innerText = "SINAL DE JOGO DO BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1;
                 const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
@@ -551,29 +555,44 @@
                 logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else {
-                let max=25, count=15; 
-                if(currentMode==='mega' || currentMode==='duplasena'){max=60;count=6;} 
-                if(currentMode==='quina'){max=80;count=5;} if(currentMode==='timemania'){max=80;count=10;}
-                // CORREÇÃO CRÍTICA: LOTOMANIA AGORA GERA 50 NÚMEROS
-                if(currentMode==='lotomania'){max=99;count=50;} 
-                if(currentMode==='diadesorte'){max=31;count=7;}
-                if(currentMode==='milionaria'){max=50;count=6;} if(currentMode==='supersete'){max=9;count=7;}
+                document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
+                let seed = getDailySeed(); 
+                let isSafe = currentBoldness < 40; 
+                let realData = null;
+                
+                // Tenta buscar dados reais se for modo conservador
+                if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let nums = new Set();
+                
                 if(currentMode==='supersete'){
                     currentNumbers = []; for(let i=0;i<7;i++) currentNumbers.push(Math.floor(Math.random()*10));
                     logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
                     renderBalls(currentNumbers);
                 } else {
+                    // LÓGICA HÍBRIDA (Passado + Futuro)
                     if(isSafe && realData && realData.dezenas) {
                         let last = realData.dezenas.map(d=>parseInt(d));
-                        for(let i=0; i<Math.min(last.length, Math.floor(count/2)); i++) nums.add(last[i]);
+                        // Pega no máximo metade do jogo anterior para não ficar repetitivo demais
+                        let keepCount = Math.min(last.length, Math.floor(config.count * 0.6));
+                        for(let i=0; i<keepCount; i++) nums.add(last[i]);
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
                     } else {
                         logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
                     }
-                    while(nums.size < count) nums.add(Math.floor(seededRandom(seed++) * max) + 1);
+                    
+                    // Completa o resto do jogo com números inteligentes
+                    while(nums.size < config.count) {
+                        let n = Math.floor(seededRandom(seed++) * config.max) + 1;
+                        if(currentMode === 'lotomania' && n === 100) n = 0; // Trata o 00 da Lotomania
+                        nums.add(n);
+                    }
+                    
                     currentNumbers = Array.from(nums).sort((a,b)=>a-b);
+                    // Correção visual para Lotomania (0 vira 00)
+                    if(currentMode === 'lotomania') {
+                        currentNumbers = currentNumbers.map(n => n === 0 ? 100 : n).sort((a,b)=>a-b).map(n => n === 100 ? 0 : n);
+                    }
                     renderBalls(currentNumbers);
                 }
             }
@@ -591,7 +610,11 @@
         function addBall(n, grid) {
             const div = document.createElement('div'); div.className = 'ball'; 
             if(Math.random() > 0.2) { div.classList.add(Math.random()>0.5 ? 'hot' : 'cold'); }
-            div.innerText = n<10 && n!==0 && n!=='00' ? '0'+n : n;
+            // Formatação do zero (0 -> 00)
+            let txt = n;
+            if(n === 0) txt = '00';
+            else if(n < 10) txt = '0'+n;
+            div.innerText = txt;
             setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
         }
 
