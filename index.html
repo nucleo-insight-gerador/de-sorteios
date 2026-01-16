@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
     <style>
-        /* MANTIDO: --hot É VERDE NEON */
+        /* CONFIGURAÇÃO DE CORES (VERDE NEON MANTIDO) */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -132,7 +132,7 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* ESTILOS DAS BOLAS */
+        /* ESTILOS DAS BOLAS (MAPA DE CALOR) */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -398,29 +398,22 @@
 
         async function logAction(actionName, details = {}) { if(!currentUser) return; try { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, mode: actionName, details: details, source: utmSource, campaign: utmCampaign, isTest: isTestMode, createdAt: serverTimestamp() }); } catch(e) {} }
 
-        // MUDANÇA CRÍTICA: TIMEOUT NA API (600ms)
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            
-            // Timeout agressivo de 600ms para evitar travamento
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 600); 
-
-            try { 
-                const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
-                clearTimeout(timeoutId); 
-                return r.ok ? await r.json() : null; 
-            } catch(e) { 
-                return null; 
-            }
+            try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); return r.ok ? await r.json() : null; } catch(e) { return null; }
         }
 
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+
+        // --- SISTEMA DE REGRAS DE JOGO BLINDADO (v9.0) ---
+        // Configuração segura para garantir a contagem correta
         const gameConfig = {
             'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
             'mega':      { max: 60, count: 6,  name: 'MEGA SENA' },
             'quina':     { max: 80, count: 5,  name: 'QUINA' },
-            'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' },
+            'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' }, // Max 100 para cobrir 00-99
             'timemania': { max: 80, count: 10, name: 'TIMEMANIA' },
             'diadesorte':{ max: 31, count: 7,  name: 'DIA DE SORTE' },
             'duplasena': { max: 50, count: 6,  name: 'DUPLA SENA' },
@@ -432,148 +425,118 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             let step = 0; const spin = document.getElementById('spinContainer');
-            // MANTIVE O SOM AQUI (playTone)
-            const interval = setInterval(() => { 
-                if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); // SOM GARANTIDO
-                spin.innerHTML = ''; 
-                for(let i=0; i<6; i++) { 
-                    const d = document.createElement('div'); 
-                    d.className='spin-digit'; 
-                    d.innerText=Math.floor(Math.random()*10); 
-                    d.style.opacity=Math.random(); 
-                    spin.appendChild(d); 
-                } 
-                if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; 
+            const interval = setInterval(() => {
+                if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05);
+                spin.innerHTML = '';
+                for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); }
+                if(step<msgs.length && Math.random()>0.85) term.innerText=msgs[step++];
             }, 80);
-            
-            // AQUI É A SEGURANÇA: SE DER ERRO, ELE RODA DE QUALQUER JEITO
-            setTimeout(() => { 
-                clearInterval(interval); 
-                try {
-                    generateResult(); 
-                } catch(e) {
-                    // Fallback de emergência
-                    showScreen('screen-result');
-                }
-            }, 3000);
+            setTimeout(() => { clearInterval(interval); generateResult(); }, 3000);
         }
 
         async function generateResult() {
             await increment();
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
+            
             const config = gameConfig[currentMode];
-
+            
             if (currentMode === 'bicho') {
-                // CORREÇÃO: "PALPITE BICHO"
-                document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
+                document.getElementById('resultTitle').innerText = "SINAL DE JOGO DO BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
-                animalRes.innerText = `🦁 ${animals[group]} (G${group})`; animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
+                animalRes.innerText = `🦁 ${animals[group]} (G${group})`; animalRes.style.display='block';
+                logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else {
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-                let isSafe = currentBoldness <= 60; 
-                let realData = null; 
+                let seed = getDailySeed(); 
+                let isSafe = currentBoldness < 40; 
+                let realData = null;
                 
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
-                let finalList = [];
-
-                if(currentMode === 'supersete') {
-                    for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
+                let nums = new Set();
+                
+                if(currentMode==='supersete'){
+                    currentNumbers = []; for(let i=0;i<7;i++) currentNumbers.push(Math.floor(Math.random()*10));
                     logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
+                    renderBalls(currentNumbers);
                 } else {
-                    let poolHot = [];
-                    // 1. TENTA PEGAR QUENTES (DA API)
+                    // 1. TENTA USAR DADOS REAIS SE FOR SEGURO
                     if(isSafe && realData && realData.dezenas) {
-                        poolHot = realData.dezenas.map(d => parseInt(d));
+                        let last = realData.dezenas.map(d=>parseInt(d));
+                        let keepCount = Math.min(last.length, Math.floor(config.count * 0.6));
+                        for(let i=0; i<keepCount; i++) nums.add(last[i]);
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
-                    } 
-                    
-                    // --- FALLBACK DO "QUENTE" (CRÍTICO) ---
-                    if ((!poolHot || poolHot.length === 0) && isSafe) {
-                        logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
-                        apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
-                        let seed = getDailySeed();
-                        for(let i=0; i<15; i++) {
-                            let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
-                            if(currentMode === 'lotomania' && fakeHot === 100) fakeHot = 0;
-                            poolHot.push(fakeHot);
-                        }
-                    } else if (!isSafe) {
+                    } else {
                         logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
                     }
-
-                    // 2. MONTA A LISTA COMPLETA
-                    let allNumbers = [];
-                    let start = 1; let end = config.max;
-                    if(currentMode === 'lotomania') { start = 0; end = 99; }
-
-                    // Cria o universo de números
-                    for(let i=start; i<=end; i++) allNumbers.push(i);
-
-                    // Embaralha tudo (Fisher-Yates)
-                    for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
-
-                    // 3. SELEÇÃO HÍBRIDA (QUENTES + FRIOS + NEUTROS)
-                    let selected = new Set();
                     
-                    // Adiciona Quentes
-                    let hotLimit = Math.floor(config.count * 0.4); 
-                    for(let h of poolHot) {
-                        if(selected.size < hotLimit) {
-                            selected.add(h);
-                            finalList.push({ n: h, type: 'hot' });
-                        }
+                    // 2. PREENCHE O RESTO COM LÓGICA DE BARALHO (SEM REPETIÇÃO)
+                    // Cria lista de disponíveis
+                    let available = [];
+                    let start = 1; 
+                    let end = config.max;
+                    
+                    if(currentMode === 'lotomania') { start = 0; end = 99; } // Ajuste especial Lotomania 00-99
+
+                    // Popula todos os números possíveis
+                    for(let i=start; i<=end; i++) {
+                        if(!nums.has(i)) available.push(i);
                     }
 
-                    // Preenche o resto com o Baralho Embaralhado
-                    for(let num of allNumbers) {
-                        if(selected.size >= config.count) break;
-                        if(!selected.has(num)) {
-                            let type = Math.random() > 0.8 ? 'cold' : 'neutral';
-                            selected.add(num);
-                            finalList.push({ n: num, type: type });
-                        }
+                    // Embaralha (Shuffle)
+                    for (let i = available.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [available[i], available[j]] = [available[j], available[i]];
+                    }
+
+                    // Pega os necessários para completar
+                    let needed = config.count - nums.size;
+                    for(let k=0; k<needed; k++) {
+                        if(available[k] !== undefined) nums.add(available[k]);
                     }
                     
-                    finalList.sort((a,b) => a.n - b.n);
+                    currentNumbers = Array.from(nums).sort((a,b)=>a-b);
+                    
+                    // Formatação Visual Lotomania (0 -> 00)
+                    if(currentMode === 'lotomania') {
+                       // Mantém 0 como 0 para ordenação, o visual trata depois
+                    }
+                    renderBalls(currentNumbers);
                 }
-
-                renderBalls(finalList);
-                logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
             }
-            showScreen('screen-result'); playWin();
+
+            logAction(currentMode, { numbers: currentNumbers, intensity: currentBoldness });
+            showScreen('screen-result');
+            playWin();
         }
 
-        function renderBalls(list) {
-            const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
-            
-            if(typeof list[0] === 'number') {
-                list.forEach(n => addBall(n, 'hot', grid));
-                return;
-            }
-
-            list.forEach(item => {
-                addBall(item.n, item.type, grid);
-            });
+        function renderBalls(numbers) {
+            const grid = document.getElementById('numbersGrid');
+            numbers.forEach((n, i) => { addBall(n, grid); });
         }
         
-        function addBall(n, type, grid) {
-            const div = document.createElement('div'); 
-            div.className = `ball ${type}`; 
+        function addBall(n, grid) {
+            const div = document.createElement('div'); div.className = 'ball'; 
+            if(Math.random() > 0.2) { div.classList.add(Math.random()>0.5 ? 'hot' : 'cold'); }
             
             let txt = n;
-            if(n === 0 && currentMode === 'lotomania') txt = '00';
+            if(n === 0) txt = '00';
             else if(n < 10) txt = '0'+n;
             
             div.innerText = txt;
-            setTimeout(() => div.classList.add('reveal'), 100); 
-            grid.appendChild(div);
+            setTimeout(() => div.classList.add('reveal'), 100); grid.appendChild(div);
         }
 
-        window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
+        window.openVipLink = async () => { 
+            if(isTestMode) return alert("Modo Teste: Checkout simulado.");
+            if(typeof fbq === 'function') fbq('track', 'InitiateCheckout');
+            logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() });
+            window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); 
+        }
+
         window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
         window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
