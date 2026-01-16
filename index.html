@@ -397,10 +397,22 @@
 
         async function logAction(actionName, details = {}) { if(!currentUser) return; try { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, mode: actionName, details: details, source: utmSource, campaign: utmCampaign, isTest: isTestMode, createdAt: serverTimestamp() }); } catch(e) {} }
 
+        // MUDANÇA CRÍTICA: TIMEOUT NA API
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            try { const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`); return r.ok ? await r.json() : null; } catch(e) { return null; }
+            
+            // Crio um "Cancelador" que dispara em 1.5 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1500); 
+
+            try { 
+                const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
+                clearTimeout(timeoutId); // Se respondeu a tempo, cancela o timeout
+                return r.ok ? await r.json() : null; 
+            } catch(e) { 
+                return null; // Se demorou demais, retorna nulo e o sistema usa o Backup
+            }
         }
 
         const gameConfig = {
@@ -437,9 +449,10 @@
                 renderBalls(currentNumbers);
             } else {
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-                let realData = null; let isSafe = currentBoldness <= 60;
+                let isSafe = currentBoldness <= 60; 
+                let realData = null; 
                 
-                // Busca API se necessário
+                // Busca API com Timeout
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
@@ -456,8 +469,8 @@
                     } 
                     
                     // --- FALLBACK DO "QUENTE" (CRÍTICO) ---
-                    // Se a API falhar ou estiver vazia, cria "fake hot"
-                    if (poolHot.length === 0 && isSafe) {
+                    // Se a API falhar (timeout) ou estiver vazia, cria "fake hot"
+                    if ((!poolHot || poolHot.length === 0) && isSafe) {
                         logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
                         apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
                         // Gera 15 números "quentes" falsos baseados na semente do dia
