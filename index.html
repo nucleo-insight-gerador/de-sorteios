@@ -56,7 +56,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* Z-INDEX 100 (ORIGINAL) */
+        /* Z-INDEX 100 (BOTÃO INSTALAR - ORIGINAL) */
         #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
@@ -114,20 +114,27 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #fff; border: 3px solid #000; box-shadow: 0 0 10px rgba(255,255,255,0.8); cursor: grab; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; }
 
+        /* BOTÃO PULSANTE (GERAL) */
         .btn-pulse {
-            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
-            border: none; color: #000; padding: 16px;
+            border: none; padding: 16px;
             font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 16px;
             text-transform: uppercase; letter-spacing: 1px;
             border-radius: 12px; cursor: pointer; width: 100%;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
             animation: pulse-gold 2s infinite; position: relative; overflow: hidden;
         }
+        /* ESTILO NOVO PARA O BOTÃO VIP (DOURADO E PRETO) */
+        .btn-vip-style {
+            background: linear-gradient(180deg, #ffd700 0%, #ffae00 100%);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            border: 2px solid #fff;
+        }
+
         .btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent); transform: rotate(45deg) translateY(-100%); animation: shine 3s infinite; }
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
         @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-        /* BOTÃO DE RESULTADO PULSANTE */
+        /* BOTÃO DE RESULTADO */
         .btn-result {
             background: transparent; border: 1px solid var(--primary); color: var(--primary);
             padding: 10px 16px; border-radius: 20px; font-size: 11px; font-weight: bold;
@@ -138,6 +145,15 @@
         }
         .btn-result:hover { background: rgba(255, 215, 0, 0.1); }
         @keyframes soft-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); } 100% { transform: scale(1); } }
+        
+        /* BOTÃO NOVO SINAL (VISÍVEL) */
+        .btn-restart {
+            background: rgba(255,255,255,0.1); border: 1px solid #fff; color: #fff;
+            padding: 12px; width: 100%; border-radius: 8px; font-weight: bold;
+            text-transform: uppercase; font-size: 12px; margin-top: 5px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-restart:active { transform: scale(0.98); background: rgba(255,255,255,0.2); }
 
         .screen { display: none; flex-direction: column; height: 100%; padding: 15px; padding-bottom: 30px; position: relative; z-index: 2; overflow: hidden; }
         .screen.active { display: flex; animation: fadeUp 0.3s ease; }
@@ -153,7 +169,7 @@
             padding: 15px;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
             margin: 10px 0 10px 0;
-            max-height: 55vh;
+            max-height: 50vh; /* Ajustado para caber os novos botões */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px; 
@@ -195,7 +211,7 @@
         .ball.neutral { border-color: #555; color: #888; }
         .ball.neutral::after { display: none; } 
 
-        .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
+        .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
         
@@ -366,10 +382,10 @@
     </div>
 
     <div id="screen-result" class="screen z-content">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px; flex-shrink:0;">
-            <button onclick="resetApp()" style="background:none; border:none; color:#666; display:flex; align-items:center; gap:5px; font-size:12px;"><i data-lucide="refresh-ccw" size="14"></i> NOVO SINAL</button>
-            <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:2px 8px; border-radius:4px;">SINAL CONFIRMADO 🎯</div>
+        <div style="text-align:center; margin-bottom:10px;">
+            <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:4px 12px; border-radius:20px; display:inline-block;">SINAL CONFIRMADO 🎯</div>
         </div>
+
         <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
             
             <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
@@ -401,6 +417,13 @@
                 <p style="color:#ff0055; font-size:11px; font-weight:bold; margin-bottom:5px;">⚠️ SINAL DE ALTA PRECISÃO DETECTADO</p>
                 <p style="color:#ccc; font-size:10px;">Os números decisivos foram ocultados para usuários gratuitos.</p>
             </div>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
+                <p style="color:#888; font-size:10px; margin-bottom:5px;">VOCÊ AINDA TEM <span id="attemptsLeft" style="color:#fff; font-weight:bold;">...</span> SINAIS GRATUITOS HOJE</p>
+                <button onclick="resetApp()" class="btn-restart">
+                    <i data-lucide="refresh-cw" size="14"></i> GERAR NOVO SINAL
+                </button>
+            </div>
 
         </div>
 
@@ -414,7 +437,7 @@
         </div>
         
         <div class="footer-action">
-            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px; animation:none; border:1px solid var(--primary); background:#000; color:var(--primary);"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
+            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse btn-vip-style"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
         </div>
     </div>
 
@@ -429,7 +452,6 @@
         
         let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
         let isLockedMode = false; 
-        let latestDrawData = null; // GUARDA O RESULTADO REAL
 
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
@@ -504,29 +526,25 @@
                 clearTimeout(timeoutId); return r.ok ? await r.json() : null; 
             } catch(e) { return null; }
         }
-        
-        // SISTEMA DE JANELA DO BING (V28)
+
+        // SISTEMA DE JANELA DO BING (V31)
         window.openResultInFrame = () => {
             if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
 
-            // 1. ABRE A JANELA E COMEÇA O TEATRO
             document.getElementById('resultCheckModal').classList.add('show');
             document.getElementById('resultLoading').style.display = 'block';
             document.getElementById('resultContent').style.display = 'none';
 
-            // FRASES DE EFEITO
             const phrases = ["CONECTANDO SATÉLITE...", "DESCRIPTOGRAFANDO DADOS...", "BUSCANDO NA BASE OFICIAL...", "PROCESSANDO..."];
             let pIndex = 0;
             const phraseInterval = setInterval(() => {
                 document.getElementById('loadingPhrase').innerText = phrases[pIndex++ % phrases.length];
             }, 1000);
 
-            // 2. APÓS 3 SEGUNDOS, MOSTRA O BING
             setTimeout(() => {
                 clearInterval(phraseInterval);
                 const gameName = gameConfig[currentMode].name.replace(' ', '+');
                 const bingUrl = `https://www.bing.com/search?q=resultado+${gameName}`;
-                
                 document.getElementById('bingIframe').src = bingUrl;
                 document.getElementById('resultLoading').style.display = 'none';
                 document.getElementById('resultContent').style.display = 'block';
@@ -535,7 +553,7 @@
         
         window.closeResultModal = () => {
             document.getElementById('resultCheckModal').classList.remove('show');
-            document.getElementById('bingIframe').src = "about:blank"; // Limpa para não pesar
+            document.getElementById('bingIframe').src = "about:blank"; 
         }
 
         const gameConfig = {
@@ -562,8 +580,13 @@
             increment(); 
             
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
-            const btnSee = document.getElementById('btnSeeResult'); // REFERENCIA AO BOTAO NOVO
+            const btnSee = document.getElementById('btnSeeResult');
             
+            // ATUALIZA TENTATIVAS RESTANTES
+            let remaining = DAILY_LIMIT - userUsage - 1; // -1 pois incrementou agora
+            if(remaining < 0) remaining = 0;
+            document.getElementById('attemptsLeft').innerText = remaining;
+
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
@@ -585,19 +608,19 @@
                 btn.style.borderColor = '#ff0055';
                 lockMsg.style.display = 'block'; 
             } else {
+                // BOTÃO VIP DOURADO (SE NÃO ESTIVER TRAVADO)
                 btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
-                btn.style.background = '#000';
-                btn.style.color = 'var(--primary)';
-                btn.style.borderColor = 'var(--primary)';
+                // Remove estilos inline para pegar a classe CSS nova
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                btn.className = "btn-pulse btn-vip-style"; // Aplica estilo dourado
                 lockMsg.style.display = 'none';
             }
             lucide.createIcons();
 
-            // LIMPA DADOS ANTIGOS
-            latestDrawData = null;
-            btnSee.style.display = 'none';
-
             if (currentMode === 'bicho') {
+                btnSee.style.display = 'none'; 
                 document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
@@ -613,18 +636,12 @@
                 animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else {
-                btnSee.style.display = 'flex'; // MOSTRA O BOTÃO FIXO
+                btnSee.style.display = 'flex'; 
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
                 let isSafe = currentBoldness <= 60; 
                 let realData = null; 
                 
-                // TENTA BUSCAR DADOS (SEMPRE, PARA O POPUP)
-                if(currentMode!=='supersete') {
-                    realData = await fetchRealLotteryData(currentMode);
-                    if(realData && realData.dezenas) {
-                        latestDrawData = realData; // SALVA PARA O POPUP
-                    }
-                }
+                if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
                 let poolHot = [];
@@ -633,13 +650,11 @@
                     for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
                     logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
                 } else {
-                    // 1. TENTA PEGAR QUENTES (DA API)
                     if(isSafe && realData && realData.dezenas) {
                         poolHot = realData.dezenas.map(d => parseInt(d));
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
                     } 
                     
-                    // 2. FALLBACK DO "QUENTE" (MATEMÁTICO)
                     if ((!poolHot || poolHot.length === 0) && isSafe) {
                         logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
                         apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
@@ -653,7 +668,6 @@
                         logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
                     }
 
-                    // 3. MONTA A LISTA COMPLETA
                     let allNumbers = [];
                     let start = 1; let end = config.max;
                     if(currentMode === 'lotomania') { start = 0; end = 99; }
@@ -685,26 +699,6 @@
             }
             showScreen('screen-result'); playWin();
         }
-
-        // FUNÇÕES DO NOVO MODAL
-        window.openResultModal = () => {
-            if(!latestDrawData) return alert("Buscando dados...");
-            document.getElementById('realResultTitle').innerText = `CONCURSO ${latestDrawData.numero}`;
-            document.getElementById('realResultDate').innerText = `DATA: ${latestDrawData.data}`;
-            
-            const grid = document.getElementById('realResultGrid');
-            grid.innerHTML = '';
-            
-            latestDrawData.dezenas.forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'real-ball';
-                el.innerText = d;
-                grid.appendChild(el);
-            });
-            
-            document.getElementById('resultCheckModal').classList.add('show');
-        }
-        window.closeResultModal = () => document.getElementById('resultCheckModal').classList.remove('show');
 
         function renderBalls(list) {
             const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
