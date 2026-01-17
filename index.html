@@ -60,7 +60,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* Z-INDEX BLINDADO PARA O BOTÃO NÃO SUMIR */
+        /* Z-INDEX 9999 PARA O BOTÃO NÃO SUMIR */
         #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 9999; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
@@ -285,13 +285,14 @@
 
     <div id="resultCheckModal">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <div style="font-size:12px; font-weight:bold; color:var(--primary);">RESULTADO OFICIAL CAIXA</div>
+            <div style="font-size:12px; font-weight:bold; color:var(--primary);">RESULTADO OFICIAL</div>
             <button onclick="closeResultModal()" style="background:none; border:none; color:#666;"><i data-lucide="x" size="20"></i></button>
         </div>
         
-        <div id="resultLoading" style="text-align:center; padding:20px;">
-            <i data-lucide="loader-2" size="30" class="text-gold" style="animation:spin 1s linear infinite;"></i>
-            <p style="color:#888; font-size:10px; margin-top:10px;">Buscando na API Nova...</p>
+        <div id="resultLoading" style="text-align:center; padding:30px 10px;">
+            <i data-lucide="loader-2" size="40" class="text-gold" style="animation:spin 1s linear infinite; margin-bottom:15px;"></i>
+            <p id="loadingPhrase" style="color:#fff; font-size:11px; font-weight:bold; text-transform:uppercase;">BUSCANDO BASE CAIXA...</p>
+            <p style="color:#666; font-size:9px; margin-top:5px;">Isso pode levar alguns segundos</p>
         </div>
 
         <div id="resultContent" style="display:none;">
@@ -299,11 +300,17 @@
                 <h3 id="realResultTitle" style="color:#fff; font-weight:900; font-size:18px; margin-bottom:5px;">CONCURSO ...</h3>
                 <p id="realResultDate" style="color:#888; font-size:11px; font-family:'JetBrains Mono';">...</p>
             </div>
-
             <div id="realResultGrid" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px;"></div>
         </div>
 
-        <button onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none;">FECHAR</button>
+        <div id="resultFallback" style="display:none; text-align:center; padding:10px;">
+            <i data-lucide="wifi-off" size="30" class="text-gold" style="margin-bottom:10px;"></i>
+            <p style="color:#fff; font-size:12px; font-weight:bold; margin-bottom:5px;">CONEXÃO INSTÁVEL COM A CAIXA</p>
+            <p style="color:#888; font-size:10px; margin-bottom:20px;">Não conseguimos baixar o resultado oficial agora.</p>
+            <button onclick="fetchAndShowResult()" class="btn-pulse" style="background:#fff; color:#000; font-size:11px; padding:12px;">🔄 TENTAR CONEXÃO NOVAMENTE</button>
+        </div>
+
+        <button id="btnCloseResult" onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none; margin-top:15px;">FECHAR</button>
     </div>
 
     <div id="paywallModal" class="modal-overlay">
@@ -514,41 +521,43 @@
             } catch(e) { return null; }
         }
 
-        // NOVA FUNÇÃO COM API VERCEL (MAIS RÁPIDA E ESTÁVEL)
+        // SISTEMA DE ENROLEIXON COM FALLBACK
         window.fetchAndShowResult = async () => {
             if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
             
+            // 1. ABRE A JANELA E COMEÇA O TEATRO
             document.getElementById('resultCheckModal').classList.add('show');
             document.getElementById('resultLoading').style.display = 'block';
             document.getElementById('resultContent').style.display = 'none';
-            
-            // MAPEAMENTO NOVO (VERCEL USA HÍFEN EM VEZ DE TUDO JUNTO)
-            const map = {
-                'lotofacil':'lotofacil', 
-                'mega':'mega-sena', // MUDOU AQUI
-                'quina':'quina', 
-                'timemania':'timemania', 
-                'lotomania':'lotomania', 
-                'diadesorte':'dia-de-sorte', // MUDOU AQUI
-                'duplasena':'dupla-sena', // MUDOU AQUI
-                'milionaria':'mais-milionaria', // MUDOU AQUI
-                'supersete':'super-sete' // MUDOU AQUI
-            };
+            document.getElementById('resultFallback').style.display = 'none';
+            document.getElementById('btnCloseResult').style.display = 'none';
+
+            // FRASES DE EFEITO (O ENROLEIXON)
+            const phrases = ["CONECTANDO BASE CAIXA...", "VERIFICANDO SERVIDORES...", "BAIXANDO DADOS CRIPTOGRAFADOS...", "VALIDANDO RESULTADO..."];
+            let pIndex = 0;
+            const phraseInterval = setInterval(() => {
+                document.getElementById('loadingPhrase').innerText = phrases[pIndex++ % phrases.length];
+            }, 1500);
+
+            // 2. TENTA A API POR TRÁS DAS CORTINAS
+            const map = {'lotofacil':'lotofacil', 'mega':'mega-sena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'dia-de-sorte', 'duplasena':'dupla-sena', 'milionaria':'mais-milionaria', 'supersete':'super-sete'};
             
             try {
-                // NOVA API (VERCEL)
-                console.log("Buscando em: https://loterias-caixa-json.vercel.app/api/" + map[currentMode]);
-                const r = await fetch(`https://loterias-caixa-json.vercel.app/api/${map[currentMode]}`);
+                // Aumentei o tempo limite para 8 segundos para dar tempo do teatro
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
+                const r = await fetch(`https://loterias-caixa-json.vercel.app/api/${map[currentMode]}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 if(r.ok) {
                     const data = await r.json();
                     
+                    // PREENCHE OS DADOS
                     document.getElementById('realResultTitle').innerText = `CONCURSO ${data.numero}`;
                     document.getElementById('realResultDate').innerText = `DATA: ${data.data}`;
-                    
                     const grid = document.getElementById('realResultGrid');
                     grid.innerHTML = '';
-                    
                     data.dezenas.forEach(d => {
                         const el = document.createElement('div');
                         el.className = 'real-ball';
@@ -556,16 +565,20 @@
                         grid.appendChild(el);
                     });
                     
+                    // MOSTRA O RESULTADO
+                    clearInterval(phraseInterval);
                     document.getElementById('resultLoading').style.display = 'none';
                     document.getElementById('resultContent').style.display = 'block';
+                    document.getElementById('btnCloseResult').style.display = 'block';
                 } else {
-                    console.error("Erro API:", r.status);
-                    throw new Error("Erro na API");
+                    throw new Error("Erro API");
                 }
             } catch(e) {
-                console.error(e);
-                alert("Serviço indisponível no momento. Tente novamente em instantes.");
-                closeResultModal();
+                // 3. SE DER MERDA, CHAMA O FALLBACK INTERNO
+                clearInterval(phraseInterval);
+                document.getElementById('resultLoading').style.display = 'none';
+                document.getElementById('resultFallback').style.display = 'block';
+                document.getElementById('btnCloseResult').style.display = 'block';
             }
         }
         
