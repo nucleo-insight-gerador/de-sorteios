@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
@@ -17,8 +17,9 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "bec7d24b-53e5-4069-a592-d797a347a051",
-          // AQUI ESTÁ O SEGREDO: ENDEREÇO COMPLETO, SEM ATALHOS
+          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37", // SEU NOVO ID AQUI
+          
+          // VACINA CONTRA O ERRO 404 (FORÇA O CAMINHO CERTO)
           path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
           serviceWorkerParam: { scope: "/de-sorteios/" },
           serviceWorkerPath: "OneSignalSDKWorker.js",
@@ -450,11 +451,11 @@
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
         // --- MUDANÇA 1: LÓGICA DO SINAL OCULTO ---
-        window.checkLimitAndStart = async () => { 
-            playClick(); 
+        window.checkLimitAndStart = async () => { 
+            playClick(); 
             // Se excedeu o limite, ativa o modo CADEADO, mas NÃO PARA.
-            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
-                isLockedMode = true; 
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
+                isLockedMode = true; 
             } else {
                 isLockedMode = false;
             }
