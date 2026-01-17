@@ -17,7 +17,9 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37",
+          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37", // SEU NOVO ID AQUI
+          
+          // VACINA CONTRA O ERRO 404 (FORÇA O CAMINHO CERTO)
           path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
           serviceWorkerParam: { scope: "/de-sorteios/" },
           serviceWorkerPath: "OneSignalSDKWorker.js",
@@ -27,7 +29,7 @@
     </script>
 
     <style>
-        /* CONFIGURAÇÃO DE CORES */
+        /* CONFIGURAÇÃO DE CORES (VERDE NEON MANTIDO) */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -54,8 +56,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* CORREÇÃO DO BOTÃO DE INSTALAR (Z-INDEX AUMENTADO) */
-        #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 9999; display: none; }
+        #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
             font-size: 10px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
@@ -64,14 +65,14 @@
         }
         @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
 
-        #installModal, #resultCheckModal {
+        #installModal {
             position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
             border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
             padding: 20px; z-index: 6000; transform: translateY(100%); transition: transform 0.3s ease-out;
             display: flex; flex-direction: column; align-items: center; text-align: center;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
-        #installModal.show, #resultCheckModal.show { transform: translateY(0); }
+        #installModal.show { transform: translateY(0); }
 
         #creditContainer { margin-bottom: 10px; flex-shrink: 0; }
         .credit-box { 
@@ -125,15 +126,6 @@
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
         @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-        /* ESTILO DO BOTÃO DE RESULTADO (NOVO) */
-        .btn-result {
-            background: transparent; border: 1px solid #333; color: #888;
-            padding: 8px 16px; border-radius: 20px; font-size: 10px; font-weight: bold;
-            margin: 10px auto; display: flex; align-items: center; gap: 6px;
-            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
-        }
-        .btn-result:hover { border-color: var(--primary); color: var(--primary); background: rgba(255, 215, 0, 0.05); }
-
         .screen { display: none; flex-direction: column; height: 100%; padding: 15px; padding-bottom: 30px; position: relative; z-index: 2; overflow: hidden; }
         .screen.active { display: flex; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -147,7 +139,7 @@
             border-radius: 16px;
             padding: 15px;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
-            margin: 10px 0 10px 0;
+            margin: 10px 0 20px 0;
             max-height: 55vh;
             overflow-y: auto;
             overflow-x: hidden;
@@ -175,34 +167,38 @@
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
         
+        /* FEATURE 3: ESTILO PARA BOLA TRAVADA (SINAL OCULTO) */
         .ball.locked { 
-            filter: blur(5px); pointer-events: auto; cursor: pointer; border-color: #ff0055 !important;
+            filter: blur(5px); 
+            pointer-events: auto; 
+            cursor: pointer;
+            border-color: #ff0055 !important;
         }
         .ball.locked::before {
-            content: '🔒'; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%) scale(1.5); filter: blur(0) !important;
-            z-index: 2000; text-shadow: 0 0 10px #000;
+            content: '🔒';
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) scale(1.5);
+            filter: blur(0) !important;
+            z-index: 2000;
+            text-shadow: 0 0 10px #000;
         }
 
+        /* TIPOS DE BOLA */
         .ball.hot { border-color: var(--hot); color: var(--hot); }
         .ball.hot::after { background: var(--hot); }
+        
         .ball.cold { border-color: var(--cold); color: var(--cold); }
         .ball.cold::after { background: var(--cold); }
+
         .ball.neutral { border-color: #555; color: #888; }
         .ball.neutral::after { display: none; } 
-
-        /* BOLAS DO MODAL DE RESULTADO REAL */
-        .real-ball {
-            width: 34px; height: 34px; background: #fff; color: #000; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-weight: 900;
-            font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'JetBrains Mono';
-        }
 
         .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
         
-        .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 10px auto; text-align: center; }
+        /* FEATURE 2: BARRA DE CONFIANÇA */
+        .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 15px auto; text-align: center; }
         .confidence-label { font-size: 10px; color: #00ff88; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
         .confidence-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333; }
         .confidence-bar-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease-out; box-shadow: 0 0 10px #00ff88; }
@@ -277,23 +273,6 @@
         <button onclick="dismissInstall()" style="background:none; border:none; color:#555; font-size:11px; margin-top:15px; text-decoration:underline;">Agora não (correr risco de perder)</button>
     </div>
 
-    <div id="resultCheckModal">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <div style="font-size:12px; font-weight:bold; color:var(--primary);">RESULTADO OFICIAL CAIXA</div>
-            <button onclick="closeResultModal()" style="background:none; border:none; color:#666;"><i data-lucide="x" size="20"></i></button>
-        </div>
-        
-        <div style="background:#222; padding:15px; border-radius:12px; width:100%; border:1px solid #333; margin-bottom:15px;">
-            <h3 id="realResultTitle" style="color:#fff; font-weight:900; font-size:18px; margin-bottom:5px;">CONCURSO ...</h3>
-            <p id="realResultDate" style="color:#888; font-size:11px; font-family:'JetBrains Mono';">...</p>
-        </div>
-
-        <div id="realResultGrid" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px;">
-            </div>
-
-        <button onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none;">FECHAR</button>
-    </div>
-
     <div id="paywallModal" class="modal-overlay">
         <div class="modal-box">
             <i data-lucide="lock" size="40" class="text-gold" style="margin-bottom: 15px;"></i>
@@ -364,7 +343,7 @@
     </div>
 
     <div id="screen-result" class="screen z-content">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px; flex-shrink:0;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; flex-shrink:0;">
             <button onclick="resetApp()" style="background:none; border:none; color:#666; display:flex; align-items:center; gap:5px; font-size:12px;"><i data-lucide="refresh-ccw" size="14"></i> NOVO SINAL</button>
             <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:2px 8px; border-radius:4px;">SINAL CONFIRMADO 🎯</div>
         </div>
@@ -382,15 +361,11 @@
             <div class="result-frame">
                 <div id="numbersGrid" class="result-grid"></div>
             </div>
-
-            <button id="btnSeeResult" class="btn-result" onclick="openResultModal()" style="display:none;">
-                <i data-lucide="eye" size="12"></i> VER ÚLTIMO RESULTADO OFICIAL
-            </button>
             
             <div class="legend-box">
-                <div class="legend-item"><div class="legend-dot" style="background:var(--hot); border-color:var(--hot);"></div> QUENTE</div>
-                <div class="legend-item"><div class="legend-dot" style="background:var(--cold); border-color:var(--cold);"></div> FRIO</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#555; border-color:#777;"></div> NORMAL</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--hot); border-color:var(--hot);"></div> QUENTE (HISTÓRICO)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--cold); border-color:var(--cold);"></div> ZEBRA (FRIO)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#555; border-color:#777;"></div> NORMAL (COMPLEMENTO)</div>
             </div>
             
             <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
@@ -426,8 +401,7 @@
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
-        let isLockedMode = false; 
-        let latestDrawData = null; // GUARDA O RESULTADO REAL
+        let isLockedMode = false; // FLAG DO MODO CADEADO
 
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
@@ -476,14 +450,16 @@
         async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
+        // --- MUDANÇA 1: LÓGICA DO SINAL OCULTO ---
         window.checkLimitAndStart = async () => { 
             playClick(); 
+            // Se excedeu o limite, ativa o modo CADEADO, mas NÃO PARA.
             if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
                 isLockedMode = true; 
             } else {
                 isLockedMode = false;
             }
-            startProcessing(); 
+            startProcessing(); // Roda de qualquer jeito
         }
 
         window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
@@ -495,9 +471,9 @@
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            // AUMENTADO O TIMEOUT DE 0.6s PARA 2s (CORREÇÃO DO BOTÃO DE RESULTADO)
+            // TIMEOUT DE 0.6s MANTIDO (SEGURANÇA CONTRA TRAVAMENTO)
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000); 
+            const timeoutId = setTimeout(() => controller.abort(), 600); 
             try { 
                 const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
                 clearTimeout(timeoutId); return r.ok ? await r.json() : null; 
@@ -520,36 +496,37 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             let step = 0; const spin = document.getElementById('spinContainer');
+            // SOM MANTIDO NO LOADING
             const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
             setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
         }
 
         async function generateResult() {
-            increment(); 
+            increment(); // FIRE AND FORGET (SEM AWAIT)
             
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
-            const btnSee = document.getElementById('btnSeeResult'); // REFERENCIA AO BOTAO NOVO
-            
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
+            // CONFIGURAÇÃO DA BARRA DE CONFIANÇA (FEATURE 2)
             const confBar = document.getElementById('confidenceBar');
             const confFill = document.getElementById('confFill');
             const confValue = document.getElementById('confValue');
             confBar.style.display = 'block';
-            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; 
+            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; // Entre 88% e 99%
             confValue.innerText = randomConf + "%";
             setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
 
+            // CONTROLE DO BOTÃO PRINCIPAL (FEATURE 1 - BLOQUEIO)
             const btn = document.getElementById('mainActionButton');
             const lockMsg = document.getElementById('lockMessage');
             
             if(isLockedMode) {
                 btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
-                btn.style.background = '#ff0055'; 
+                btn.style.background = '#ff0055'; // Vermelho de alerta
                 btn.style.color = '#fff';
                 btn.style.borderColor = '#ff0055';
-                lockMsg.style.display = 'block'; 
+                lockMsg.style.display = 'block'; // Mostra msg de erro
             } else {
                 btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
                 btn.style.background = '#000';
@@ -559,15 +536,13 @@
             }
             lucide.createIcons();
 
-            // LIMPA DADOS ANTIGOS
-            latestDrawData = null;
-            btnSee.style.display = 'none';
-
             if (currentMode === 'bicho') {
+                // FEATURE 3 - MUDANÇA DE NOME
                 document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 
+                // Lógica de Bloqueio do Bicho (Oculta o texto do animal e dezenas)
                 if(isLockedMode) {
                    animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
                    animalRes.style.filter = "blur(4px)";
@@ -583,22 +558,15 @@
                 let isSafe = currentBoldness <= 60; 
                 let realData = null; 
                 
-                // TENTA BUSCAR DADOS (SEMPRE, PARA O POPUP)
-                if(currentMode!=='supersete') {
-                    realData = await fetchRealLotteryData(currentMode);
-                    if(realData && realData.dezenas) {
-                        latestDrawData = realData; // SALVA PARA O POPUP
-                        btnSee.style.display = 'flex'; // MOSTRA O BOTÃO
-                    }
-                }
+                if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
-                let poolHot = [];
 
                 if(currentMode === 'supersete') {
                     for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
                     logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
                 } else {
+                    let poolHot = [];
                     // 1. TENTA PEGAR QUENTES (DA API)
                     if(isSafe && realData && realData.dezenas) {
                         poolHot = realData.dezenas.map(d => parseInt(d));
@@ -609,6 +577,7 @@
                     if ((!poolHot || poolHot.length === 0) && isSafe) {
                         logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
                         apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
+                        // Gera 15 números "quentes" falsos baseados na semente do dia
                         let seed = getDailySeed();
                         for(let i=0; i<15; i++) {
                             let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
@@ -624,9 +593,13 @@
                     let start = 1; let end = config.max;
                     if(currentMode === 'lotomania') { start = 0; end = 99; }
 
+                    // Cria o universo de números
                     for(let i=start; i<=end; i++) allNumbers.push(i);
+
+                    // Embaralha tudo (Fisher-Yates)
                     for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
 
+                    // 4. SELEÇÃO HÍBRIDA (QUENTES + FRIOS + NEUTROS)
                     let selected = new Set();
                     let hotLimit = Math.floor(config.count * 0.4); 
                     for(let h of poolHot) {
@@ -644,52 +617,38 @@
                             finalList.push({ n: num, type: type });
                         }
                     }
+                    
                     finalList.sort((a,b) => a.n - b.n);
                 }
+
                 renderBalls(finalList);
                 logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
             }
             showScreen('screen-result'); playWin();
         }
 
-        // FUNÇÕES DO NOVO MODAL
-        window.openResultModal = () => {
-            if(!latestDrawData) return alert("Buscando dados...");
-            document.getElementById('realResultTitle').innerText = `CONCURSO ${latestDrawData.numero}`;
-            document.getElementById('realResultDate').innerText = `DATA: ${latestDrawData.data}`;
-            
-            const grid = document.getElementById('realResultGrid');
-            grid.innerHTML = '';
-            
-            latestDrawData.dezenas.forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'real-ball';
-                el.innerText = d;
-                grid.appendChild(el);
-            });
-            
-            document.getElementById('resultCheckModal').classList.add('show');
-        }
-        window.closeResultModal = () => document.getElementById('resultCheckModal').classList.remove('show');
-
         function renderBalls(list) {
             const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
+            
             if(typeof list[0] === 'number') {
                 list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
                 return;
             }
+
             list.forEach((item, i) => {
                 addBall(item.n, item.type, grid, i, list.length);
             });
         }
         
+        // FEATURE 1: LÓGICA DE BORRAR AS BOLAS NO RENDER
         function addBall(n, type, grid, index, total) {
             const div = document.createElement('div'); 
             div.className = `ball ${type}`; 
             
+            // SE TIVER NO MODO LOCKED E FOR UMA DAS ÚLTIMAS 2 BOLAS
             if(isLockedMode && index >= total - 2) {
                 div.classList.add('locked');
-                div.onclick = openVipLink; 
+                div.onclick = openVipLink; // Clicar na bola travada leva pro checkout
             }
             
             let txt = n;
