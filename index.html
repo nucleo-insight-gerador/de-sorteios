@@ -169,7 +169,7 @@
             padding: 15px;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
             margin: 10px 0 10px 0;
-            max-height: 50vh; /* Ajustado para caber os novos botões */
+            max-height: 50vh; 
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px; 
@@ -582,3 +582,15 @@
             setTimeout(() => div.classList.add('reveal'), 100); 
             grid.appendChild(div);
         }
+
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
+
+        window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
+        window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
+        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        lucide.createIcons();
+    </script>
+</body>
+</html>
