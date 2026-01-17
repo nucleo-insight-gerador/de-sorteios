@@ -5,17 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sala de Sinais | VIP</title>
     <meta name="theme-color" content="#000000">
-    
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Sala de Sinais VIP","short_name":"Sinais VIP","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000","icons":[{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"512x512","type":"image/png"}]}'>
-    
-    <meta name="application-name" content="Sinais VIP">
-    <meta name="apple-mobile-web-app-title" content="Sinais VIP">
+    <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
@@ -24,7 +17,9 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37",
+          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37", // SEU NOVO ID AQUI
+          
+          // VACINA CONTRA O ERRO 404 (FORÇA O CAMINHO CERTO)
           path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
           serviceWorkerParam: { scope: "/de-sorteios/" },
           serviceWorkerPath: "OneSignalSDKWorker.js",
