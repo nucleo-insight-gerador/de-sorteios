@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sala de Sinais | VIP</title>
     <meta name="theme-color" content="#000000">
-    <link rel="manifest" href="manifest.json">
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Sala de Sinais VIP","short_name":"Sinais VIP","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000","orientation":"portrait","icons":[{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"512x512","type":"image/png"}]}'>
+    
+    <meta name="application-name" content="Sinais VIP">
+    <meta name="apple-mobile-web-app-title" content="Sinais VIP">
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
@@ -17,9 +23,7 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37", // SEU NOVO ID AQUI
-          
-          // VACINA CONTRA O ERRO 404 (FORÇA O CAMINHO CERTO)
+          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37",
           path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
           serviceWorkerParam: { scope: "/de-sorteios/" },
           serviceWorkerPath: "OneSignalSDKWorker.js",
@@ -29,7 +33,7 @@
     </script>
 
     <style>
-        /* CONFIGURAÇÃO DE CORES (VERDE NEON MANTIDO) */
+        /* CONFIGURAÇÃO DE CORES */
         :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -56,7 +60,8 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
+        /* CORREÇÃO DO BOTÃO DE INSTALAR (Z-INDEX 9999) */
+        #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 9999; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
             font-size: 10px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
@@ -450,16 +455,14 @@
         async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
-        // --- MUDANÇA 1: LÓGICA DO SINAL OCULTO ---
         window.checkLimitAndStart = async () => { 
             playClick(); 
-            // Se excedeu o limite, ativa o modo CADEADO, mas NÃO PARA.
             if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
                 isLockedMode = true; 
             } else {
                 isLockedMode = false;
             }
-            startProcessing(); // Roda de qualquer jeito
+            startProcessing(); 
         }
 
         window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
@@ -471,7 +474,6 @@
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            // TIMEOUT DE 0.6s MANTIDO (SEGURANÇA CONTRA TRAVAMENTO)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 600); 
             try { 
@@ -496,37 +498,34 @@
             showScreen('screen-loading');
             const term = document.getElementById('terminalText');
             let step = 0; const spin = document.getElementById('spinContainer');
-            // SOM MANTIDO NO LOADING
             const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
             setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
         }
 
         async function generateResult() {
-            increment(); // FIRE AND FORGET (SEM AWAIT)
+            increment(); 
             
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
-            // CONFIGURAÇÃO DA BARRA DE CONFIANÇA (FEATURE 2)
             const confBar = document.getElementById('confidenceBar');
             const confFill = document.getElementById('confFill');
             const confValue = document.getElementById('confValue');
             confBar.style.display = 'block';
-            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; // Entre 88% e 99%
+            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; 
             confValue.innerText = randomConf + "%";
             setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
 
-            // CONTROLE DO BOTÃO PRINCIPAL (FEATURE 1 - BLOQUEIO)
             const btn = document.getElementById('mainActionButton');
             const lockMsg = document.getElementById('lockMessage');
             
             if(isLockedMode) {
                 btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
-                btn.style.background = '#ff0055'; // Vermelho de alerta
+                btn.style.background = '#ff0055'; 
                 btn.style.color = '#fff';
                 btn.style.borderColor = '#ff0055';
-                lockMsg.style.display = 'block'; // Mostra msg de erro
+                lockMsg.style.display = 'block'; 
             } else {
                 btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
                 btn.style.background = '#000';
@@ -537,12 +536,10 @@
             lucide.createIcons();
 
             if (currentMode === 'bicho') {
-                // FEATURE 3 - MUDANÇA DE NOME
                 document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
                 
-                // Lógica de Bloqueio do Bicho (Oculta o texto do animal e dezenas)
                 if(isLockedMode) {
                    animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
                    animalRes.style.filter = "blur(4px)";
@@ -577,7 +574,6 @@
                     if ((!poolHot || poolHot.length === 0) && isSafe) {
                         logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
                         apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
-                        // Gera 15 números "quentes" falsos baseados na semente do dia
                         let seed = getDailySeed();
                         for(let i=0; i<15; i++) {
                             let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
@@ -593,13 +589,9 @@
                     let start = 1; let end = config.max;
                     if(currentMode === 'lotomania') { start = 0; end = 99; }
 
-                    // Cria o universo de números
                     for(let i=start; i<=end; i++) allNumbers.push(i);
-
-                    // Embaralha tudo (Fisher-Yates)
                     for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
 
-                    // 4. SELEÇÃO HÍBRIDA (QUENTES + FRIOS + NEUTROS)
                     let selected = new Set();
                     let hotLimit = Math.floor(config.count * 0.4); 
                     for(let h of poolHot) {
@@ -617,10 +609,8 @@
                             finalList.push({ n: num, type: type });
                         }
                     }
-                    
                     finalList.sort((a,b) => a.n - b.n);
                 }
-
                 renderBalls(finalList);
                 logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
             }
@@ -629,26 +619,22 @@
 
         function renderBalls(list) {
             const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
-            
             if(typeof list[0] === 'number') {
                 list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
                 return;
             }
-
             list.forEach((item, i) => {
                 addBall(item.n, item.type, grid, i, list.length);
             });
         }
         
-        // FEATURE 1: LÓGICA DE BORRAR AS BOLAS NO RENDER
         function addBall(n, type, grid, index, total) {
             const div = document.createElement('div'); 
             div.className = `ball ${type}`; 
             
-            // SE TIVER NO MODO LOCKED E FOR UMA DAS ÚLTIMAS 2 BOLAS
             if(isLockedMode && index >= total - 2) {
                 div.classList.add('locked');
-                div.onclick = openVipLink; // Clicar na bola travada leva pro checkout
+                div.onclick = openVipLink; 
             }
             
             let txt = n;
