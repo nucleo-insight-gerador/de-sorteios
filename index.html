@@ -56,7 +56,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* Z-INDEX 100 (ORIGINAL E SEGURO) */
+        /* Z-INDEX 100 */
         #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
@@ -66,20 +66,20 @@
         }
         @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
 
-        /* CORREÇÃO DA "PAREDE DE VIDRO" (VISIBILITY) */
+        /* CORREÇÃO DA PAREDE DE VIDRO (VISIBILITY) */
         #installModal, #resultCheckModal {
             position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
             border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
             padding: 20px; z-index: 9999; 
             transform: translateY(100%); 
-            visibility: hidden; /* ESCONDIDO DE VERDADE */
+            visibility: hidden; /* O SEGREDO ESTÁ AQUI */
             transition: transform 0.3s ease-out, visibility 0s linear 0.3s;
             display: flex; flex-direction: column; align-items: center; text-align: center;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
         #installModal.show, #resultCheckModal.show { 
             transform: translateY(0); 
-            visibility: visible; /* VISÍVEL SÓ QUANDO CHAMADO */
+            visibility: visible;
             transition: transform 0.3s ease-out, visibility 0s linear 0s;
         }
 
@@ -122,7 +122,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #fff; border: 3px solid #000; box-shadow: 0 0 10px rgba(255,255,255,0.8); cursor: grab; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; }
 
-        /* BOTÃO PULSANTE (GERAL) */
+        /* BOTÕES */
         .btn-pulse {
             border: none; padding: 16px;
             font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 16px;
@@ -130,19 +130,14 @@
             border-radius: 12px; cursor: pointer; width: 100%;
             animation: pulse-gold 2s infinite; position: relative; overflow: hidden;
         }
-        /* ESTILO NOVO PARA O BOTÃO VIP (DOURADO E PRETO) */
         .btn-vip-style {
             background: linear-gradient(180deg, #ffd700 0%, #ffae00 100%);
-            color: #000;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-            border: 2px solid #fff;
+            color: #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); border: 2px solid #fff;
         }
-
         .btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent); transform: rotate(45deg) translateY(-100%); animation: shine 3s infinite; }
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
         @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-        /* BOTÃO DE RESULTADO */
         .btn-result {
             background: transparent; border: 1px solid var(--primary); color: var(--primary);
             padding: 10px 16px; border-radius: 20px; font-size: 11px; font-weight: bold;
@@ -154,7 +149,6 @@
         .btn-result:hover { background: rgba(255, 215, 0, 0.1); }
         @keyframes soft-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); } 100% { transform: scale(1); } }
         
-        /* BOTÃO NOVO SINAL (VISÍVEL) */
         .btn-restart {
             background: rgba(255,255,255,0.1); border: 1px solid #fff; color: #fff;
             padding: 12px; width: 100%; border-radius: 8px; font-weight: bold;
@@ -177,7 +171,7 @@
             padding: 15px;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
             margin: 10px 0 10px 0;
-            max-height: 50vh; 
+            max-height: 50vh;
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px; 
@@ -590,15 +584,3 @@
             setTimeout(() => div.classList.add('reveal'), 100); 
             grid.appendChild(div);
         }
-
-        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
-
-        window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
-        window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
-        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        lucide.createIcons();
-    </script>
-</body>
-</html>
