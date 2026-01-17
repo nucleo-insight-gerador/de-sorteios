@@ -1431,8 +1431,8 @@
 
        
 
-      if(isLockedMode && index >= total - 2) {
-
+if(isLockedMode && type === 'hot') { 
+   div.classList.add('locked');
         div.classList.add('locked');
 
         div.onclick = openVipLink; 
