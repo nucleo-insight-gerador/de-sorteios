@@ -6,10 +6,12 @@
     <title>Sala de Sinais | VIP</title>
     <meta name="theme-color" content="#000000">
     
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Sala de Sinais VIP","short_name":"Sinais VIP","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000","orientation":"portrait","icons":[{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"192x192","type":"image/png"},{"src":"https://i.ibb.co/nMt8zB1d/LOGO-01.png","sizes":"512x512","type":"image/png"}]}'>
+    
     <meta name="application-name" content="Sinais VIP">
     <meta name="apple-mobile-web-app-title" content="Sinais VIP">
-    <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
@@ -58,7 +60,7 @@
         }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* CORREÇÃO DO Z-INDEX DO BOTÃO DE INSTALAR */
+        /* Z-INDEX BLINDADO PARA O BOTÃO NÃO SUMIR */
         #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 9999; display: none; }
         .btn-install-app {
             background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
@@ -129,7 +131,6 @@
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
         @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-        /* ESTILO DO BOTÃO DE RESULTADO (PULSANTE) */
         .btn-result {
             background: transparent; border: 1px solid var(--primary); color: var(--primary);
             padding: 10px 16px; border-radius: 20px; font-size: 11px; font-weight: bold;
@@ -163,7 +164,6 @@
 
         .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
         
-        /* ESTILOS DAS BOLAS */
         .ball { 
             width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
             border: 1px solid #444; color: #fff;
@@ -198,7 +198,6 @@
         .ball.neutral { border-color: #555; color: #888; }
         .ball.neutral::after { display: none; } 
 
-        /* BOLAS DO MODAL DE RESULTADO REAL */
         .real-ball {
             width: 34px; height: 34px; background: #fff; color: #000; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; font-weight: 900;
@@ -292,7 +291,7 @@
         
         <div id="resultLoading" style="text-align:center; padding:20px;">
             <i data-lucide="loader-2" size="30" class="text-gold" style="animation:spin 1s linear infinite;"></i>
-            <p style="color:#888; font-size:10px; margin-top:10px;">Buscando dados oficiais...</p>
+            <p style="color:#888; font-size:10px; margin-top:10px;">Buscando na API Nova...</p>
         </div>
 
         <div id="resultContent" style="display:none;">
@@ -301,8 +300,7 @@
                 <p id="realResultDate" style="color:#888; font-size:11px; font-family:'JetBrains Mono';">...</p>
             </div>
 
-            <div id="realResultGrid" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px;">
-                </div>
+            <div id="realResultGrid" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px;"></div>
         </div>
 
         <button onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none;">FECHAR</button>
@@ -489,7 +487,6 @@
         async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
-        // MANTIDA LÓGICA ORIGINAL DE GERAÇÃO (SEM TIMEOUTS)
         window.checkLimitAndStart = async () => { 
             playClick(); 
             if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
@@ -509,7 +506,6 @@
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            // TIMEOUT MANTIDO APENAS PARA A GERAÇÃO (PARA NÃO TRAVAR O SINAL)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 600); 
             try { 
@@ -518,19 +514,32 @@
             } catch(e) { return null; }
         }
 
-        // NOVA FUNÇÃO: FETCH INDEPENDENTE PARA O BOTÃO (SEM TIMEOUT CURTO)
+        // NOVA FUNÇÃO COM API VERCEL (MAIS RÁPIDA E ESTÁVEL)
         window.fetchAndShowResult = async () => {
             if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
             
-            // MOSTRA LOADING
             document.getElementById('resultCheckModal').classList.add('show');
             document.getElementById('resultLoading').style.display = 'block';
             document.getElementById('resultContent').style.display = 'none';
             
-            const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria', 'supersete':'supersete'};
+            // MAPEAMENTO NOVO (VERCEL USA HÍFEN EM VEZ DE TUDO JUNTO)
+            const map = {
+                'lotofacil':'lotofacil', 
+                'mega':'mega-sena', // MUDOU AQUI
+                'quina':'quina', 
+                'timemania':'timemania', 
+                'lotomania':'lotomania', 
+                'diadesorte':'dia-de-sorte', // MUDOU AQUI
+                'duplasena':'dupla-sena', // MUDOU AQUI
+                'milionaria':'mais-milionaria', // MUDOU AQUI
+                'supersete':'super-sete' // MUDOU AQUI
+            };
             
             try {
-                const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[currentMode]}`);
+                // NOVA API (VERCEL)
+                console.log("Buscando em: https://loterias-caixa-json.vercel.app/api/" + map[currentMode]);
+                const r = await fetch(`https://loterias-caixa-json.vercel.app/api/${map[currentMode]}`);
+                
                 if(r.ok) {
                     const data = await r.json();
                     
@@ -550,10 +559,12 @@
                     document.getElementById('resultLoading').style.display = 'none';
                     document.getElementById('resultContent').style.display = 'block';
                 } else {
+                    console.error("Erro API:", r.status);
                     throw new Error("Erro na API");
                 }
             } catch(e) {
-                alert("Não foi possível buscar o resultado agora. Tente mais tarde.");
+                console.error(e);
+                alert("Serviço indisponível no momento. Tente novamente em instantes.");
                 closeResultModal();
             }
         }
@@ -615,9 +626,8 @@
             }
             lucide.createIcons();
 
-            // LÓGICA DO BOTÃO "VER RESULTADO"
             if (currentMode === 'bicho') {
-                btnSee.style.display = 'none'; // Esconde no bicho
+                btnSee.style.display = 'none'; 
                 document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
                 const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
                 const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
@@ -633,12 +643,11 @@
                 animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
                 renderBalls(currentNumbers);
             } else {
-                btnSee.style.display = 'flex'; // MOSTRA O BOTÃO FIXO
+                btnSee.style.display = 'flex'; 
                 document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
                 let isSafe = currentBoldness <= 60; 
                 let realData = null; 
                 
-                // GERAÇÃO RÁPIDA (COM TIMEOUT DE 0.6s PARA NÃO TRAVAR A UI)
                 if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
 
                 let finalList = [];
