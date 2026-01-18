@@ -576,6 +576,165 @@
             document.getElementById('bingIframe').src = "about:blank"; // Limpa para não pesar
         }
 
+        // --- REINSERINDO A LÓGICA DO JOGO QUE FOI APAGADA ---
+
+        const gameConfig = {
+            'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
+            'mega':   { max: 60, count: 6, name: 'MEGA SENA' },
+            'quina':   { max: 80, count: 5, name: 'QUINA' },
+            'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' },
+            'timemania': { max: 80, count: 10, name: 'TIMEMANIA' },
+            'diadesorte':{ max: 31, count: 7, name: 'DIA DE SORTE' },
+            'duplasena': { max: 50, count: 6, name: 'DUPLA SENA' },
+            'milionaria':{ max: 50, count: 6, name: '+MILIONÁRIA' },
+            'supersete': { max: 9, count: 7, name: 'SUPER SETE' }
+        };
+
+        window.startProcessing = () => {
+            showScreen('screen-loading');
+            const term = document.getElementById('terminalText');
+            let step = 0; const spin = document.getElementById('spinContainer');
+            const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
+            setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
+        }
+
+        async function generateResult() {
+            increment(); // Chama a função otimista que você criou
+            
+            const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
+            const btnSee = document.getElementById('btnSeeResult');
+            
+            // ATUALIZA TENTATIVAS RESTANTES
+            let remaining = DAILY_LIMIT - userUsage; 
+            if(remaining < 0) remaining = 0;
+            document.getElementById('attemptsLeft').innerText = remaining;
+
+            grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
+            const config = gameConfig[currentMode];
+
+            const confBar = document.getElementById('confidenceBar');
+            const confFill = document.getElementById('confFill');
+            const confValue = document.getElementById('confValue');
+            confBar.style.display = 'block';
+            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; 
+            confValue.innerText = randomConf + "%";
+            setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
+
+            const btn = document.getElementById('mainActionButton');
+            const lockMsg = document.getElementById('lockMessage');
+            
+            if(isLockedMode) {
+                btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
+                btn.style.background = '#ff0055'; 
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#ff0055';
+                lockMsg.style.display = 'block'; 
+            } else {
+                // BOTÃO VIP DOURADO (SE NÃO ESTIVER TRAVADO)
+                btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
+                // Remove estilos inline para pegar a classe CSS nova
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                btn.className = "btn-pulse btn-vip-style"; // Aplica estilo dourado
+                lockMsg.style.display = 'none';
+            }
+            lucide.createIcons();
+
+            if (currentMode === 'bicho') {
+                btnSee.style.display = 'none'; 
+                document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
+                const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
+                const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
+                
+                if(isLockedMode) {
+                    animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
+                    animalRes.style.filter = "blur(4px)";
+                } else {
+                    animalRes.innerText = `🦁 ${animals[group]} (G${group})`;
+                    animalRes.style.filter = "none";
+                }
+                
+                animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
+                renderBalls(currentNumbers);
+            } else {
+                btnSee.style.display = 'flex'; 
+                document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
+                let isSafe = currentBoldness <= 60; 
+                let realData = null; 
+                
+                if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
+
+                let finalList = [];
+                let poolHot = [];
+
+                if(currentMode === 'supersete') {
+                    for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
+                    logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
+                } else {
+                    if(isSafe && realData && realData.dezenas) {
+                        poolHot = realData.dezenas.map(d => parseInt(d));
+                        logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
+                    } 
+                    
+                    if ((!poolHot || poolHot.length === 0) && isSafe) {
+                        logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
+                        apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
+                        let seed = getDailySeed();
+                        for(let i=0; i<15; i++) {
+                            let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
+                            if(currentMode === 'lotomania' && fakeHot === 100) fakeHot = 0;
+                            poolHot.push(fakeHot);
+                        }
+                    } else if (!isSafe) {
+                        logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
+                    }
+
+                    let allNumbers = [];
+                    let start = 1; let end = config.max;
+                    if(currentMode === 'lotomania') { start = 0; end = 99; }
+
+                    for(let i=start; i<=end; i++) allNumbers.push(i);
+                    for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
+
+                    let selected = new Set();
+                    let hotLimit = Math.floor(config.count * 0.4); 
+                    for(let h of poolHot) {
+                        if(selected.size < hotLimit) {
+                            selected.add(h);
+                            finalList.push({ n: h, type: 'hot' });
+                        }
+                    }
+
+                    for(let num of allNumbers) {
+                        if(selected.size >= config.count) break;
+                        if(!selected.has(num)) {
+                            let type = Math.random() > 0.8 ? 'cold' : 'neutral';
+                            selected.add(num);
+                            finalList.push({ n: num, type: type });
+                        }
+                    }
+                    finalList.sort((a,b) => a.n - b.n);
+                }
+                renderBalls(finalList);
+                logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
+            }
+            showScreen('screen-result'); playWin();
+        }
+
+        function renderBalls(list) {
+            const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
+            if(typeof list[0] === 'number') {
+                list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
+                return;
+            }
+            list.forEach((item, i) => {
+                addBall(item.n, item.type, grid, i, list.length);
+            });
+        }
+
+        // --- FIM DA LÓGICA REINSERIDA ---
+
         // FEATURE 1: LÓGICA DE BORRAR AS BOLAS NO RENDER
         function addBall(n, type, grid, index, total) {
             const div = document.createElement('div'); 
