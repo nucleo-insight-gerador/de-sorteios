@@ -503,17 +503,35 @@
         
         async function increment() { 
             if(!currentUser || isVip || isTestMode) return; 
-            const t=new Date().toDateString(); 
-            const ref=doc(db,"usage",currentUser.uid); 
+            
+            console.log("Tentando salvar contagem para:", currentUser.email, "Valor atual:", userUsage);
+            
+            const t = new Date().toDateString(); 
+            const ref = doc(db, "usage", currentUser.uid); 
+            
             userUsage++; 
-            updateUI(); // ATUALIZA A TELA IMEDIATAMENTE
-            await updateDoc(ref,{count:userUsage,date:t}); 
+            updateUI(); 
+
+            // USANDO setDoc COM MERGE (SOLUÇÃO DEFINITIVA)
+            // Isso cria o documento se ele não existir, ou atualiza se existir.
+            try {
+                await setDoc(ref, { 
+                    count: userUsage, 
+                    date: t,
+                    email: currentUser.email 
+                }, { merge: true });
+                console.log("Salvo com sucesso no Firestore!");
+            } catch (error) {
+                console.error("Erro fatal ao salvar:", error);
+                alert("Erro ao salvar progresso. Verifique sua conexão.");
+            }
         }
         
         function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
 
         window.checkLimitAndStart = async () => { 
             playClick(); 
+            // A lógica de bloqueio ocorre aqui
             if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
                 isLockedMode = true; 
             } else {
