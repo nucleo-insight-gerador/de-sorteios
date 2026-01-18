@@ -422,7 +422,6 @@
             </div>
             
             <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
-                <p style="color:#888; font-size:10px; margin-bottom:5px;">VOCÊ AINDA TEM <span id="attemptsLeft" style="color:#fff; font-weight:bold;">...</span> SINAIS GRATUITOS HOJE</p>
                 <button onclick="resetApp()" class="btn-restart">
                     <i data-lucide="refresh-cw" size="14"></i> GERAR NOVO SINAL
                 </button>
@@ -502,7 +501,6 @@
 
         async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
         
-        // FIX 1: LÓGICA OTIMISTA (ATUALIZA UI ANTES DO AWAIT)
         async function increment() { 
             if(!currentUser || isVip || isTestMode) return; 
             const t=new Date().toDateString(); 
@@ -533,7 +531,6 @@
         async function fetchRealLotteryData(mode) {
             const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
             if(!map[mode]) return null;
-            // TIMEOUT APENAS PARA A GERAÇÃO (PARA NÃO TRAVAR O SINAL)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 600); 
             try { 
@@ -546,23 +543,19 @@
         window.openResultInFrame = () => {
             if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
 
-            // 1. ABRE A JANELA E COMEÇA O TEATRO
             document.getElementById('resultCheckModal').classList.add('show');
             document.getElementById('resultLoading').style.display = 'block';
             document.getElementById('resultContent').style.display = 'none';
 
-            // FRASES DE EFEITO
             const phrases = ["CONECTANDO SATÉLITE...", "DESCRIPTOGRAFANDO DADOS...", "BUSCANDO NA BASE OFICIAL...", "PROCESSANDO..."];
             let pIndex = 0;
             const phraseInterval = setInterval(() => {
                 document.getElementById('loadingPhrase').innerText = phrases[pIndex++ % phrases.length];
             }, 1000);
 
-            // 2. APÓS 3 SEGUNDOS, MOSTRA O BING
             setTimeout(() => {
                 clearInterval(phraseInterval);
                 const gameName = gameConfig[currentMode].name.replace(' ', '+');
-                // TRUQUE DO IGU=1 DO GOOGLE/BING PARA EMBED
                 const bingUrl = `https://www.bing.com/search?q=resultado+${gameName}`;
                 
                 document.getElementById('bingIframe').src = bingUrl;
@@ -573,10 +566,8 @@
         
         window.closeResultModal = () => {
             document.getElementById('resultCheckModal').classList.remove('show');
-            document.getElementById('bingIframe').src = "about:blank"; // Limpa para não pesar
+            document.getElementById('bingIframe').src = "about:blank"; 
         }
-
-        // --- REINSERINDO A LÓGICA DO JOGO QUE FOI APAGADA ---
 
         const gameConfig = {
             'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
@@ -599,16 +590,11 @@
         }
 
         async function generateResult() {
-            increment(); // Chama a função otimista que você criou
+            increment(); 
             
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             const btnSee = document.getElementById('btnSeeResult');
             
-            // ATUALIZA TENTATIVAS RESTANTES
-            let remaining = DAILY_LIMIT - userUsage; 
-            if(remaining < 0) remaining = 0;
-            document.getElementById('attemptsLeft').innerText = remaining;
-
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
@@ -630,13 +616,11 @@
                 btn.style.borderColor = '#ff0055';
                 lockMsg.style.display = 'block'; 
             } else {
-                // BOTÃO VIP DOURADO (SE NÃO ESTIVER TRAVADO)
                 btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
-                // Remove estilos inline para pegar a classe CSS nova
                 btn.style.background = '';
                 btn.style.color = '';
                 btn.style.borderColor = '';
-                btn.className = "btn-pulse btn-vip-style"; // Aplica estilo dourado
+                btn.className = "btn-pulse btn-vip-style"; 
                 lockMsg.style.display = 'none';
             }
             lucide.createIcons();
@@ -733,18 +717,13 @@
             });
         }
 
-        // --- FIM DA LÓGICA REINSERIDA ---
-
-        // FEATURE 1: LÓGICA DE BORRAR AS BOLAS NO RENDER
         function addBall(n, type, grid, index, total) {
             const div = document.createElement('div'); 
             div.className = `ball ${type}`; 
             
-            // LÓGICA NOVA: SE ESTIVER TRAVADO, ESCONDE AS BOLAS QUENTES (VERDES)
-            // Isso força a venda, pois o usuário quer ver justamente as melhores.
             if(isLockedMode && type === 'hot') {
                 div.classList.add('locked');
-                div.onclick = openVipLink; // Clicar na bola travada leva pro checkout
+                div.onclick = openVipLink; 
             }
             
             let txt = n;
