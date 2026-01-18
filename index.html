@@ -169,7 +169,7 @@
             padding: 15px;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
             margin: 10px 0 10px 0;
-            max-height: 50vh; /* Ajustado para caber os novos botões */
+            max-height: 50vh; 
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px; 
@@ -427,7 +427,11 @@
 
         </div>
 
-        <div style="margin-top:auto; padding:15px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:8px; flex-shrink:0;">
+        <div class="footer-action">
+            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse btn-vip-style"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
+        </div>
+
+        <div style="margin-top:10px; padding:15px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:8px; flex-shrink:0;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
                 <i data-lucide="bar-chart-2" size="14" class="text-gold"></i>
                 <span style="font-size:10px; color:#888; font-weight:bold;">ANÁLISE DO SINAL:</span>
@@ -435,10 +439,7 @@
             <p id="logText" style="font-size:11px; color:#fff; line-height:1.4;">...</p>
             <p id="apiStatus" style="font-size:9px; color:#444; margin-top:5px;"></p>
         </div>
-        
-        <div class="footer-action">
-            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse btn-vip-style"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
-        </div>
+
     </div>
 
     <script type="module">
@@ -582,15 +583,3 @@
             setTimeout(() => div.classList.add('reveal'), 100); 
             grid.appendChild(div);
         }
-
-        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
-
-        window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
-        window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
-        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        lucide.createIcons();
-    </script>
-</body>
-</html>
