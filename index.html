@@ -454,7 +454,8 @@
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
-        let isLockedMode = false; 
+        let isLockedMode = false;
+        let currentContestNumber = null; // VARIAVEL PARA GUARDAR NUMERO DO CONCURSO
 
         const isTestMode = window.location.search.includes('mode=test');
         const DAILY_LIMIT = 5;
@@ -502,7 +503,8 @@
         async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
         
         async function increment() { 
-            if(!currentUser || isVip || isTestMode) return; 
+            // AGORA VAI CONTAR MESMO SE VOCÊ FOR O ADMIN (REMOVIDO: || isTestMode)
+            if(!currentUser || isVip) return; 
             
             console.log("Tentando salvar contagem para:", currentUser.email, "Valor atual:", userUsage);
             
@@ -513,7 +515,6 @@
             updateUI(); 
 
             // USANDO setDoc COM MERGE (SOLUÇÃO DEFINITIVA)
-            // Isso cria o documento se ele não existir, ou atualiza se existir.
             try {
                 await setDoc(ref, { 
                     count: userUsage, 
@@ -557,7 +558,7 @@
             } catch(e) { return null; }
         }
 
-        // SISTEMA DE JANELA DO BING (V31)
+        // SISTEMA DE JANELA DO BING (V32 - INTELIGENTE)
         window.openResultInFrame = () => {
             if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
 
@@ -573,8 +574,20 @@
 
             setTimeout(() => {
                 clearInterval(phraseInterval);
+                
                 const gameName = gameConfig[currentMode].name.replace(' ', '+');
-                const bingUrl = `https://www.bing.com/search?q=resultado+${gameName}`;
+                let searchQuery = "";
+
+                // LÓGICA HÍBRIDA
+                if (currentContestNumber) {
+                    // CENÁRIO IDEAL: Temos o número (Ex: Resultado Lotofacil 3020)
+                    searchQuery = `resultado+${gameName}+${currentContestNumber}`;
+                } else {
+                    // CENÁRIO CEGO: Adiciona "ultimo sorteio" para melhorar a busca
+                    searchQuery = `resultado+${gameName}+ultimo+sorteio`;
+                }
+
+                const bingUrl = `https://www.bing.com/search?q=${searchQuery}`;
                 
                 document.getElementById('bingIframe').src = bingUrl;
                 document.getElementById('resultLoading').style.display = 'none';
@@ -613,6 +626,9 @@
             const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
             const btnSee = document.getElementById('btnSeeResult');
             
+            // RESETA O NÚMERO DO CONCURSO
+            currentContestNumber = null;
+
             grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
             const config = gameConfig[currentMode];
 
@@ -676,6 +692,8 @@
                 } else {
                     if(isSafe && realData && realData.dezenas) {
                         poolHot = realData.dezenas.map(d => parseInt(d));
+                        // AQUI ESTÁ O PULO DO GATO: SALVAMOS O NÚMERO
+                        currentContestNumber = realData.numero;
                         logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
                     } 
                     
