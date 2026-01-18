@@ -1,1482 +1,748 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sala de Sinais | VIP</title>
+    <meta name="theme-color" content="#000000">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
 
-  <meta charset="UTF-8">
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37",
+          path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
+          serviceWorkerParam: { scope: "/de-sorteios/" },
+          serviceWorkerPath: "OneSignalSDKWorker.js",
+          serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js"
+        });
+      });
+    </script>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        /* CONFIGURAÇÃO DE CORES */
+        :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; 
+            height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 10%, #1a1a00 0%, #000 90%);
+        }
 
-  <title>Sala de Sinais | VIP</title>
+        #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; pointer-events: none; }
+        .z-content { position: relative; z-index: 50; } 
 
-  <meta name="theme-color" content="#000000">
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-   
+        .marquee-container { 
+            background: rgba(0, 255, 136, 0.1); border-bottom: 1px solid rgba(0, 255, 136, 0.2); 
+            height: 28px; overflow: hidden; white-space: nowrap; position: relative; z-index: 10; display: flex; align-items: center; flex-shrink: 0;
+        }
+        .marquee-content { 
+            display: inline-block; animation: marquee 30s linear infinite; 
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #00ff88; text-transform: uppercase; font-weight: bold;
+        }
+        @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-  <link rel="manifest" href="manifest.json">
+        /* Z-INDEX 100 (ORIGINAL) */
+        #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
+        .btn-install-app {
+            background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
+            font-size: 10px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 5px; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
 
-  <link rel="icon" type="image/png" href="https://i.ibb.co/nMt8zB1d/LOGO-01.png">
+        #installModal, #resultCheckModal {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
+            border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
+            padding: 20px; z-index: 6000; transform: translateY(100%); transition: transform 0.3s ease-out;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+        }
+        #installModal.show, #resultCheckModal.show { transform: translateY(0); }
 
-  <meta name="mobile-web-app-capable" content="yes">
+        #creditContainer { margin-bottom: 10px; flex-shrink: 0; }
+        .credit-box { 
+            padding: 10px; border-radius: 8px; text-align: center; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255, 215, 0, 0.05); border: 1px solid var(--primary); color: var(--primary);
+        }
+        .credit-box.red { background: rgba(255, 0, 85, 0.15); border: 2px solid #ff0055; color: #ff0055; animation: pulse-danger 0.8s infinite alternate; }
+        @keyframes pulse-danger { from { box-shadow: 0 0 5px #ff0055; transform: scale(1); } to { box-shadow: 0 0 15px #ff0055; transform: scale(1.02); } }
+        
+        .vip-badge {
+            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000;
+            padding: 10px; border-radius: 8px; text-align: center; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
 
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        .games-wrapper { 
+            overflow-y: auto; flex-grow: 1; padding: 5px; margin-bottom: 5px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.05); min-height: 0; 
+        }
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 10px; }
+        
+        .game-card { 
+            background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.9)); 
+            border: 1px solid #333; border-radius: 10px; padding: 12px; 
+            text-align: center; cursor: pointer; transition: all 0.1s; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .game-card:active { transform: scale(0.95); border-color: var(--primary); }
+        .game-card.active { border-color: var(--primary); background: rgba(255, 215, 0, 0.15); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2) inset; }
+        .game-icon { font-size: 24px; margin-bottom: 2px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        .game-title { font-size: 10px; font-weight: 800; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; }
+        .game-card.active .game-title { color: #fff; text-shadow: 0 0 5px var(--primary); }
 
-   
+        .slider-box { background: rgba(20,20,20,0.8); padding: 10px; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; flex-shrink: 0; }
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 4px; outline: none; background: linear-gradient(90deg, #00ff88 0%, #ffd700 50%, #ff0055 100%); } 
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #fff; border: 3px solid #000; box-shadow: 0 0 10px rgba(255,255,255,0.8); cursor: grab; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; }
 
-  <script src="https://unpkg.com/lucide@latest"></script>
+        .btn-pulse {
+            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+            border: none; color: #000; padding: 16px;
+            font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 16px;
+            text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 12px; cursor: pointer; width: 100%;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            animation: pulse-gold 2s infinite; position: relative; overflow: hidden;
+        }
+        .btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent); transform: rotate(45deg) translateY(-100%); animation: shine 3s infinite; }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+        @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
 
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=JetBrains+Mono:wght@400;800&display=swap" rel="stylesheet">
+        /* BOTÃO DE RESULTADO PULSANTE */
+        .btn-result {
+            background: transparent; border: 1px solid var(--primary); color: var(--primary);
+            padding: 10px 16px; border-radius: 20px; font-size: 11px; font-weight: bold;
+            margin: 10px auto; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+            animation: soft-pulse 2s infinite;
+        }
+        .btn-result:hover { background: rgba(255, 215, 0, 0.1); }
+        @keyframes soft-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); } 100% { transform: scale(1); } }
 
+        .screen { display: none; flex-direction: column; height: 100%; padding: 15px; padding-bottom: 30px; position: relative; z-index: 2; overflow: hidden; }
+        .screen.active { display: flex; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        .spin-container { display: flex; justify-content: center; gap: 4px; font-size: 28px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; text-shadow: 0 0 10px var(--primary); }
+        .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
 
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        .result-frame {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
+            margin: 10px 0 10px 0;
+            max-height: 55vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px; 
+        }
 
-  <script>
+        .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        
+        .ball { 
+            width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
+            border: 1px solid #444; color: #fff;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
+            position: relative; overflow: visible !important; z-index: 10;
+        }
+        .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 
-   window.OneSignalDeferred = window.OneSignalDeferred || [];
+        .ball::after { 
+            content:''; position: absolute; top: 0px; right: 0px; 
+            width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; 
+            opacity: 1; z-index: 1000; transform: translate(30%, -30%);
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .ball.locked { 
+            filter: blur(5px); pointer-events: auto; cursor: pointer; border-color: #ff0055 !important;
+        }
+        .ball.locked::before {
+            content: '🔒'; position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) scale(1.5); filter: blur(0) !important;
+            z-index: 2000; text-shadow: 0 0 10px #000;
+        }
 
-   OneSignalDeferred.push(async function(OneSignal) {
+        .ball.hot { border-color: var(--hot); color: var(--hot); }
+        .ball.hot::after { background: var(--hot); }
+        .ball.cold { border-color: var(--cold); color: var(--cold); }
+        .ball.cold::after { background: var(--cold); }
+        .ball.neutral { border-color: #555; color: #888; }
+        .ball.neutral::after { display: none; } 
 
-    await OneSignal.init({
+        .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
+        
+        .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 10px auto; text-align: center; }
+        .confidence-label { font-size: 10px; color: #00ff88; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .confidence-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333; }
+        .confidence-bar-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease-out; box-shadow: 0 0 10px #00ff88; }
 
-     appId: "0c40d33b-5fb0-414f-9d56-b821718a2c37",
+        .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
+        .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        .modal-box { background: #111; border: 1px solid var(--primary); padding: 30px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; }
+        #testModeBar { background: #ff0000; color: #fff; text-align: center; font-size: 9px; padding: 2px; display: none; z-index: 9999; flex-shrink: 0; }
+        
+        #social-toast {
+            position: fixed; top: 40px; left: 50%; transform: translateX(-50%) translateY(-150px);
+            background: rgba(10, 10, 10, 0.95); border: 1px solid #333; border-left: 3px solid var(--primary);
+            padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 90%; max-width: 320px;
+        }
+        #social-toast.visible { transform: translateX(-50%) translateY(0); }
+        .fallback-link { color: #555; font-size: 10px; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
+        
+        .footer-action { margin-top: auto; padding-bottom: 20px; flex-shrink: 0; width: 100%; }
 
-     path: "https://nucleo-insight-gerador.github.io/de-sorteios/",
-
-     serviceWorkerParam: { scope: "/de-sorteios/" },
-
-     serviceWorkerPath: "OneSignalSDKWorker.js",
-
-     serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js"
-
-    });
-
-   });
-
-  </script>
-
-
-
-  <style>
-
-    /* CONFIGURAÇÃO DE CORES */
-
-    :root { --primary: #ffd700; --bg: #050505; --surface: #121212; --hot: #00ff88; --cold: #00ccff; --neutral: #333333; }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-
-     
-
-    body { 
-
-      background-color: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; 
-
-      height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
-
-      background-image: radial-gradient(circle at 50% 10%, #1a1a00 0%, #000 90%);
-
+        /* IFRAME RESPONSIVO */
+        .result-iframe { width: 100%; height: 400px; border: none; background: #fff; border-radius: 0 0 12px 12px; }
+        
+        script { display: none; } 
+    </style>
+    
+    <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestURL = urlParams.get('mode') === 'test';
+    if (!isTestURL) {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '734910919692454'); fbq('track', 'PageView');
     }
-
-
-
-    #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; pointer-events: none; }
-
-    .z-content { position: relative; z-index: 50; } 
-
-
-
-    ::-webkit-scrollbar { width: 4px; }
-
-    ::-webkit-scrollbar-track { background: #111; }
-
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-
-
-    .marquee-container { 
-
-      background: rgba(0, 255, 136, 0.1); border-bottom: 1px solid rgba(0, 255, 136, 0.2); 
-
-      height: 28px; overflow: hidden; white-space: nowrap; position: relative; z-index: 10; display: flex; align-items: center; flex-shrink: 0;
-
-    }
-
-    .marquee-content { 
-
-      display: inline-block; animation: marquee 30s linear infinite; 
-
-      font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #00ff88; text-transform: uppercase; font-weight: bold;
-
-    }
-
-    @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-
-
-
-    /* Z-INDEX 100 (BOTÃO INSTALAR - ORIGINAL) */
-
-    #installBtnContainer { position: absolute; top: 40px; right: 10px; z-index: 100; display: none; }
-
-    .btn-install-app {
-
-      background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88;
-
-      font-size: 10px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
-
-      display: flex; align-items: center; gap: 5px; cursor: pointer;
-
-      box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); animation: pulse-green 2s infinite;
-
-    }
-
-    @keyframes pulse-green { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); } 100% { transform: scale(1); } }
-
-
-
-    #installModal, #resultCheckModal {
-
-      position: fixed; bottom: 0; left: 0; width: 100%; background: #111;
-
-      border-top: 2px solid var(--primary); border-radius: 20px 20px 0 0;
-
-      padding: 20px; z-index: 6000; transform: translateY(100%); transition: transform 0.3s ease-out;
-
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
-
-    }
-
-    #installModal.show, #resultCheckModal.show { transform: translateY(0); }
-
-
-
-    #creditContainer { margin-bottom: 10px; flex-shrink: 0; }
-
-    .credit-box { 
-
-      padding: 10px; border-radius: 8px; text-align: center; 
-
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-
-      background: rgba(255, 215, 0, 0.05); border: 1px solid var(--primary); color: var(--primary);
-
-    }
-
-    .credit-box.red { background: rgba(255, 0, 85, 0.15); border: 2px solid #ff0055; color: #ff0055; animation: pulse-danger 0.8s infinite alternate; }
-
-    @keyframes pulse-danger { from { box-shadow: 0 0 5px #ff0055; transform: scale(1); } to { box-shadow: 0 0 15px #ff0055; transform: scale(1.02); } }
-
-     
-
-    .vip-badge {
-
-      background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000;
-
-      padding: 10px; border-radius: 8px; text-align: center; font-weight: 900;
-
-      text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
-
-      box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px;
-
-    }
-
-
-
-    .games-wrapper { 
-
-      overflow-y: auto; flex-grow: 1; padding: 5px; margin-bottom: 5px; 
-
-      border-bottom: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.05); min-height: 0; 
-
-    }
-
-    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 10px; }
-
-     
-
-    .game-card { 
-
-      background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.9)); 
-
-      border: 1px solid #333; border-radius: 10px; padding: 12px; 
-
-      text-align: center; cursor: pointer; transition: all 0.1s; position: relative;
-
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-
-    }
-
-    .game-card:active { transform: scale(0.95); border-color: var(--primary); }
-
-    .game-card.active { border-color: var(--primary); background: rgba(255, 215, 0, 0.15); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2) inset; }
-
-    .game-icon { font-size: 24px; margin-bottom: 2px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
-
-    .game-title { font-size: 10px; font-weight: 800; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .game-card.active .game-title { color: #fff; text-shadow: 0 0 5px var(--primary); }
-
-
-
-    .slider-box { background: rgba(20,20,20,0.8); padding: 10px; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; flex-shrink: 0; }
-
-    input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 4px; outline: none; background: linear-gradient(90deg, #00ff88 0%, #ffd700 50%, #ff0055 100%); } 
-
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #fff; border: 3px solid #000; box-shadow: 0 0 10px rgba(255,255,255,0.8); cursor: grab; margin-top: -6px; }
-
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; }
-
-
-
-    /* BOTÃO PULSANTE (GERAL) */
-
-    .btn-pulse {
-
-      border: none; padding: 16px;
-
-      font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 16px;
-
-      text-transform: uppercase; letter-spacing: 1px;
-
-      border-radius: 12px; cursor: pointer; width: 100%;
-
-      animation: pulse-gold 2s infinite; position: relative; overflow: hidden;
-
-    }
-
-    /* ESTILO NOVO PARA O BOTÃO VIP (DOURADO E PRETO) */
-
-    .btn-vip-style {
-
-      background: linear-gradient(180deg, #ffd700 0%, #ffae00 100%);
-
-      color: #000;
-
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-
-      border: 2px solid #fff;
-
-    }
-
-
-
-    .btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent); transform: rotate(45deg) translateY(-100%); animation: shine 3s infinite; }
-
-    @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
-
-    @keyframes shine { 0% { top: -100%; opacity: 0; } 20% { opacity: 1; } 100% { top: 200%; opacity: 0; } }
-
-
-
-    /* BOTÃO DE RESULTADO */
-
-    .btn-result {
-
-      background: transparent; border: 1px solid var(--primary); color: var(--primary);
-
-      padding: 10px 16px; border-radius: 20px; font-size: 11px; font-weight: bold;
-
-      margin: 10px auto; display: flex; align-items: center; gap: 8px;
-
-      cursor: pointer; transition: all 0.2s; text-transform: uppercase;
-
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
-
-      animation: soft-pulse 2s infinite;
-
-    }
-
-    .btn-result:hover { background: rgba(255, 215, 0, 0.1); }
-
-    @keyframes soft-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); } 100% { transform: scale(1); } }
-
-     
-
-    /* BOTÃO NOVO SINAL (VISÍVEL) */
-
-    .btn-restart {
-
-      background: rgba(255,255,255,0.1); border: 1px solid #fff; color: #fff;
-
-      padding: 12px; width: 100%; border-radius: 8px; font-weight: bold;
-
-      text-transform: uppercase; font-size: 12px; margin-top: 5px; cursor: pointer;
-
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-
-    }
-
-    .btn-restart:active { transform: scale(0.98); background: rgba(255,255,255,0.2); }
-
-
-
-    .screen { display: none; flex-direction: column; height: 100%; padding: 15px; padding-bottom: 30px; position: relative; z-index: 2; overflow: hidden; }
-
-    .screen.active { display: flex; animation: fadeUp 0.3s ease; }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-
-
-    .spin-container { display: flex; justify-content: center; gap: 4px; font-size: 28px; font-family: 'JetBrains Mono'; color: #fff; margin: 20px 0; text-shadow: 0 0 10px var(--primary); }
-
-    .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
-
-
-
-    .result-frame {
-
-      background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-
-      border: 2px solid var(--primary);
-
-      border-radius: 16px;
-
-      padding: 15px;
-
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
-
-      margin: 10px 0 10px 0;
-
-      max-height: 50vh; /* Ajustado para caber os novos botões */
-
-      overflow-y: auto;
-
-      overflow-x: hidden;
-
-      padding: 20px; 
-
-    }
-
-
-
-    .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-
-     
-
-    .ball { 
-
-      width: 44px; height: 44px; background: linear-gradient(135deg, #222, #000); 
-
-      border: 1px solid #444; color: #fff;
-
-      border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-
-      font-family: 'JetBrains Mono'; font-weight: 800; font-size: 16px;
-
-      box-shadow: 0 4px 10px rgba(0,0,0,0.8); opacity: 0; transform: scale(0);
-
-      position: relative; overflow: visible !important; z-index: 10;
-
-    }
-
-    .ball.reveal { animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-    @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
-
-
-
-    .ball::after { 
-
-      content:''; position: absolute; top: 0px; right: 0px; 
-
-      width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; 
-
-      opacity: 1; z-index: 1000; transform: translate(30%, -30%);
-
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
-
-    }
-
-     
-
-    .ball.locked { 
-
-      filter: blur(5px); pointer-events: auto; cursor: pointer; border-color: #ff0055 !important;
-
-    }
-
-    .ball.locked::before {
-
-      content: '🔒'; position: absolute; top: 50%; left: 50%; 
-
-      transform: translate(-50%, -50%) scale(1.5); filter: blur(0) !important;
-
-      z-index: 2000; text-shadow: 0 0 10px #000;
-
-    }
-
-
-
-    .ball.hot { border-color: var(--hot); color: var(--hot); }
-
-    .ball.hot::after { background: var(--hot); }
-
-    .ball.cold { border-color: var(--cold); color: var(--cold); }
-
-    .ball.cold::after { background: var(--cold); }
-
-    .ball.neutral { border-color: #555; color: #888; }
-
-    .ball.neutral::after { display: none; } 
-
-
-
-    .legend-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px; }
-
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
-
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #000; }
-
-     
-
-    .confidence-container { width: 100%; max-width: 250px; margin: 0 auto 10px auto; text-align: center; }
-
-    .confidence-label { font-size: 10px; color: #00ff88; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
-
-    .confidence-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333; }
-
-    .confidence-bar-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease-out; box-shadow: 0 0 10px #00ff88; }
-
-
-
-    .btn-google { background: #fff; color: #000; border: none; border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; margin-top: 15px; }
-
-    .input-box { background: #111; border: 1px solid #333; color: #fff; padding: 15px; width: 100%; border-radius: 8px; margin-bottom:10px; }
-
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; }
-
-    .modal-box { background: #111; border: 1px solid var(--primary); padding: 30px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; }
-
-    #testModeBar { background: #ff0000; color: #fff; text-align: center; font-size: 9px; padding: 2px; display: none; z-index: 9999; flex-shrink: 0; }
-
-     
-
-    #social-toast {
-
-      position: fixed; top: 40px; left: 50%; transform: translateX(-50%) translateY(-150px);
-
-      background: rgba(10, 10, 10, 0.95); border: 1px solid #333; border-left: 3px solid var(--primary);
-
-      padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 12px;
-
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-      width: 90%; max-width: 320px;
-
-    }
-
-    #social-toast.visible { transform: translateX(-50%) translateY(0); }
-
-    .fallback-link { color: #555; font-size: 10px; text-decoration: underline; margin-top: 15px; cursor: pointer; display: block; }
-
-     
-
-    .footer-action { margin-top: auto; padding-bottom: 20px; flex-shrink: 0; width: 100%; }
-
-
-
-    /* IFRAME RESPONSIVO */
-
-    .result-iframe { width: 100%; height: 400px; border: none; background: #fff; border-radius: 0 0 12px 12px; }
-
-     
-
-    script { display: none; } 
-
-  </style>
-
-   
-
-  <script>
-
-  const urlParams = new URLSearchParams(window.location.search);
-
-  const isTestURL = urlParams.get('mode') === 'test';
-
-  if (!isTestURL) {
-
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-
-    fbq('init', '734910919692454'); fbq('track', 'PageView');
-
-  }
-
-  </script>
-
+    </script>
 </head>
-
 <body onclick="forceAudioUnlock()">
 
+    <div id="testModeBar">🔧 MODO ADMIN</div>
+    <canvas id="neural-canvas"></canvas>
 
-
-  <div id="testModeBar">🔧 MODO ADMIN</div>
-
-  <canvas id="neural-canvas"></canvas>
-
-
-
-  <div id="installBtnContainer">
-
-    <button onclick="promptInstall()" class="btn-install-app">
-
-      <i data-lucide="download" size="14"></i> SALVAR APP SECRETO
-
-    </button>
-
-  </div>
-
-
-
-  <div class="marquee-container">
-
-    <div class="marquee-content">
-
-      💰 R$ 12.500,00 NA MILIONÁRIA • 🍀 ANA J. FEZ 14 PONTOS • 🦁 DEU LEÃO NO RIO • 💎 SUPER SETE ACUMULADO • 💰 R$ 500,00 NA QUINA DE ONTEM • 🚀 SALA DE SINAIS ATIVA
-
+    <div id="installBtnContainer">
+        <button onclick="promptInstall()" class="btn-install-app">
+            <i data-lucide="download" size="14"></i> SALVAR APP SECRETO
+        </button>
     </div>
 
-  </div>
-
-   
-
-  <div id="social-toast">
-
-    <div style="background:var(--primary); width:8px; height:8px; border-radius:50%; box-shadow:0 0 10px var(--primary);"></div>
-
-    <div style="flex:1;">
-
-      <p style="color:#fff; font-size:10px; font-weight:bold; text-transform:uppercase;">Novo Sinal Identificado</p>
-
-      <p style="color:#888; font-size:9px;" id="toast-desc">...</p>
-
+    <div class="marquee-container">
+        <div class="marquee-content">
+            💰 R$ 12.500,00 NA MILIONÁRIA • 🍀 ANA J. FEZ 14 PONTOS • 🦁 DEU LEÃO NO RIO • 💎 SUPER SETE ACUMULADO • 💰 R$ 500,00 NA QUINA DE ONTEM • 🚀 SALA DE SINAIS ATIVA
+        </div>
+    </div>
+    
+    <div id="social-toast">
+        <div style="background:var(--primary); width:8px; height:8px; border-radius:50%; box-shadow:0 0 10px var(--primary);"></div>
+        <div style="flex:1;">
+            <p style="color:#fff; font-size:10px; font-weight:bold; text-transform:uppercase;">Novo Sinal Identificado</p>
+            <p style="color:#888; font-size:9px;" id="toast-desc">...</p>
+        </div>
     </div>
 
-  </div>
-
-
-
-  <div id="installModal">
-
-    <i data-lucide="smartphone" size="40" class="text-gold mb-3"></i>
-
-    <h3 style="color:#fff; font-weight:900; font-size:16px; margin-bottom:5px;">NÃO PERCA SEU ACESSO!</h3>
-
-    <p style="color:#999; font-size:12px; margin-bottom:20px; line-height:1.4;">Salve o aplicativo agora para garantir seus 5 sinais gratuitos de amanhã.</p>
-
-    <div id="androidInstallBtn" style="display:none; width:100%;">
-
-      <button onclick="triggerNativeInstall()" class="btn-pulse" style="padding:12px; font-size:14px; margin-bottom:10px;">📲 SALVAR APLICATIVO AGORA</button>
-
+    <div id="installModal">
+        <i data-lucide="smartphone" size="40" class="text-gold mb-3"></i>
+        <h3 style="color:#fff; font-weight:900; font-size:16px; margin-bottom:5px;">NÃO PERCA SEU ACESSO!</h3>
+        <p style="color:#999; font-size:12px; margin-bottom:20px; line-height:1.4;">Salve o aplicativo agora para garantir seus 5 sinais gratuitos de amanhã.</p>
+        <div id="androidInstallBtn" style="display:none; width:100%;">
+            <button onclick="triggerNativeInstall()" class="btn-pulse" style="padding:12px; font-size:14px; margin-bottom:10px;">📲 SALVAR APLICATIVO AGORA</button>
+        </div>
+        <div id="iosInstructions" style="display:none; text-align:center; background:#222; padding:15px; border-radius:10px; width:100%;">
+            <p style="color:#fff; font-size:12px; margin-bottom:10px;">Para salvar no iPhone:</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px;">1. Toque em <i data-lucide="share" size="14"></i> Compartilhar</div>
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px; margin-top:5px;">2. Selecione <i data-lucide="plus-square" size="14"></i> <b>Adicionar à Tela de Início</b></div>
+        </div>
+        <button onclick="dismissInstall()" style="background:none; border:none; color:#555; font-size:11px; margin-top:15px; text-decoration:underline;">Agora não (correr risco de perder)</button>
     </div>
 
-    <div id="iosInstructions" style="display:none; text-align:center; background:#222; padding:15px; border-radius:10px; width:100%;">
+    <div id="resultCheckModal">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="font-size:12px; font-weight:bold; color:var(--primary);">RESULTADO OFICIAL</div>
+            <button onclick="closeResultModal()" style="background:none; border:none; color:#666;"><i data-lucide="x" size="20"></i></button>
+        </div>
+        
+        <div id="resultLoading" style="text-align:center; padding:30px 10px;">
+            <i data-lucide="loader-2" size="40" class="text-gold" style="animation:spin 1s linear infinite; margin-bottom:15px;"></i>
+            <p id="loadingPhrase" style="color:#fff; font-size:11px; font-weight:bold; text-transform:uppercase;">BUSCANDO BASE CAIXA...</p>
+            <p style="color:#666; font-size:9px; margin-top:5px;">Isso pode levar alguns segundos</p>
+        </div>
 
-      <p style="color:#fff; font-size:12px; margin-bottom:10px;">Para salvar no iPhone:</p>
+        <div id="resultContent" style="display:none; background:#fff; border-radius:12px; overflow:hidden;">
+            <iframe id="bingIframe" class="result-iframe" src="about:blank"></iframe>
+        </div>
 
-      <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px;">1. Toque em <i data-lucide="share" size="14"></i> Compartilhar</div>
-
-      <div style="display:flex; align-items:center; justify-content:center; gap:5px; color:#ccc; font-size:11px; margin-top:5px;">2. Selecione <i data-lucide="plus-square" size="14"></i> <b>Adicionar à Tela de Início</b></div>
-
+        <button onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none; margin-top:10px;">FECHAR</button>
     </div>
 
-    <button onclick="dismissInstall()" style="background:none; border:none; color:#555; font-size:11px; margin-top:15px; text-decoration:underline;">Agora não (correr risco de perder)</button>
-
-  </div>
-
-
-
-  <div id="resultCheckModal">
-
-    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-
-      <div style="font-size:12px; font-weight:bold; color:var(--primary);">RESULTADO OFICIAL</div>
-
-      <button onclick="closeResultModal()" style="background:none; border:none; color:#666;"><i data-lucide="x" size="20"></i></button>
-
+    <div id="paywallModal" class="modal-overlay">
+        <div class="modal-box">
+            <i data-lucide="lock" size="40" class="text-gold" style="margin-bottom: 15px;"></i>
+            <h2 style="color:#fff; font-size:18px; margin-bottom:5px; font-weight:800;">SINAIS ESGOTADOS</h2>
+            <p style="color:#888; font-size:12px; margin-bottom:20px;">Você recebeu seus 5 sinais gratuitos de hoje.</p>
+            <button onclick="openVipLink()" class="btn-pulse" style="font-size:13px; padding:12px;">ENTRAR NA SALA VIP</button>
+            <button onclick="closeModal()" style="background:none; border:none; color:#444; margin-top:15px; font-size:10px;">Voltar amanhã</button>
+        </div>
     </div>
 
-     
-
-    <div id="resultLoading" style="text-align:center; padding:30px 10px;">
-
-      <i data-lucide="loader-2" size="40" class="text-gold" style="animation:spin 1s linear infinite; margin-bottom:15px;"></i>
-
-      <p id="loadingPhrase" style="color:#fff; font-size:11px; font-weight:bold; text-transform:uppercase;">BUSCANDO BASE CAIXA...</p>
-
-      <p style="color:#666; font-size:9px; margin-top:5px;">Isso pode levar alguns segundos</p>
-
+    <div id="screen-home" class="screen active z-content" style="justify-content: center; align-items: center; text-align: center;">
+        <div style="position:relative; margin-bottom:30px;">
+            <div style="position:absolute; inset:-10px; border:1px solid var(--primary); border-radius:50%; animation:pulse 2s infinite; opacity:0.5;"></div>
+            <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #000; position:relative; z-index:2;">
+        </div>
+        <h1 style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase;">SALA DE <span style="color:var(--primary)">SINAIS</span></h1>
+        <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">RECEBA 5 SINAIS GRATUITOS HOJE</p>
+        <div style="width:100%; max-width:280px; margin-top:40px;">
+            <button id="btnLogin" class="btn-google" onclick="playSound('click')">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> PEGAR SINAIS AGORA
+            </button>
+            <p id="loadingLogin" style="color:#ffd700; font-size:10px; margin-top:10px; display:none;">Acessando Sala...</p>
+            <a onclick="forceRedirectLogin()" class="fallback-link">Problemas no celular? Clique aqui</a>
+            <p style="color:#333; font-size:9px; margin-top:15px;">🔒 ACESSO CRIPTOGRAFADO</p>
+        </div>
     </div>
 
-
-
-    <div id="resultContent" style="display:none; background:#fff; border-radius:12px; overflow:hidden;">
-
-      <iframe id="bingIframe" class="result-iframe" src="about:blank"></iframe>
-
+    <div id="screen-ritual" class="screen z-content" style="justify-content: flex-start;">
+        <div style="display:flex; justify-content:center; margin-bottom:10px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono'; font-size:11px; color:#666;">USUÁRIO: <span id="userIdDisplay" style="color:#fff; font-weight:bold;">...</span></div>
+        </div>
+        <div id="creditContainer"></div>
+        <div style="margin-bottom:10px; flex-shrink:0;">
+            <label style="color:#888; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:block;">ESCOLHA A LOTERIA</label>
+        </div>
+        <div class="games-wrapper">
+            <div class="game-grid">
+                <div class="game-card active" onclick="selectGame('lotofacil', this)"><div class="game-icon">🍀</div><div class="game-title">Lotofácil</div></div>
+                <div class="game-card" onclick="selectGame('mega', this)"><div class="game-icon">💰</div><div class="game-title">Mega Sena</div></div>
+                <div class="game-card" onclick="selectGame('quina', this)"><div class="game-icon">🔷</div><div class="game-title">Quina</div></div>
+                <div class="game-card" onclick="selectGame('bicho', this)"><div class="game-icon">🦁</div><div class="game-title">Palpite Bicho</div></div>
+                <div class="game-card" onclick="selectGame('milionaria', this)"><div class="game-icon">💎</div><div class="game-title">+Milionária</div></div>
+                <div class="game-card" onclick="selectGame('supersete', this)"><div class="game-icon">7️⃣</div><div class="game-title">Super Sete</div></div>
+                <div class="game-card" onclick="selectGame('timemania', this)"><div class="game-icon">⚽</div><div class="game-title">Timemania</div></div>
+                <div class="game-card" onclick="selectGame('lotomania', this)"><div class="game-icon">🎱</div><div class="game-title">Lotomania</div></div>
+                <div class="game-card" onclick="selectGame('diadesorte', this)"><div class="game-icon">📅</div><div class="game-title">Dia de Sorte</div></div>
+                <div class="game-card" onclick="selectGame('duplasena', this)"><div class="game-icon">🎲</div><div class="game-title">Dupla Sena</div></div>
+            </div>
+        </div>
+        <input type="hidden" id="gameType" value="lotofacil">
+        <input type="text" id="dreamInput" class="input-box" placeholder="Descreva o sonho aqui..." style="display:none; text-align:center; border-color:var(--primary); color:var(--primary); font-weight:bold; flex-shrink:0;">
+        <div class="slider-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:10px; color:#888; font-weight:bold;">INTENSIDADE DO SINAL</span>
+                <span id="boldnessValue" style="font-size:12px; font-weight:bold; color:#fff;">50%</span>
+            </div>
+            <input type="range" min="10" max="90" value="50" onchange="trackSliderChange(this.value)" oninput="updateBoldness(this.value)">
+        </div>
+        <div class="footer-action">
+            <button onclick="checkLimitAndStart()" class="btn-pulse">GERAR SINAL AGORA</button>
+        </div>
     </div>
 
-
-
-    <button onclick="closeResultModal()" class="btn-pulse" style="font-size:12px; padding:12px; animation:none; background:#333; color:#fff; border:none; margin-top:10px;">FECHAR</button>
-
-  </div>
-
-
-
-  <div id="paywallModal" class="modal-overlay">
-
-    <div class="modal-box">
-
-      <i data-lucide="lock" size="40" class="text-gold" style="margin-bottom: 15px;"></i>
-
-      <h2 style="color:#fff; font-size:18px; margin-bottom:5px; font-weight:800;">SINAIS ESGOTADOS</h2>
-
-      <p style="color:#888; font-size:12px; margin-bottom:20px;">Você recebeu seus 5 sinais gratuitos de hoje.</p>
-
-      <button onclick="openVipLink()" class="btn-pulse" style="font-size:13px; padding:12px;">ENTRAR NA SALA VIP</button>
-
-      <button onclick="closeModal()" style="background:none; border:none; color:#444; margin-top:15px; font-size:10px;">Voltar amanhã</button>
-
+    <div id="screen-loading" class="screen z-content" style="justify-content:center; align-items:center;">
+        <i data-lucide="cpu" size="64" class="text-gold" style="animation:spin 3s linear infinite;"></i>
+        <div class="spin-container" id="spinContainer"></div>
+        <div id="terminalText" class="matrix-text">BUSCANDO OPORTUNIDADES...</div>
     </div>
 
-  </div>
-
-
-
-  <div id="screen-home" class="screen active z-content" style="justify-content: center; align-items: center; text-align: center;">
-
-    <div style="position:relative; margin-bottom:30px;">
-
-      <div style="position:absolute; inset:-10px; border:1px solid var(--primary); border-radius:50%; animation:pulse 2s infinite; opacity:0.5;"></div>
-
-      <img src="https://i.ibb.co/nMt8zB1d/LOGO-01.png" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #000; position:relative; z-index:2;">
-
-    </div>
-
-    <h1 style="font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase;">SALA DE <span style="color:var(--primary)">SINAIS</span></h1>
-
-    <p style="color:#666; font-family:'JetBrains Mono'; font-size:10px; margin-top:5px; letter-spacing:3px;">RECEBA 5 SINAIS GRATUITOS HOJE</p>
-
-    <div style="width:100%; max-width:280px; margin-top:40px;">
-
-      <button id="btnLogin" class="btn-google" onclick="playSound('click')">
-
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> PEGAR SINAIS AGORA
-
-      </button>
-
-      <p id="loadingLogin" style="color:#ffd700; font-size:10px; margin-top:10px; display:none;">Acessando Sala...</p>
-
-      <a onclick="forceRedirectLogin()" class="fallback-link">Problemas no celular? Clique aqui</a>
-
-      <p style="color:#333; font-size:9px; margin-top:15px;">🔒 ACESSO CRIPTOGRAFADO</p>
-
-    </div>
-
-  </div>
-
-
-
-  <div id="screen-ritual" class="screen z-content" style="justify-content: flex-start;">
-
-    <div style="display:flex; justify-content:center; margin-bottom:10px; flex-shrink:0;">
-
-      <div style="font-family:'JetBrains Mono'; font-size:11px; color:#666;">USUÁRIO: <span id="userIdDisplay" style="color:#fff; font-weight:bold;">...</span></div>
-
-    </div>
-
-    <div id="creditContainer"></div>
-
-    <div style="margin-bottom:10px; flex-shrink:0;">
-
-      <label style="color:#888; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:block;">ESCOLHA A LOTERIA</label>
-
-    </div>
-
-    <div class="games-wrapper">
-
-      <div class="game-grid">
-
-        <div class="game-card active" onclick="selectGame('lotofacil', this)"><div class="game-icon">🍀</div><div class="game-title">Lotofácil</div></div>
-
-        <div class="game-card" onclick="selectGame('mega', this)"><div class="game-icon">💰</div><div class="game-title">Mega Sena</div></div>
-
-        <div class="game-card" onclick="selectGame('quina', this)"><div class="game-icon">🔷</div><div class="game-title">Quina</div></div>
-
-        <div class="game-card" onclick="selectGame('bicho', this)"><div class="game-icon">🦁</div><div class="game-title">Palpite Bicho</div></div>
-
-        <div class="game-card" onclick="selectGame('milionaria', this)"><div class="game-icon">💎</div><div class="game-title">+Milionária</div></div>
-
-        <div class="game-card" onclick="selectGame('supersete', this)"><div class="game-icon">7️⃣</div><div class="game-title">Super Sete</div></div>
-
-        <div class="game-card" onclick="selectGame('timemania', this)"><div class="game-icon">⚽</div><div class="game-title">Timemania</div></div>
-
-        <div class="game-card" onclick="selectGame('lotomania', this)"><div class="game-icon">🎱</div><div class="game-title">Lotomania</div></div>
-
-        <div class="game-card" onclick="selectGame('diadesorte', this)"><div class="game-icon">📅</div><div class="game-title">Dia de Sorte</div></div>
-
-        <div class="game-card" onclick="selectGame('duplasena', this)"><div class="game-icon">🎲</div><div class="game-title">Dupla Sena</div></div>
-
-      </div>
-
-    </div>
-
-    <input type="hidden" id="gameType" value="lotofacil">
-
-    <input type="text" id="dreamInput" class="input-box" placeholder="Descreva o sonho aqui..." style="display:none; text-align:center; border-color:var(--primary); color:var(--primary); font-weight:bold; flex-shrink:0;">
-
-    <div class="slider-box">
-
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-
-        <span style="font-size:10px; color:#888; font-weight:bold;">INTENSIDADE DO SINAL</span>
-
-        <span id="boldnessValue" style="font-size:12px; font-weight:bold; color:#fff;">50%</span>
-
-      </div>
-
-      <input type="range" min="10" max="90" value="50" onchange="trackSliderChange(this.value)" oninput="updateBoldness(this.value)">
-
-    </div>
-
-    <div class="footer-action">
-
-      <button onclick="checkLimitAndStart()" class="btn-pulse">GERAR SINAL AGORA</button>
-
-    </div>
-
-  </div>
-
-
-
-  <div id="screen-loading" class="screen z-content" style="justify-content:center; align-items:center;">
-
-    <i data-lucide="cpu" size="64" class="text-gold" style="animation:spin 3s linear infinite;"></i>
-
-    <div class="spin-container" id="spinContainer"></div>
-
-    <div id="terminalText" class="matrix-text">BUSCANDO OPORTUNIDADES...</div>
-
-  </div>
-
-
-
-  <div id="screen-result" class="screen z-content">
-
-    <div style="text-align:center; margin-bottom:10px;">
-
-      <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:4px 12px; border-radius:20px; display:inline-block;">SINAL CONFIRMADO 🎯</div>
-
-    </div>
-
-
-
-    <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
-
-       
-
-      <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
-
-       
-
-      <div class="confidence-container" id="confidenceBar" style="display:none;">
-
-        <div class="confidence-label">PRECISÃO DA IA: <span id="confValue">98%</span></div>
-
-        <div class="confidence-bar-bg">
-
-          <div class="confidence-bar-fill" id="confFill"></div>
+    <div id="screen-result" class="screen z-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; flex-shrink:0;">
+            <button onclick="resetApp()" style="background:none; border:none; color:#666; display:flex; align-items:center; gap:5px; font-size:12px;"><i data-lucide="refresh-ccw" size="14"></i> NOVO SINAL</button>
+            <div style="color:#00ff88; font-size:10px; font-weight:bold; border:1px solid #00ff88; padding:2px 8px; border-radius:4px;">SINAL CONFIRMADO 🎯</div>
+        </div>
+        <div style="text-align:center; flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+            
+            <h2 id="resultTitle" style="font-size:14px; letter-spacing:1px; color:#fff; margin-bottom:15px; font-weight:900;">SINAL PRONTO 🎯</h2>
+            
+            <div class="confidence-container" id="confidenceBar" style="display:none;">
+                <div class="confidence-label">PRECISÃO DA IA: <span id="confValue">98%</span></div>
+                <div class="confidence-bar-bg">
+                    <div class="confidence-bar-fill" id="confFill"></div>
+                </div>
+            </div>
+
+            <div class="result-frame">
+                <div id="numbersGrid" class="result-grid"></div>
+            </div>
+
+            <button id="btnSeeResult" class="btn-result" onclick="openResultInFrame()">
+                <i data-lucide="eye" size="12"></i> VER ÚLTIMO RESULTADO OFICIAL
+            </button>
+            
+            <div class="legend-box">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--hot); border-color:var(--hot);"></div> QUENTE</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--cold); border-color:var(--cold);"></div> FRIO</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#555; border-color:#777;"></div> NORMAL</div>
+            </div>
+            
+            <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
+        
+            <div id="lockMessage" style="display:none; margin-top:15px; padding:10px; background:rgba(255,0,0,0.15); border:1px solid #ff0055; border-radius:8px;">
+                <p style="color:#ff0055; font-size:11px; font-weight:bold; margin-bottom:5px;">⚠️ SINAL DE ALTA PRECISÃO DETECTADO</p>
+                <p style="color:#ccc; font-size:10px;">Os números decisivos foram ocultados para usuários gratuitos.</p>
+            </div>
 
         </div>
 
-      </div>
-
-
-
-      <div class="result-frame">
-
-        <div id="numbersGrid" class="result-grid"></div>
-
-      </div>
-
-
-
-      <button id="btnSeeResult" class="btn-result" onclick="openResultInFrame()">
-
-        <i data-lucide="eye" size="12"></i> VER ÚLTIMO RESULTADO OFICIAL
-
-      </button>
-
-       
-
-      <div class="legend-box">
-
-        <div class="legend-item"><div class="legend-dot" style="background:var(--hot); border-color:var(--hot);"></div> QUENTE</div>
-
-        <div class="legend-item"><div class="legend-dot" style="background:var(--cold); border-color:var(--cold);"></div> FRIO</div>
-
-        <div class="legend-item"><div class="legend-dot" style="background:#555; border-color:#777;"></div> NORMAL</div>
-
-      </div>
-
-       
-
-      <div id="animalResult" style="display:none; font-size:24px; color:var(--primary); font-weight:900; text-transform:uppercase; text-shadow:0 0 20px rgba(255,215,0,0.5); margin-bottom:20px;"></div>
-
-     
-
-      <div id="lockMessage" style="display:none; margin-top:15px; padding:10px; background:rgba(255,0,0,0.15); border:1px solid #ff0055; border-radius:8px;">
-
-        <p style="color:#ff0055; font-size:11px; font-weight:bold; margin-bottom:5px;">⚠️ SINAL DE ALTA PRECISÃO DETECTADO</p>
-
-        <p style="color:#ccc; font-size:10px;">Os números decisivos foram ocultados para usuários gratuitos.</p>
-
-      </div>
-
-       
-
-      <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
-
-        <p style="color:#888; font-size:10px; margin-bottom:5px;">VOCÊ AINDA TEM <span id="attemptsLeft" style="color:#fff; font-weight:bold;">...</span> SINAIS GRATUITOS HOJE</p>
-
-        <button onclick="resetApp()" class="btn-restart">
-
-          <i data-lucide="refresh-cw" size="14"></i> GERAR NOVO SINAL
-
-        </button>
-
-      </div>
-
-
-
+        <div style="margin-top:auto; padding:15px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:8px; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                <i data-lucide="bar-chart-2" size="14" class="text-gold"></i>
+                <span style="font-size:10px; color:#888; font-weight:bold;">ANÁLISE DO SINAL:</span>
+            </div>
+            <p id="logText" style="font-size:11px; color:#fff; line-height:1.4;">...</p>
+            <p id="apiStatus" style="font-size:9px; color:#444; margin-top:5px;"></p>
+        </div>
+        
+        <div class="footer-action">
+            <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse" style="font-size:14px; padding:15px; animation:none; border:1px solid var(--primary); background:#000; color:var(--primary);"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
+        </div>
     </div>
 
-
-
-    <div style="margin-top:auto; padding:15px; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:8px; flex-shrink:0;">
-
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-
-        <i data-lucide="bar-chart-2" size="14" class="text-gold"></i>
-
-        <span style="font-size:10px; color:#888; font-weight:bold;">ANÁLISE DO SINAL:</span>
-
-      </div>
-
-      <p id="logText" style="font-size:11px; color:#fff; line-height:1.4;">...</p>
-
-      <p id="apiStatus" style="font-size:9px; color:#444; margin-top:5px;"></p>
-
-    </div>
-
-     
-
-    <div class="footer-action">
-
-      <button id="mainActionButton" onclick="openVipLink()" class="btn-pulse btn-vip-style"><i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS</button>
-
-    </div>
-
-  </div>
-
-
-
-  <script type="module">
-
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-
-
-
-    const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
-
-    const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
-
-     
-
-    let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
-
-    let isLockedMode = false; 
-
-
-
-    const isTestMode = window.location.search.includes('mode=test');
-
-    const DAILY_LIMIT = 5;
-
-
-
-    // PWA LOGIC
-
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtnContainer').style.display = 'block'; document.getElementById('androidInstallBtn').style.display = 'block'; if(!localStorage.getItem('installPromptShown')) { setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000); localStorage.setItem('installPromptShown', 'true'); } });
-
-    const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test( userAgent ); }
-
-    if (isIos() && !window.navigator.standalone) { document.getElementById('installBtnContainer').style.display = 'block'; document.getElementById('iosInstructions').style.display = 'block'; if(!localStorage.getItem('installPromptShown')) { setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000); localStorage.setItem('installPromptShown', 'true'); } }
-
-    window.promptInstall = () => document.getElementById('installModal').classList.add('show');
-
-    window.dismissInstall = () => document.getElementById('installModal').classList.remove('show');
-
-    window.triggerNativeInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome === 'accepted') { document.getElementById('installBtnContainer').style.display = 'none'; } deferredPrompt = null; dismissInstall(); } };
-
-
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const utmSource = urlParams.get('utm_source') || 'Direto';
-
-    const utmCampaign = urlParams.get('utm_campaign') || 'Orgânico';
-
-
-
-    // AUDIO
-
-    let audioCtx;
-
-    window.forceAudioUnlock = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
-
-    function playTone(freq, type, duration, vol=0.1) { forceAudioUnlock(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); }
-
-    function playClick() { playTone(1200, 'square', 0.05, 0.2); }
-
-    function playSlide(val) { playTone(300 + (val*5), 'sine', 0.1, 0.1); }
-
-    function playWin() { [0, 150, 300].forEach((t, i) => setTimeout(() => playTone(600 + (i*200), 'triangle', 0.4, 0.3), t)); }
-
-    let coinSoundIndex = 0;
-
-    function playCoinVariant() { forceAudioUnlock(); coinSoundIndex = (coinSoundIndex + 1) % 3; switch(coinSoundIndex) { case 0: [0, 0.1].forEach((t, i) => setTimeout(() => playTone(2500 + (i*500), 'sine', 0.05, 0.15), t*1000)); break; case 1: playTone(1500, 'square', 0.05, 0.1); setTimeout(() => playTone(2200, 'sine', 0.1, 0.2), 60); break; case 2: playTone(1800, 'triangle', 0.08, 0.15); setTimeout(() => playTone(2000, 'sine', 0.05, 0.1), 80); break; } }
-
-
-
-    const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
-
-    let width, height, particles = [];
-
-    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-
-    class Particle { constructor() { this.x = Math.random()*width; this.y = Math.random()*height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>width) this.vx*=-1; if(this.y<0||this.y>height) this.vy*=-1; } draw() { ctx.fillStyle = 'rgba(255, 215, 0, 0.2)'; ctx.fillRect(this.x, this.y, 2, 2); } }
-
-    function initParticles() { particles = []; for(let i=0; i<40; i++) particles.push(new Particle()); }
-
-    function animate() { ctx.clearRect(0,0,width,height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-
-    window.addEventListener('resize', resize); resize(); initParticles(); animate();
-
-
-
-    const names = ["João M.", "Carlos S.", "Ana P.", "Pedro H.", "Lucas F."];
-
-    const actions = ["+Milionária", "Lotofácil", "Super Sete", "Bicho"];
-
-    setInterval(() => { if(Math.random()>0.5) { playCoinVariant(); const t = document.getElementById('social-toast'); const n = names[Math.floor(Math.random()*names.length)]; const a = actions[Math.floor(Math.random()*actions.length)]; document.getElementById('toast-desc').innerText = `${n} gerou um sinal na ${a}`; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 4000); }}, 10000);
-
-
-
-    document.getElementById('btnLogin').addEventListener('click', async () => { playClick(); document.getElementById('loadingLogin').style.display = 'block'; try { await setPersistence(auth, browserLocalPersistence); await signInWithPopup(auth, provider); } catch (error) { await signInWithRedirect(auth, provider); } });
-
-    window.forceRedirectLogin = async () => { document.getElementById('loadingLogin').innerText="Redirecionando..."; document.getElementById('loadingLogin').style.display='block'; await signInWithRedirect(auth, provider); }
-
-    getRedirectResult(auth).then(() => console.log("OK"));
-
-    onAuthStateChanged(auth, (user) => { if(user) { currentUser=user; if(!isTestMode) logEvent(analytics,'login'); document.getElementById('userIdDisplay').innerText=user.email.split('@')[0]; showScreen('screen-ritual'); checkServerUsage(); logAction('ACESSOU_APP', { source: utmSource, campaign: utmCampaign }); } else { showScreen('screen-home'); } });
-
-
-
-    async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
-
-    async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
-
-    function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
-
-
-
-    window.checkLimitAndStart = async () => { 
-
-      playClick(); 
-
-      if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
-
-        isLockedMode = true; 
-
-      } else {
-
-        isLockedMode = false;
-
-      }
-
-      startProcessing(); 
-
-    }
-
-
-
-    window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
-
-    window.updateBoldness = (val) => { playSlide(val); currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
-
-    window.trackSliderChange = (val) => { logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' }); }
-
-
-
-    async function logAction(actionName, details = {}) { if(!currentUser) return; try { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, mode: actionName, details: details, source: utmSource, campaign: utmCampaign, isTest: isTestMode, createdAt: serverTimestamp() }); } catch(e) {} }
-
-
-
-    async function fetchRealLotteryData(mode) {
-
-      const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
-
-      if(!map[mode]) return null;
-
-      const controller = new AbortController();
-
-      const timeoutId = setTimeout(() => controller.abort(), 600); 
-
-      try { 
-
-        const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
-
-        clearTimeout(timeoutId); return r.ok ? await r.json() : null; 
-
-      } catch(e) { return null; }
-
-    }
-
-
-
-    // SISTEMA DE JANELA DO BING (V31)
-
-    window.openResultInFrame = () => {
-
-      if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
-
-
-
-      document.getElementById('resultCheckModal').classList.add('show');
-
-      document.getElementById('resultLoading').style.display = 'block';
-
-      document.getElementById('resultContent').style.display = 'none';
-
-
-
-      const phrases = ["CONECTANDO SATÉLITE...", "DESCRIPTOGRAFANDO DADOS...", "BUSCANDO NA BASE OFICIAL...", "PROCESSANDO..."];
-
-      let pIndex = 0;
-
-      const phraseInterval = setInterval(() => {
-
-        document.getElementById('loadingPhrase').innerText = phrases[pIndex++ % phrases.length];
-
-      }, 1000);
-
-
-
-      setTimeout(() => {
-
-        clearInterval(phraseInterval);
-
-        const gameName = gameConfig[currentMode].name.replace(' ', '+');
-
-        const bingUrl = `https://www.bing.com/search?q=resultado+${gameName}`;
-
-        document.getElementById('bingIframe').src = bingUrl;
-
-        document.getElementById('resultLoading').style.display = 'none';
-
-        document.getElementById('resultContent').style.display = 'block';
-
-      }, 3000);
-
-    }
-
-     
-
-    window.closeResultModal = () => {
-
-      document.getElementById('resultCheckModal').classList.remove('show');
-
-      document.getElementById('bingIframe').src = "about:blank"; 
-
-    }
-
-
-
-    const gameConfig = {
-
-      'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
-
-      'mega':   { max: 60, count: 6, name: 'MEGA SENA' },
-
-      'quina':   { max: 80, count: 5, name: 'QUINA' },
-
-      'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' },
-
-      'timemania': { max: 80, count: 10, name: 'TIMEMANIA' },
-
-      'diadesorte':{ max: 31, count: 7, name: 'DIA DE SORTE' },
-
-      'duplasena': { max: 50, count: 6, name: 'DUPLA SENA' },
-
-      'milionaria':{ max: 50, count: 6, name: '+MILIONÁRIA' },
-
-      'supersete': { max: 9, count: 7, name: 'SUPER SETE' }
-
-    };
-
-
-
-    window.startProcessing = () => {
-
-      showScreen('screen-loading');
-
-      const term = document.getElementById('terminalText');
-
-      let step = 0; const spin = document.getElementById('spinContainer');
-
-      const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
-
-      setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
-
-    }
-
-
-
-    async function generateResult() {
-
-      increment(); 
-
-       
-
-      const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
-
-      const btnSee = document.getElementById('btnSeeResult');
-
-       
-
-      // ATUALIZA TENTATIVAS RESTANTES
-
-      let remaining = DAILY_LIMIT - userUsage - 1; // -1 pois incrementou agora
-
-      if(remaining < 0) remaining = 0;
-
-      document.getElementById('attemptsLeft').innerText = remaining;
-
-
-
-      grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
-
-      const config = gameConfig[currentMode];
-
-
-
-      const confBar = document.getElementById('confidenceBar');
-
-      const confFill = document.getElementById('confFill');
-
-      const confValue = document.getElementById('confValue');
-
-      confBar.style.display = 'block';
-
-      const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; 
-
-      confValue.innerText = randomConf + "%";
-
-      setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
-
-
-
-      const btn = document.getElementById('mainActionButton');
-
-      const lockMsg = document.getElementById('lockMessage');
-
-       
-
-      if(isLockedMode) {
-
-        btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
-
-        btn.style.background = '#ff0055'; 
-
-        btn.style.color = '#fff';
-
-        btn.style.borderColor = '#ff0055';
-
-        lockMsg.style.display = 'block'; 
-
-      } else {
-
-        // BOTÃO VIP DOURADO (SE NÃO ESTIVER TRAVADO)
-
-        btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
-
-        // Remove estilos inline para pegar a classe CSS nova
-
-        btn.style.background = '';
-
-        btn.style.color = '';
-
-        btn.style.borderColor = '';
-
-        btn.className = "btn-pulse btn-vip-style"; // Aplica estilo dourado
-
-        lockMsg.style.display = 'none';
-
-      }
-
-      lucide.createIcons();
-
-
-
-      if (currentMode === 'bicho') {
-
-        btnSee.style.display = 'none'; 
-
-        document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
-
-        const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
-
-        const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
-
-         
-
-        if(isLockedMode) {
-
-          animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
-
-          animalRes.style.filter = "blur(4px)";
-
-        } else {
-
-          animalRes.innerText = `🦁 ${animals[group]} (G${group})`;
-
-          animalRes.style.filter = "none";
-
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCga2CVSKysTYUpY3RDZNyV5BXhJe32lJQ", authDomain: "nucleo-insight-gerador.firebaseapp.com", projectId: "nucleo-insight-gerador", storageBucket: "nucleo-insight-gerador.firebasestorage.app", messagingSenderId: "159624822756", appId: "1:159624822756:web:279e5e1d4e0b80bc4991f1" };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const analytics = getAnalytics(app); const provider = new GoogleAuthProvider();
+        
+        let currentUser = null; let currentNumbers = []; let currentMode = 'lotofacil'; let currentBoldness = 50; let userUsage = 0; let isVip = false;
+        let isLockedMode = false; 
+        let latestDrawData = null; // GUARDA O RESULTADO REAL
+
+        const isTestMode = window.location.search.includes('mode=test');
+        const DAILY_LIMIT = 5;
+
+        // PWA LOGIC
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtnContainer').style.display = 'block'; document.getElementById('androidInstallBtn').style.display = 'block'; if(!localStorage.getItem('installPromptShown')) { setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000); localStorage.setItem('installPromptShown', 'true'); } });
+        const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test( userAgent ); }
+        if (isIos() && !window.navigator.standalone) { document.getElementById('installBtnContainer').style.display = 'block'; document.getElementById('iosInstructions').style.display = 'block'; if(!localStorage.getItem('installPromptShown')) { setTimeout(() => { document.getElementById('installModal').classList.add('show'); }, 3000); localStorage.setItem('installPromptShown', 'true'); } }
+        window.promptInstall = () => document.getElementById('installModal').classList.add('show');
+        window.dismissInstall = () => document.getElementById('installModal').classList.remove('show');
+        window.triggerNativeInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome === 'accepted') { document.getElementById('installBtnContainer').style.display = 'none'; } deferredPrompt = null; dismissInstall(); } };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const utmSource = urlParams.get('utm_source') || 'Direto';
+        const utmCampaign = urlParams.get('utm_campaign') || 'Orgânico';
+
+        // AUDIO
+        let audioCtx;
+        window.forceAudioUnlock = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+        function playTone(freq, type, duration, vol=0.1) { forceAudioUnlock(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); }
+        function playClick() { playTone(1200, 'square', 0.05, 0.2); }
+        function playSlide(val) { playTone(300 + (val*5), 'sine', 0.1, 0.1); }
+        function playWin() { [0, 150, 300].forEach((t, i) => setTimeout(() => playTone(600 + (i*200), 'triangle', 0.4, 0.3), t)); }
+        let coinSoundIndex = 0;
+        function playCoinVariant() { forceAudioUnlock(); coinSoundIndex = (coinSoundIndex + 1) % 3; switch(coinSoundIndex) { case 0: [0, 0.1].forEach((t, i) => setTimeout(() => playTone(2500 + (i*500), 'sine', 0.05, 0.15), t*1000)); break; case 1: playTone(1500, 'square', 0.05, 0.1); setTimeout(() => playTone(2200, 'sine', 0.1, 0.2), 60); break; case 2: playTone(1800, 'triangle', 0.08, 0.15); setTimeout(() => playTone(2000, 'sine', 0.05, 0.1), 80); break; } }
+
+        const canvas = document.getElementById('neural-canvas'); const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        class Particle { constructor() { this.x = Math.random()*width; this.y = Math.random()*height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>width) this.vx*=-1; if(this.y<0||this.y>height) this.vy*=-1; } draw() { ctx.fillStyle = 'rgba(255, 215, 0, 0.2)'; ctx.fillRect(this.x, this.y, 2, 2); } }
+        function initParticles() { particles = []; for(let i=0; i<40; i++) particles.push(new Particle()); }
+        function animate() { ctx.clearRect(0,0,width,height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+        window.addEventListener('resize', resize); resize(); initParticles(); animate();
+
+        const names = ["João M.", "Carlos S.", "Ana P.", "Pedro H.", "Lucas F."];
+        const actions = ["+Milionária", "Lotofácil", "Super Sete", "Bicho"];
+        setInterval(() => { if(Math.random()>0.5) { playCoinVariant(); const t = document.getElementById('social-toast'); const n = names[Math.floor(Math.random()*names.length)]; const a = actions[Math.floor(Math.random()*actions.length)]; document.getElementById('toast-desc').innerText = `${n} gerou um sinal na ${a}`; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 4000); }}, 10000);
+
+        document.getElementById('btnLogin').addEventListener('click', async () => { playClick(); document.getElementById('loadingLogin').style.display = 'block'; try { await setPersistence(auth, browserLocalPersistence); await signInWithPopup(auth, provider); } catch (error) { await signInWithRedirect(auth, provider); } });
+        window.forceRedirectLogin = async () => { document.getElementById('loadingLogin').innerText="Redirecionando..."; document.getElementById('loadingLogin').style.display='block'; await signInWithRedirect(auth, provider); }
+        getRedirectResult(auth).then(() => console.log("OK"));
+        onAuthStateChanged(auth, (user) => { if(user) { currentUser=user; if(!isTestMode) logEvent(analytics,'login'); document.getElementById('userIdDisplay').innerText=user.email.split('@')[0]; showScreen('screen-ritual'); checkServerUsage(); logAction('ACESSOU_APP', { source: utmSource, campaign: utmCampaign }); } else { showScreen('screen-home'); } });
+
+        async function checkServerUsage() { if(!currentUser) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); try{const s=await getDoc(ref); if(s.exists()){const d=s.data(); if(d.date===t) userUsage=d.count; else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email},{merge:true});} if(d.isVip) isVip=true;} else {userUsage=0; await setDoc(ref,{date:t,count:0,email:currentUser.email,isVip:false});} updateUI();}catch(e){} }
+        async function increment() { if(!currentUser || isVip || isTestMode) return; const t=new Date().toDateString(); const ref=doc(db,"usage",currentUser.uid); userUsage++; await updateDoc(ref,{count:userUsage,date:t}); updateUI(); }
+        function updateUI() { const container = document.getElementById('creditContainer'); if(isVip) { container.innerHTML = '<div class="vip-badge"><i data-lucide="crown" size="16"></i> VIP VITALÍCIO ATIVO</div>'; lucide.createIcons(); } else { let colorClass = '', text = 'SINAIS DIÁRIOS'; if(userUsage >= 4) { colorClass = 'red'; text = 'ÚLTIMA CHANCE'; } if(userUsage >= 5) { colorClass = 'red'; text = 'ESGOTADO'; } container.innerHTML = `<div class="credit-box ${colorClass}"><div style="font-size:9px; opacity:0.8; letter-spacing:1px; font-weight:bold;">${text}</div><div style="font-size:26px; font-weight:900; line-height:1;">${userUsage} / ${DAILY_LIMIT}</div></div>`; } }
+
+        window.checkLimitAndStart = async () => { 
+            playClick(); 
+            if(!isTestMode && !isVip && userUsage >= DAILY_LIMIT) { 
+                isLockedMode = true; 
+            } else {
+                isLockedMode = false;
+            }
+            startProcessing(); 
         }
 
-         
-
-        animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
-
-        renderBalls(currentNumbers);
-
-      } else {
-
-        btnSee.style.display = 'flex'; 
-
-        document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
-
-        let isSafe = currentBoldness <= 60; 
-
-        let realData = null; 
-
-         
-
-        if(isSafe && currentMode!=='supersete') realData = await fetchRealLotteryData(currentMode);
-
-
-
-        let finalList = [];
-
-        let poolHot = [];
-
-
-
-        if(currentMode === 'supersete') {
-
-          for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
-
-          logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
-
-        } else {
-
-          if(isSafe && realData && realData.dezenas) {
-
-            poolHot = realData.dezenas.map(d => parseInt(d));
-
-            logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
-
-          } 
-
-           
-
-          if ((!poolHot || poolHot.length === 0) && isSafe) {
-
-            logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
-
-            apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
-
-            let seed = getDailySeed();
-
-            for(let i=0; i<15; i++) {
-
-              let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
-
-              if(currentMode === 'lotomania' && fakeHot === 100) fakeHot = 0;
-
-              poolHot.push(fakeHot);
-
-            }
-
-          } else if (!isSafe) {
-
-            logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
-
-          }
-
-
-
-          let allNumbers = [];
-
-          let start = 1; let end = config.max;
-
-          if(currentMode === 'lotomania') { start = 0; end = 99; }
-
-
-
-          for(let i=start; i<=end; i++) allNumbers.push(i);
-
-          for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
-
-
-
-          let selected = new Set();
-
-          let hotLimit = Math.floor(config.count * 0.4); 
-
-          for(let h of poolHot) {
-
-            if(selected.size < hotLimit) {
-
-              selected.add(h);
-
-              finalList.push({ n: h, type: 'hot' });
-
-            }
-
-          }
-
-
-
-          for(let num of allNumbers) {
-
-            if(selected.size >= config.count) break;
-
-            if(!selected.has(num)) {
-
-              let type = Math.random() > 0.8 ? 'cold' : 'neutral';
-
-              selected.add(num);
-
-              finalList.push({ n: num, type: type });
-
-            }
-
-          }
-
-          finalList.sort((a,b) => a.n - b.n);
-
+        window.selectGame = (mode, el) => { playClick(); currentMode = mode; document.getElementById('gameType').value = mode; document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); const inp = document.getElementById('dreamInput'); inp.style.display = (mode === 'bicho') ? 'block' : 'none'; }
+        window.updateBoldness = (val) => { playSlide(val); currentBoldness = val; document.getElementById('boldnessValue').innerText = val + '%'; }
+        window.trackSliderChange = (val) => { logAction('AJUSTOU_INTENSIDADE', { valor: val + '%' }); }
+
+        async function logAction(actionName, details = {}) { if(!currentUser) return; try { await addDoc(collection(db, "history"), { uid: currentUser.uid, email: currentUser.email, mode: actionName, details: details, source: utmSource, campaign: utmCampaign, isTest: isTestMode, createdAt: serverTimestamp() }); } catch(e) {} }
+
+        async function fetchRealLotteryData(mode) {
+            const map = {'lotofacil':'lotofacil', 'mega':'megasena', 'quina':'quina', 'timemania':'timemania', 'lotomania':'lotomania', 'diadesorte':'diadesorte', 'duplasena':'duplasena', 'milionaria':'maismilionaria'};
+            if(!map[mode]) return null;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 600); 
+            try { 
+                const r = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${map[mode]}`, { signal: controller.signal }); 
+                clearTimeout(timeoutId); return r.ok ? await r.json() : null; 
+            } catch(e) { return null; }
+        }
+        
+        // SISTEMA DE JANELA DO BING (V28)
+        window.openResultInFrame = () => {
+            if(currentMode === 'bicho') return alert("O resultado do Bicho deve ser conferido na banca local.");
+
+            // 1. ABRE A JANELA E COMEÇA O TEATRO
+            document.getElementById('resultCheckModal').classList.add('show');
+            document.getElementById('resultLoading').style.display = 'block';
+            document.getElementById('resultContent').style.display = 'none';
+
+            // FRASES DE EFEITO
+            const phrases = ["CONECTANDO SATÉLITE...", "DESCRIPTOGRAFANDO DADOS...", "BUSCANDO NA BASE OFICIAL...", "PROCESSANDO..."];
+            let pIndex = 0;
+            const phraseInterval = setInterval(() => {
+                document.getElementById('loadingPhrase').innerText = phrases[pIndex++ % phrases.length];
+            }, 1000);
+
+            // 2. APÓS 3 SEGUNDOS, MOSTRA O BING
+            setTimeout(() => {
+                clearInterval(phraseInterval);
+                const gameName = gameConfig[currentMode].name.replace(' ', '+');
+                const bingUrl = `https://www.bing.com/search?q=resultado+${gameName}`;
+                
+                document.getElementById('bingIframe').src = bingUrl;
+                document.getElementById('resultLoading').style.display = 'none';
+                document.getElementById('resultContent').style.display = 'block';
+            }, 3000);
+        }
+        
+        window.closeResultModal = () => {
+            document.getElementById('resultCheckModal').classList.remove('show');
+            document.getElementById('bingIframe').src = "about:blank"; // Limpa para não pesar
         }
 
-        renderBalls(finalList);
+        const gameConfig = {
+            'lotofacil': { max: 25, count: 15, name: 'LOTOFÁCIL' },
+            'mega':      { max: 60, count: 6,  name: 'MEGA SENA' },
+            'quina':     { max: 80, count: 5,  name: 'QUINA' },
+            'lotomania': { max: 100, count: 50, name: 'LOTOMANIA' },
+            'timemania': { max: 80, count: 10, name: 'TIMEMANIA' },
+            'diadesorte':{ max: 31, count: 7,  name: 'DIA DE SORTE' },
+            'duplasena': { max: 50, count: 6,  name: 'DUPLA SENA' },
+            'milionaria':{ max: 50, count: 6,  name: '+MILIONÁRIA' },
+            'supersete': { max: 9,  count: 7,  name: 'SUPER SETE' }
+        };
 
-        logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
+        window.startProcessing = () => {
+            showScreen('screen-loading');
+            const term = document.getElementById('terminalText');
+            let step = 0; const spin = document.getElementById('spinContainer');
+            const interval = setInterval(() => { if(Math.random() > 0.7) playTone(1000 + Math.random()*500, 'square', 0.03, 0.05); spin.innerHTML = ''; for(let i=0; i<6; i++) { const d = document.createElement('div'); d.className='spin-digit'; d.innerText=Math.floor(Math.random()*10); d.style.opacity=Math.random(); spin.appendChild(d); } if(Math.random()>0.85) term.innerText=["RASTREAMENTO DE TENDÊNCIA...", "FILTRO DE PADRÕES...", "CONECTANDO BANCO DE DADOS...", "GERANDO SINAL..."][step++ % 4]; }, 80);
+            setTimeout(() => { clearInterval(interval); try { generateResult(); } catch(e) { showScreen('screen-result'); } }, 3000);
+        }
 
-      }
+        async function generateResult() {
+            increment(); 
+            
+            const grid = document.getElementById('numbersGrid'); const animalRes = document.getElementById('animalResult'); const logText = document.getElementById('logText'); const apiStatus = document.getElementById('apiStatus');
+            const btnSee = document.getElementById('btnSeeResult'); // REFERENCIA AO BOTAO NOVO
+            
+            grid.innerHTML = ''; animalRes.style.display = 'none'; currentNumbers = [];
+            const config = gameConfig[currentMode];
 
-      showScreen('screen-result'); playWin();
+            const confBar = document.getElementById('confidenceBar');
+            const confFill = document.getElementById('confFill');
+            const confValue = document.getElementById('confValue');
+            confBar.style.display = 'block';
+            const randomConf = Math.floor(Math.random() * (99 - 88 + 1)) + 88; 
+            confValue.innerText = randomConf + "%";
+            setTimeout(() => { confFill.style.width = randomConf + "%"; }, 200);
 
-    }
+            const btn = document.getElementById('mainActionButton');
+            const lockMsg = document.getElementById('lockMessage');
+            
+            if(isLockedMode) {
+                btn.innerHTML = '<i data-lucide="lock"></i> DESBLOQUEAR ESSE SINAL AGORA';
+                btn.style.background = '#ff0055'; 
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#ff0055';
+                lockMsg.style.display = 'block'; 
+            } else {
+                btn.innerHTML = '<i data-lucide="crown"></i> QUERO SINAIS ILIMITADOS';
+                btn.style.background = '#000';
+                btn.style.color = 'var(--primary)';
+                btn.style.borderColor = 'var(--primary)';
+                lockMsg.style.display = 'none';
+            }
+            lucide.createIcons();
 
+            // LIMPA DADOS ANTIGOS
+            latestDrawData = null;
+            btnSee.style.display = 'none';
 
+            if (currentMode === 'bicho') {
+                document.getElementById('resultTitle').innerText = "SINAL DE PALPITE BICHO 🎯";
+                const animals = ["","Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo","Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco","Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"];
+                const group = Math.floor(Math.random()*25)+1; const base = (group-1)*4+1; currentNumbers=[base,base+1,base+2,base+3];
+                
+                if(isLockedMode) {
+                   animalRes.innerText = `🔒 BLOQUEADO (G${group})`;
+                   animalRes.style.filter = "blur(4px)";
+                } else {
+                   animalRes.innerText = `🦁 ${animals[group]} (G${group})`;
+                   animalRes.style.filter = "none";
+                }
+                
+                animalRes.style.display='block'; logText.innerText = "PADRÃO: SONHO LUCID"; apiStatus.innerText = "FONTE: DICIONÁRIO GLOBAL";
+                renderBalls(currentNumbers);
+            } else {
+                btnSee.style.display = 'flex'; // MOSTRA O BOTÃO FIXO
+                document.getElementById('resultTitle').innerText = `SINAL DE ${config.name} PRONTO 🎯`;
+                let isSafe = currentBoldness <= 60; 
+                let realData = null; 
+                
+                // TENTA BUSCAR DADOS (SEMPRE, PARA O POPUP)
+                if(currentMode!=='supersete') {
+                    realData = await fetchRealLotteryData(currentMode);
+                    if(realData && realData.dezenas) {
+                        latestDrawData = realData; // SALVA PARA O POPUP
+                    }
+                }
 
-    function renderBalls(list) {
+                let finalList = [];
+                let poolHot = [];
 
-      const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
+                if(currentMode === 'supersete') {
+                    for(let i=0; i<7; i++) finalList.push({ n: Math.floor(Math.random()*10), type: 'neutral' });
+                    logText.innerText = "PADRÃO: COLUNA QUENTE"; apiStatus.innerText = "FONTE: ANÁLISE DE FLUXO";
+                } else {
+                    // 1. TENTA PEGAR QUENTES (DA API)
+                    if(isSafe && realData && realData.dezenas) {
+                        poolHot = realData.dezenas.map(d => parseInt(d));
+                        logText.innerText = `BASE: ÚLTIMO RESULTADO (${realData.numero})`; apiStatus.innerText = "FONTE: CAIXA (OFICIAL)";
+                    } 
+                    
+                    // 2. FALLBACK DO "QUENTE" (MATEMÁTICO)
+                    if ((!poolHot || poolHot.length === 0) && isSafe) {
+                        logText.innerText = "BASE: PADRÃO MATEMÁTICO (IA)";
+                        apiStatus.innerText = "FONTE: INTELIGÊNCIA INTERNA";
+                        let seed = getDailySeed();
+                        for(let i=0; i<15; i++) {
+                            let fakeHot = Math.floor(seededRandom(seed + i) * config.max) + 1;
+                            if(currentMode === 'lotomania' && fakeHot === 100) fakeHot = 0;
+                            poolHot.push(fakeHot);
+                        }
+                    } else if (!isSafe) {
+                        logText.innerText = "PADRÃO: QUEBRA DE BANCA ⚡"; apiStatus.innerText = "FONTE: IA DE PRECISÃO";
+                    }
 
-      if(typeof list[0] === 'number') {
+                    // 3. MONTA A LISTA COMPLETA
+                    let allNumbers = [];
+                    let start = 1; let end = config.max;
+                    if(currentMode === 'lotomania') { start = 0; end = 99; }
 
-        list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
+                    for(let i=start; i<=end; i++) allNumbers.push(i);
+                    for (let i = allNumbers.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]]; }
 
-        return;
+                    let selected = new Set();
+                    let hotLimit = Math.floor(config.count * 0.4); 
+                    for(let h of poolHot) {
+                        if(selected.size < hotLimit) {
+                            selected.add(h);
+                            finalList.push({ n: h, type: 'hot' });
+                        }
+                    }
 
-      }
+                    for(let num of allNumbers) {
+                        if(selected.size >= config.count) break;
+                        if(!selected.has(num)) {
+                            let type = Math.random() > 0.8 ? 'cold' : 'neutral';
+                            selected.add(num);
+                            finalList.push({ n: num, type: type });
+                        }
+                    }
+                    finalList.sort((a,b) => a.n - b.n);
+                }
+                renderBalls(finalList);
+                logAction(currentMode, { numbers: finalList.map(x=>x.n), intensity: currentBoldness });
+            }
+            showScreen('screen-result'); playWin();
+        }
 
-      list.forEach((item, i) => {
+        // FUNÇÕES DO NOVO MODAL
+        window.openResultModal = () => {
+            if(!latestDrawData) return alert("Buscando dados...");
+            document.getElementById('realResultTitle').innerText = `CONCURSO ${latestDrawData.numero}`;
+            document.getElementById('realResultDate').innerText = `DATA: ${latestDrawData.data}`;
+            
+            const grid = document.getElementById('realResultGrid');
+            grid.innerHTML = '';
+            
+            latestDrawData.dezenas.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'real-ball';
+                el.innerText = d;
+                grid.appendChild(el);
+            });
+            
+            document.getElementById('resultCheckModal').classList.add('show');
+        }
+        window.closeResultModal = () => document.getElementById('resultCheckModal').classList.remove('show');
 
-        addBall(item.n, item.type, grid, i, list.length);
+        function renderBalls(list) {
+            const grid = document.getElementById('numbersGrid'); grid.innerHTML = '';
+            if(typeof list[0] === 'number') {
+                list.forEach((n, i) => addBall(n, 'hot', grid, i, list.length));
+                return;
+            }
+            list.forEach((item, i) => {
+                addBall(item.n, item.type, grid, i, list.length);
+            });
+        }
+        
+        function addBall(n, type, grid, index, total) {
+            const div = document.createElement('div'); 
+            div.className = `ball ${type}`; 
+            
+            if(isLockedMode && index >= total - 2) {
+                div.classList.add('locked');
+                div.onclick = openVipLink; 
+            }
+            
+            let txt = n;
+            if(n === 0 && currentMode === 'lotomania') txt = '00';
+            else if(n < 10) txt = '0'+n;
+            
+            div.innerText = txt;
+            setTimeout(() => div.classList.add('reveal'), 100); 
+            grid.appendChild(div);
+        }
 
-      });
+        function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+        function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
 
-    }
-
-     
-
-    function addBall(n, type, grid, index, total) {
-
-      const div = document.createElement('div'); 
-
-      div.className = `ball ${type}`; 
-
-       
-
-if(isLockedMode && type === 'hot') { 
-   div.classList.add('locked');
-        div.classList.add('locked');
-
-        div.onclick = openVipLink; 
-
-      }
-
-       
-
-      let txt = n;
-
-      if(n === 0 && currentMode === 'lotomania') txt = '00';
-
-      else if(n < 10) txt = '0'+n;
-
-       
-
-      div.innerText = txt;
-
-      setTimeout(() => div.classList.add('reveal'), 100); 
-
-      grid.appendChild(div);
-
-    }
-
-
-
-    function getDailySeed() { const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-
-    function seededRandom(s) { var x = Math.sin(s++) * 10000; return x - Math.floor(x); }
-
-
-
-    window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
-
-    window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
-
-    window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
-
-    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-
-    lucide.createIcons();
-
-  </script>
-
+        window.openVipLink = async () => { if(isTestMode) return alert("Modo Teste."); if(typeof fbq === 'function') fbq('track', 'InitiateCheckout'); logAction('CLICOU_VIP', { time: new Date().toLocaleTimeString() }); window.open("https://pay.kiwify.com.br/MuUU7j8", "_blank"); }
+        window.closeModal = () => { document.getElementById('paywallModal').style.display = 'none'; }
+        window.resetApp = () => { playClick(); showScreen('screen-ritual'); }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        lucide.createIcons();
+    </script>
 </body>
-
-</html> 
+</html>
