@@ -325,34 +325,22 @@
 
     .spin-digit { width: 30px; text-align: center; border-bottom: 2px solid #333; }
 
-
-
-    .result-frame {
-
+.result-frame {
       background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-
       border: 2px solid var(--primary);
-
       border-radius: 16px;
-
       padding: 15px;
-
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.15) inset, 0 4px 15px rgba(0,0,0,0.5);
-
       margin: 10px 0 10px 0;
-
-      max-height: 50vh; /* Ajustado para caber os novos botões */
-
+      
+      /* AQUI ESTÁ A MUDANÇA: DE 50vh PARA 35vh */
+      max-height: 35vh; 
+      
       overflow-y: auto;
-
       overflow-x: hidden;
-
       padding: 20px; 
-
     }
-
-
-
+    
     .result-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 
      
